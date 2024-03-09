@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,18 +23,18 @@
 // Code:
 
 interface Sensor {
-  in void activate();
-  out void activated();
+  in void activate ();
+  out void activated ();
   behavior {
     on activate: activated;
   }
 }
 
 interface Start {
-  in bool start();
+  in bool start ();
   behavior {
-    on start: reply(false);
-    on start: reply(true);
+    on start: return false;
+    on start: return true;
   }
 }
 
@@ -42,6 +42,6 @@ component Test {
   provides Start start;
   requires Sensor sensor;
   behavior {
-    on start.start(): sensor.reply();
+    on start.start (): sensor.return;
   }
 }

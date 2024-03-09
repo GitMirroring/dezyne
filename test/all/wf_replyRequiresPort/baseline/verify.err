@@ -1,2 +1,2 @@
-test/all/wf_replyRequiresPort/wf_replyRequiresPort.dzn:45:23: error: cannot use requires port `sensor' in reply
+test/all/wf_replyRequiresPort/wf_replyRequiresPort.dzn:45:24: error: cannot use requires port `sensor' in return
 test/all/wf_replyRequiresPort/wf_replyRequiresPort.dzn:43:3: info: port defined here
