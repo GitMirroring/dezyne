@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom rutger@dezyne.org
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -26,10 +27,10 @@
 interface ihello
 {
   enum R {A};
-  in R hello();
+  in R hello ();
   behavior
   {
-    on hello: reply(R.A);
+    on hello: return R.A;
   }
 }
 component shadow_port
@@ -38,8 +39,8 @@ component shadow_port
   behavior
   {
     ihello.R r = ihello.R.A;
-    on h.hello(): reply(f(r));
-    ihello.R f(ihello.R h)
+    on h.hello (): return f (r);
+    ihello.R f (ihello.R h)
     {
       return h;
     }
