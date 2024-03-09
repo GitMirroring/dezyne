@@ -3,7 +3,7 @@ interface ihello
   in bool hello ();
   behavior
   {
-    on hello: reply (true);
+    on hello: return true;
   }
 }
 

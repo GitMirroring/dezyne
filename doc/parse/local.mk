@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -47,6 +47,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/function-missing-return.dzn		\
  %D%/function-not-tail-recursive.dzn		\
  %D%/function-reply-needs-provides-port.dzn	\
+ %D%/function-return-cannot-use-port.dzn	\
  %D%/imperative-illegal.dzn			\
  %D%/injected-with-out-event.dzn		\
  %D%/inout-parameter-on-out-event.dzn		\
@@ -68,7 +69,7 @@ DEZYNE_PARSE_EXAMPLES =				\
  %D%/port-bound-twice.dzn			\
  %D%/recursive-system.dzn			\
  %D%/requires-reply-needs-provides-port.dzn	\
- %D%/return-outside-function.dzn		\
+ %D%/requires-return-needs-provides-port.dzn	\
  %D%/second-otherwise.dzn			\
  %D%/typed-out-event.dzn
 

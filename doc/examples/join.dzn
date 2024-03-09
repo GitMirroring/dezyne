@@ -35,6 +35,6 @@ component join
     [running != 1] on one.finished (), two.finished ():
       running = running - 1;
     [running == 1] on one.finished (), two.finished ():
-      {running = 0; ref.reply ();}
+      {running = 0; ref.return;}
   }
 }

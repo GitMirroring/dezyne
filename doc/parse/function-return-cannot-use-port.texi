@@ -1,0 +1,4 @@
+function-return-cannot-use-port.dzn:19:7: error: cannot use
+    <port>.return in function
+function-return-cannot-use-port.dzn:23:7: error: type mismatch: expected
+    `void', found: `bool'

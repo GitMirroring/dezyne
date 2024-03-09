@@ -10,8 +10,8 @@ interface ihello_bool
     [idle] on hello: idle = false;
     [!idle]
       {
-        on cruel: {idle = true; reply (idle);}
-        on cruel: reply (idle);
+        on cruel: {idle = true; return idle;}
+        on cruel: return idle;
         on inevitable: {world; idle = true;}
       }
   }

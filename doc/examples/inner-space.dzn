@@ -4,7 +4,7 @@ namespace foo {
     in Bool e();
     out void a();
     behavior {
-      on e: {a; reply (Bool.T); }
+      on e: {a; return Bool.T;}
     }
   }
 }

@@ -18,6 +18,6 @@ component indirect_blocking_multiple_external_out
     bool ready = true;
     on p.a (): blocking {ready = false; r1.a (); r2.a ();}
     [!ready] on r1.b (), r2.b (): {ready = true; p.b ();}
-    [ready] on r1.b (), r2.b (): p.reply ();
+    [ready] on r1.b (), r2.b (): p.return;
   }
 }

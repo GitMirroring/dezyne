@@ -1,2 +1,10 @@
+function-reply-needs-provides-port.dzn:6:15: warning: reply is
+    deprecated, please update to return.
+function-reply-needs-provides-port.dzn:7:15: warning: reply is
+    deprecated, please update to return.
+function-reply-needs-provides-port.dzn:19:7: warning: reply is
+    deprecated, please update to return.
 function-reply-needs-provides-port.dzn:23:7: error: must specify a
     provides-port with reply
+function-reply-needs-provides-port.dzn:23:7: warning: reply is
+    deprecated, please update to return.

@@ -35,23 +35,23 @@ component cruise_control
       }
     }
     [hmi.state.Enabled && timer.idle] {
-      [pedals.engaged] on hmi.set (): reply (false);
+      [pedals.engaged] on hmi.set (): return false;
       [!pedals.engaged] on hmi.set (): {
         throttle.setpoint ();
         timer.start ();
-        reply (true);
+        return true;
       }
       on hmi.resume (): {
-        [pedals.engaged || !hmi.setpoint.Set] reply (false);
+        [pedals.engaged || !hmi.setpoint.Set] return false;
         [otherwise] {
           throttle.setpoint ();
           timer.start ();
-          reply (true);
+          return true;
         }
       }
     }
     [!hmi.state.Enabled || !timer.idle] {
-      on hmi.set (), hmi.resume (): reply (false);
+      on hmi.set (), hmi.resume (): return false;
     }
     on timer.timeout (): {
       if (!hmi.state.Active) illegal;

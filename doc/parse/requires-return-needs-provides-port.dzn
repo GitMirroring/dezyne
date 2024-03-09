@@ -1,0 +1,32 @@
+interface ihello
+{
+  in bool hello ();
+  behavior
+  {
+    on hello: return true;
+    on hello: return false;
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    on hello: world;
+  }
+}
+
+component requires_return_needs_provides_port
+{
+  provides ihello left;
+  provides ihello right;
+  requires iworld r;
+  behavior
+  {
+    on left.hello (): return true;
+    on right.hello (): return false;
+    on r.world (): return;
+  }
+}

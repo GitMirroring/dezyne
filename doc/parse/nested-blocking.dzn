@@ -12,6 +12,6 @@ component nested_blocking
   provides blocking ihello p;
   behavior
   {
-    blocking on p.hello (): [true] blocking p.reply ();
+    blocking on p.hello (): [true] blocking p.return;
   }
 }

@@ -1,2 +1,12 @@
+requires-reply-needs-provides-port.dzn:6:15: warning: reply is
+    deprecated, please update to return.
+requires-reply-needs-provides-port.dzn:7:15: warning: reply is
+    deprecated, please update to return.
+requires-reply-needs-provides-port.dzn:28:23: warning: reply is
+    deprecated, please update to return.
+requires-reply-needs-provides-port.dzn:29:24: warning: reply is
+    deprecated, please update to return.
 requires-reply-needs-provides-port.dzn:30:20: error: must specify a
     provides-port with reply on requires out-trigger: `r.world'
+requires-reply-needs-provides-port.dzn:30:20: warning: reply is
+    deprecated, please update to return.

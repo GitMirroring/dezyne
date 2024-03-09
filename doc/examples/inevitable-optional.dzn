@@ -12,8 +12,8 @@ interface inevitable_optional
 
     [state.IDLE]
     {
-      on hello: {state = status.WORLD; reply (true);}
-      on hello: {state = status.CRUEL; reply (false);}
+      on hello: {state = status.WORLD; return true;}
+      on hello: {state = status.CRUEL; return false;}
     }
     [state.WORLD] on inevitable: {state = status.IDLE; world;}
     [state.CRUEL]

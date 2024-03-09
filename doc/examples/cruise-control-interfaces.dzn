@@ -25,15 +25,15 @@ interface ihmi
 
     [!state.Disabled] on enable: {/* ignore when not disabled */}
     [!state.Active] on cancel: {/* ignore when not active */}
-    [!state.Enabled] on set, resume: reply (false);
+    [!state.Enabled] on set, resume: return false;
 
     [state.Disabled] on enable: state = State.Enabled;
     [state.Enabled] {
-      on set, resume: reply (false);
-      on set: {state = State.Active; setpoint = Setpoint.Set; reply (true);}
+      on set, resume: return false;
+      on set: {state = State.Active; setpoint = Setpoint.Set; return true;}
       on resume: {
-        [setpoint.Set] {state = State.Active; reply (true);}
-        [setpoint.Unset] reply (false);
+        [setpoint.Set] {state = State.Active; return true;}
+        [setpoint.Unset] return false;
       }
     }
     [state.Active]
@@ -57,8 +57,8 @@ interface ipedals
     bool monitor = false;
     bool engaged = false;
     [!monitor] {
-      on enable: {monitor = true; reply (engaged);}
-      on enable: {monitor = true; engaged = !engaged; reply (engaged);}
+      on enable: {monitor = true; return engaged;}
+      on enable: {monitor = true; engaged = !engaged; return engaged;}
     }
     [monitor] {
       on disable: {monitor = false; engaged = false;}

@@ -26,10 +26,10 @@ component simple_state_machine
     }
     [s.B]
     {
-      on p.cruel (): {if (r1.cruel ()) s=status.A; reply (s.A);}
+      on p.cruel (): {if (r1.cruel ()) s=status.A; return s.A;}
       on r2.world (): s=status.C;
     }
     [s.B || s.C] on r1.world (): {s=status.A; p.world ();}
-    [s.C] on p.cruel (): reply (s.A);
+    [s.C] on p.cruel (): return s.A;
   }
 }

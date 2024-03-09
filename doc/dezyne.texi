@@ -225,7 +225,7 @@ Imperative Statements
 * Empty Statement::             When a trigger has no effect, or there is nothing to do.
 * If::                          Imperative decisions.
 * Illegal::                     Specifying what is not allowed.
-* Reply::                       Determining the reply for a typed trigger.
+* Reply::                       Deprecated, see Return.
 * Return::                      Returning from a function.
 * Variable::                    Defining a local variable.
 
@@ -255,7 +255,8 @@ Component Imperative Statements
 * Component Action::            Sending messages over ports.
 * Component If::                Imperative decisions in a component.
 * Component Illegal::           Using illegal in a component.
-* Component Reply::             Using reply in a component.
+* Component Reply::             Deprecated, see Return.
+* Component Return::            Deprecated, see Compoent Return.
 * Component Defer::             Decoupling execution from the client.
 
 Systems
@@ -275,7 +276,7 @@ Well-formedness
 * Well-formedness -- Directional::  Direction of trigger and action.
 * Well-formedness -- Nesting::  The right place for declarative and imperative.
 * Well-formedness -- Mixing::   Mixing of declarative and imperative.
-* Well-formedness -- Reply::    Reply and ports.
+* Well-formedness -- Reply (deprecated)::    Reply and ports.
 * Well-formedness -- Valued Actions and Calls::  Careful use of values.
 * Well-formedness -- Injection::  Restrictions on injection.
 * Well-formedness -- Functions::  Returning and recursing.
@@ -318,6 +319,11 @@ Well-formedness -- Reply
 * Must specify provides-port with reply on out-trigger::
 * Must specify provides-port with reply::
 
+Well-formedness -- Return
+
+* Must specify provides-port with return on out-trigger::
+* Cannot use port with return in function::
+
 Well-formedness -- Valued Actions and Calls
 
 * Action in member variable initializer::
@@ -332,7 +338,6 @@ Well-formedness -- Injection
 Well-formedness -- Functions
 
 * Missing return::
-* Cannot use return outside of function::
 * Cannot use statement after recursive call::
 
 Well-formedness -- Data Parameters
@@ -930,11 +935,11 @@ interface transitions to state @code{!idle},
 A non-deterministic choice@footnote{the caller does not resolve the choice
 between the two cruel triggers, this is decided by the implementation}.
 In the @code{!idle} state, @code{cruel} is accepted; it can either...
-@item reply (true)
-reply @code{false} and remain not idle, or
-@item @{idle = true; reply (idle);@}
-execute a compound of two imperative statements: Set the reply value to
-@code{true} and transition to the idle state,
+@item return true
+return @code{false} and remain not idle, or
+@item @{idle = true; return idle;@}
+execute a compound of two imperative statements: Transition to the idle
+state and return @code{true}.
 @item inevitable
 If no @code{cruel} trigger occurs, @emph{inevitably} the @code{world}
 action will occur.  @code{inevitable} is a @emph{modeling} event and is
@@ -1166,7 +1171,7 @@ The full example is contained in the source tree at
 Camera.dzn}.
 
 The simplified@footnote{A simplified state diagram shows only triggers
-on state transitions and hides any actions or reply values.  Also, the
+on state transitions and hides any actions or return values.  Also, the
 state of the ports or even all extended state can be removed.  For this
 diagram, the command @code{dzn graph --backend=state --hide=actions
 --remove=extended test/all/Camera/Camera.dzn} was used.} state diagram:
@@ -1367,8 +1372,8 @@ subtle differences in the internal handling of messages.
 
 @cindex blocking semantics
 The in-event on the provides port (@code{p.a}) blocks (does not return)
-until a reply is handled.  This happens in the handling of the requires
-port out-event (@code{r.b}).  Also @pxref{Blocking}.
+until a @code{return} is performed.  This happens in the handling of the
+requires port out-event (@code{r.b}).  Also @pxref{Blocking}.
 
 @example
 @verbatiminclude semantics/indirect_blocking_out.dzn
@@ -1743,7 +1748,7 @@ error: integer range error in model <name>
 @end example
 
 @item type error
-A trigger of a typed (i.e., non-@code{void}) event must reply a value
+A trigger of a typed (i.e., non-@code{void}) event must return a value
 of the type of the event.
 
 Upon violation, the following error is reported
@@ -2007,7 +2012,7 @@ specification of a component is the component @ref{proxy}.
 Dezyne version 2.18.0 introduces shared interface variables.
 
 Before 2.18.0, for a component to be able to act on the state of another
-component through a guard, if or reply expression, it was necessary to
+component through a guard, if or return expression, it was necessary to
 define and maintain a shadow copy of said state, either by inferring its
 value or explicitly retrieving it via an action.
 
@@ -2433,9 +2438,9 @@ external calls are serviced in the order of arrival.
 
 An external call of a provides port in event blocks until the
 thread-safe shell private thread has completed the deferred function
-call.  The external call blocks until a @code{reply} has been executed
-for the input event port.  A subsequent call on a blocked port will block
-until the prior call returns.
+call.  The external call blocks until a @code{return} has been performed
+for the input event port.  A subsequent call on a blocked port will
+block until the prior call returns.
 
 An external call of a requires port out event returns a soon as the
 event call is scheduled.  The external call return is not synchronized
@@ -3770,7 +3775,7 @@ type      ::= bool / enum / subint / void
 data-type ::= extern
 @end example
 
-@code{type}s are used for event reply types, variables,
+@code{type}s are used for event return types, variables,
 function parameters, function, function return types, and function call
 arguments.  @code{data-types} are used for event parameters, action
 arguments, and variables.
@@ -3789,7 +3794,7 @@ arguments, and variables.
 
 @code{void} is used for defining untyped events and functions, e.g.,
 
-an event without reply value:
+an event without return value:
 
 @example
 in void hello ();
@@ -4328,9 +4333,9 @@ An example of an interface using both inevitable and optional.
 @verbatiminclude examples/inevitable-optional.dzn
 @end example
 
-In the interface above a reply value of @code{true} on @code{hello}
+In the interface above a return value of @code{true} on @code{hello}
 informs the client sending the @code{hello} that the @code{world} can be
-waited on.  However in case the reply value of @code{hello} is
+waited on.  However in case the return value of @code{hello} is
 @code{false} and the client would sit there waiting for @code{cruel} to
 happen, they may sit there forever because @code{cruel} might never
 happen.  This is what we refer to as a @emph{deadlock}.  To avoid this
@@ -4356,7 +4361,7 @@ guarded trigger occurs (see also @xref{Declarative Statements}).
 * Empty Statement::             When a trigger has no effect, or there is nothing to do.
 * If::                          Imperative decisions.
 * Illegal::                     Specifying what is not allowed.
-* Reply::                       Determining the reply for a typed trigger.
+* Reply::                       Deprecated, see Return.
 * Return::                      Returning from a function.
 * Variable::                    Defining a local variable.
 @end menu
@@ -4440,8 +4445,8 @@ if (!bool_function ()) @dots{};
 if (!bool_function () && b) @dots{};
 if (enum_function () == result.FALSE) @dots{};
 if (enum_function () != result.TRUE || b) @dots{};
-reply (enum_function ());
-reply (enum_function () != result.ERROR);
+return enum_function ();
+return enum_function () != result.ERROR;
 @end example
 
 or in any expression (since 2.16.0).
@@ -4548,6 +4553,10 @@ still available for backwards compatibility.
 @node Reply
 @subsubsection @code{reply}
 
+@quotation Note
+@code{reply} is deprecated, @xref{Return}.
+@end quotation
+
 Define the value to be returned at the end of an @code{on} with a typed
 trigger.
 
@@ -4571,13 +4580,14 @@ exactly once on every path through every sequence statements.
 @node Return
 @subsubsection @code{return}
 
-@code{return} is used to return program execution from the body of a
-function to the caller, possibly providing a value.
+@code{return} is used to return program execution from the body of an
+@code{on} statement (since 2.19.0) or the body of a function to the
+caller, possibly providing a value.
 
-Implicitly returning from a @code{void} function is allowed.  Also it is
-not required to use @code{return} as the last statement of a @code{void}
-function, i.e., an early return skipping over remaining statements is
-allowed.
+Implicitly returning from a @code{void} trigger or function is allowed.
+Also it is not required to use @code{return} as the last statement of a
+@code{void} trigger or function, i.e., an early return skipping over
+remaining statements is allowed.
 
 @example
 return ::= "return" ";"
@@ -4587,6 +4597,8 @@ return ::= "return" ";"
 For example:
 
 @example
+on hello: return true;
+
 void foo ()
 @{
   if (idle) return;
@@ -4976,16 +4988,16 @@ in a component.
 blocking ::= "blocking" statement
 @end example
 
-Using @code{blocking} requires an explicit @code{reply}.  It can only be
-used in a component.  If the @code{reply} is omitted for the
-@code{blocking} @code{trigger}, the imperative statement of another
-@code{trigger} must perform the @code{reply} for the blocked port.
-Thus, time and value of a blocked port reply depend on another
+Using @code{blocking} requires an explicit @code{return} (since 2.19.0).
+It can only be used in a component.  If the @code{return} is omitted for
+the @code{blocking} @code{trigger}, the imperative statement of another
+@code{trigger} must perform the @code{return} for the blocked port.
+Thus, time and value of a blocked port return depend on another
 @code{trigger}.  @code{blocking} may be used once in the declarative
 prefix.
 
 Only @code{provides} ports are affected by @code{blocking}.  A call of a
-provides port in-event will not return before a @code{reply} is
+provides port in-event will not return before a @code{return} is
 performed for that port.
 
 Guards or @code{on} is commutative with respect to blocking.  If
@@ -5164,7 +5176,8 @@ synchronizing a @code{starter} with the activities of two
 * Component Action::            Sending messages over ports.
 * Component If::                Imperative decisions in a component.
 * Component Illegal::           Using illegal in a component.
-* Component Reply::             Using reply in a component.
+* Component Reply::             Deprecated, see Component Return.
+* Component Return::            Using return in a component.
 * Component Defer::             Decoupling execution from the client.
 @end menu
 
@@ -5186,9 +5199,9 @@ and @code{event-name} is the name of an event defined in the interface
 associated with the port.
 
 Note that the @code{event} in an @code{action} statement must be of type
-@code{void}.  For a typed @code{action} the @code{reply} value may not
+@code{void}.  For a typed @code{action} the @code{return} value may not
 be ignored.  A variable definition or an @code{assign} are the
-appropriate ways to handle a @code{reply} value:
+appropriate ways to handle a @code{return} value:
 
 @example
 bool b = r.bool_event ();
@@ -5204,8 +5217,8 @@ if (!r.bool_event ()) @dots{};
 if (!r.bool_event () && b) @dots{};
 if (r.enum_event () == result.FALSE) @dots{};
 if (r.enum_event () != result.TRUE || b) @dots{};
-reply (r.enum_event ());
-reply (r.enum_event () != result.ERROR);
+return r.enum_event ();
+return r.enum_event () != result.ERROR;
 @end example
 
 or in any expression (since 2.16.0).
@@ -5294,6 +5307,10 @@ in the branch of an @code{if} as any other imperative statement
 @node Component Reply
 @subsubsection Component @code{reply}
 
+@quotation Note
+@code{reply} is deprecated, @xref{Component Return}.
+@end quotation
+
 A typed trigger event requires an appropriate return value in its
 response handling, the @code{reply} only determines the value not the
 moment of returning it:
@@ -5308,6 +5325,23 @@ or set the reply value from a synchrous context like so:
 @example
   port.reply ();
   port.reply (expression);
+@end example
+
+@node Component Return
+@subsubsection Component @code{return}
+
+In a component, @code{return} can be used similar as in an interface to
+return a value or perform an @emph{early return} from the body of an
+@code{on} statement (since 2.19.0) or a @code{function} body
+(@xref{Return}).
+
+@code{return} is also used (since 2.19.0) to release a blocked call
+(@xref{Blocking}), and return the value from a synchrous context like
+so:
+
+@example
+  port.return;
+  port.return expression;
 @end example
 
 @node Component Defer
@@ -5658,7 +5692,7 @@ namespace space
      out void world ();
      behavior
      @{
-       on hello (s): reply (result.TRUE);
+       on hello (s): return result.TRUE;
     @}
   @}
 @}
@@ -5764,7 +5798,7 @@ checks---are unique to Dezyne and are described in this chapter.
 * Well-formedness -- Directional::  Direction of trigger and action.
 * Well-formedness -- Nesting::  The right place for declarative and imperative.
 * Well-formedness -- Mixing::   Mixing of declarative and imperative.
-* Well-formedness -- Reply::    Reply and ports.
+* Well-formedness -- Reply (deprecated)::    Reply and ports.
 * Well-formedness -- Valued Actions and Calls::  Careful use of values.
 * Well-formedness -- Injection::  Restrictions on injection.
 * Well-formedness -- Functions::  Returning and recursing.
@@ -5796,7 +5830,10 @@ a function body,
 The use of statements within @code{compound}s is restricted,
 
 @item Reply
-The usage of @code{reply},
+The usage of @code{reply} (deprecated),
+
+@item Return
+The usage of @code{return},
 
 @item Valued Actions and Calls
 The use of non-@code{void} @code{action}s and @code{call}s,
@@ -5849,7 +5886,6 @@ The well-formedness checks in alphabetical order:
 @xref{Cannot use otherwise guard more than once},@*
 @xref{Cannot use otherwise guard with non-guard statements},@*
 @xref{Cannot use out-parameter on out-event},@*
-@xref{Cannot use return outside of function},@*
 @xref{Cannot use statement after recursive call},@*
 @xref{Component with behavior must define a provides port},@*
 @xref{Component with behavior must have a trigger},@*
@@ -5863,6 +5899,7 @@ The well-formedness checks in alphabetical order:
 @xref{Missing return},@*
 @xref{Must specify provides-port with reply},@*
 @xref{Must specify provides-port with reply on out-trigger},@*
+@xref{Cannot use port with return in function},@*
 @xref{Nested blocking used},@*
 @xref{Nested on used},@*
 @xref{Out-event must be void},@*
@@ -6319,8 +6356,8 @@ This results in the following error message:
 @verbatiminclude parse/interface-function-illegal.texi
 @end example
 
-@node Well-formedness -- Reply
-@section Well-formedness -- Reply
+@node Well-formedness -- Reply (deprecated)
+@section Well-formedness -- Reply (deprecated)
 
 A @code{reply} is required in the handling of a typed (i.e.
 non-@code{void}) trigger.  It is also required in case a @code{trigger}
@@ -6368,6 +6405,56 @@ This results in the following error message:
 
 @example
 @verbatiminclude parse/function-reply-needs-provides-port.texi
+@end example
+
+@node Well-formedness -- Return
+@section Well-formedness -- Return
+
+A @code{return} is required in the handling of a typed (i.e.
+non-@code{void}) trigger.  It is also required in case a @code{trigger}
+(which in this case might be @code{void}) is used in @code{blocking}
+mode; in that case the occurrence of the return might be postponed.  In
+general this is hard to check statically.  What can be checked is
+described below.
+
+@menu
+* Must specify provides-port with return on out-trigger::
+* Cannot use port with return in function::
+@end menu
+
+@node Must specify provides-port with return on out-trigger
+@subsection Must specify @code{provides}-port with @code{return} on out-trigger
+
+When a @code{return} is used in the body of a @code{requires-out}
+trigger, and the component has multiple provides ports, the @code{return}
+must specify which port it belongs to:
+
+@example
+@verbatiminclude parse/requires-return-needs-provides-port.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/requires-return-needs-provides-port.texi
+@end example
+
+@node Cannot use port with return in function
+@subsection Cannot use port with @code{return} in function
+
+A @code{return} cannot be used in a function to release a blocked port
+or direct return a value to a trigger.
+
+@example
+@verbatiminclude parse/function-return-cannot-use-port.dzn
+@end example
+
+@noindent
+This results in the following error message:
+
+@example
+@verbatiminclude parse/function-return-cannot-use-port.texi
 @end example
 
 @node Well-formedness -- Valued Actions and Calls
@@ -6503,7 +6590,6 @@ A recursive function is required to be tail recursive.
 
 @menu
 * Missing return::
-* Cannot use return outside of function::
 * Cannot use statement after recursive call::
 @end menu
 
@@ -6523,22 +6609,6 @@ This results in the following error message:
 
 @example
 @verbatiminclude parse/function-missing-return.texi
-@end example
-
-@node Cannot use return outside of function
-@subsection Cannot use @code{return} outside of function
-
-A @code{return} statement is restricted to function body.  So:
-
-@example
-@verbatiminclude parse/return-outside-function.dzn
-@end example
-
-@noindent
-This results in the following error message:
-
-@example
-@verbatiminclude parse/return-outside-function.texi
 @end example
 
 @node Cannot use statement after recursive call

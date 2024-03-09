@@ -9,11 +9,11 @@ component block
   {
     blocking on b.block():
     {
-      w.hello();
-      //execution waits here for b.reply()
-      //to occur as a result of w.world()
+      w.hello ();
+      //execution waits here for b.return
+      //to occur as a result of w.world ()
     }
 
-    on w.world(): b.reply();
+    on w.world (): b.return;
   }
 }

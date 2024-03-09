@@ -1,4 +1,16 @@
+out-binding-reversed.dzn:20:26: warning: formal binding (<-) is
+    deprecated
+    
+out-binding-reversed.dzn:21:26: warning: formal binding (<-) is
+    deprecated
+    
+out-binding-reversed.dzn:22:26: warning: formal binding (<-) is
+    deprecated
+    
 out-binding-reversed.dzn:22:26: error: formal binding `i' is not a data
     member variable
+out-binding-reversed.dzn:23:26: warning: formal binding (<-) is
+    deprecated
+    
 out-binding-reversed.dzn:23:26: error: formal binding `b' is not a data
     member variable

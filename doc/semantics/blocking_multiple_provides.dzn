@@ -15,18 +15,18 @@ component blocking_multiple_provides
 
     [side.None]
     {
-      blocking on left.hello(): {r.hello(); side = Side.Left;}
-      blocking on right.hello(): {r.hello(); side = Side.Right;}
+      blocking on left.hello (): {r.hello (); side = Side.Left;}
+      blocking on right.hello (): {r.hello (); side = Side.Right;}
     }
 
-    [side.Left] blocking on right.hello(): pending = Side.Right;
-    [side.Right] blocking on left.hello(): pending = Side.Left;
+    [side.Left] blocking on right.hello (): pending = Side.Right;
+    [side.Right] blocking on left.hello (): pending = Side.Left;
 
-    on r.world():
+    on r.world ():
     {
-      if(side.Left) left.reply();
-      if(side.Right) right.reply();
-      if(!pending.None) r.hello();
+      if (side.Left) left.return;
+      if (side.Right) right.return;
+      if (!pending.None) r.hello ();
       side = pending;
       pending = Side.None;
     }
