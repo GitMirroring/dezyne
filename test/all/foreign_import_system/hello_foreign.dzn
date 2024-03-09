@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -26,15 +26,15 @@ import iworld.dzn;
 
 interface ihello
 {
-  in bool hello();
-  out void goodbye();
+  in bool hello ();
+  out void goodbye ();
 
   behavior
   {
     bool b = true;
     [b] {
-      on hello: reply(b);
-      on hello: {b = false; reply(b);}
+      on hello: return b;
+      on hello: {b = false; return b;}
     }
     [!b] on inevitable: {b = true; goodbye;}
   }
@@ -48,8 +48,8 @@ component hello
   behavior
   {
     bool b = true;
-    on h.hello(): {b = false; w.world(); reply(b);}
-    [!b] on w.howdy(): {b = true; h.goodbye();}
+    on h.hello (): {b = false; w.world (); return b;}
+    [!b] on w.howdy (): {b = true; h.goodbye ();}
   }
 }
 
