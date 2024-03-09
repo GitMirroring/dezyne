@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -18,9 +18,10 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 //
+
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -30,8 +31,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -50,8 +51,8 @@ component blocking_top
 
   behavior
   {
-    blocking on h.hello(): {w.hello(); p.hello(); p.hello();}
-    on w.world(): h.reply();
+    blocking on h.hello (): {w.hello (); p.hello (); p.hello ();}
+    on w.world (): h.return;
   }
 }
 
@@ -78,10 +79,10 @@ component blocking_middle
   behavior
   {
     bool first = true;
-    [first] blocking on h.hello(): {w.hello(); first = false;}
-    on w.world(): h.reply();
+    [first] blocking on h.hello (): {w.hello (); first = false;}
+    on w.world (): h.return;
 
-    [!first] on h.hello(): {p.hello(); first = true;}
+    [!first] on h.hello (): {p.hello (); first = true;}
   }
 }
 
@@ -92,8 +93,8 @@ component blocking_bottom
 
   behavior
   {
-    blocking on h.hello(): w.hello();
-    on w.world(): h.reply();
+    blocking on h.hello (): w.hello ();
+    on w.world (): h.return;
   }
 }
 
@@ -114,7 +115,7 @@ component blocker
   provides blocking ihello b;
   behavior
   {
-    blocking on b.hello (): defer b.reply ();
+    blocking on b.hello (): defer b.return;
   }
 }
 
