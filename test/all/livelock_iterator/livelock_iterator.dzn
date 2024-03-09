@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +23,7 @@
 
 interface Iterate
 {
-  in void map();
+  in void map ();
 
   behavior
   {
@@ -33,12 +33,12 @@ interface Iterate
 
 interface List
 {
-  in bool next();
+  in bool next ();
 
   behavior
   {
-    on next: reply(false);
-    on next: reply(true);
+    on next: return false;
+    on next: return true;
   }
 }
 
@@ -49,11 +49,11 @@ component livelock_iterator
 
   behavior
   {
-    void next()
+    void next ()
     {
-      if (list.next()) next();
+      if (list.next ()) next ();
     }
 
-    on iter.map(): next();
+    on iter.map (): next ();
   }
 }
