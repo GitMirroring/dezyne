@@ -842,24 +842,13 @@ std::basic_ostream<Char, Traits> &")
           `(,@(map port->injected-require-override
                    (ast:injected-port* o))
             ,@(if (not (ast:provides? port)) '()
-               `(,(sm:assign*
-                   (sm:member* (%member-prefix) (code:out-binding port))
-                   (sm:member* (string-append "&" (%member-prefix))
-                               (string-append (code:event-name trigger)
-                                              ".dzn_out_binding")))))
-            ,@(if (not typed?) `(,call-slot)
                   `(,(sm:assign*
-                      (sm:member* (%member-prefix) (code:reply-var return-type))
-                      (sm:member* (string-append "&"(%member-prefix))
-                                  (simple-format #f "~a.in.~a.reply"
-                                                 port-name event-name)))
-                    ,@(if (is-a? o <foreign>) `(,(sm:return* call-slot))
-                          `(,call-slot
-                            ,(sm:return*
-                              (sm:member*
-                               (%member-prefix)
-                               (simple-format #f "~a.in.~a.reply"
-                                              port-name event-name))))))))))))))
+                      (sm:member* (%member-prefix) (code:out-binding port))
+                      (sm:member* (string-append "&" (%member-prefix))
+                                  (string-append (code:event-name trigger)
+                                                 ".dzn_out_binding")))))
+            ,@(if (not typed?) `(,call-slot)
+                  `(,(sm:return* call-slot))))))))))
   (define (trigger->method component trigger)
     (let* ((trigger
             statement
@@ -871,11 +860,11 @@ std::basic_ostream<Char, Traits> &")
                       (statement (.statement on)))
                  (values trigger (ast->code statement))))))
            (formals (ast:formal* trigger))
-           (return-type (ast:type trigger)))
+           (return-type (ast:type trigger))
+           (type-name (code:type-name return-type)))
       (sm:method (struct component)
-                 (type (if (not (is-a? o <foreign>)) "void"
-                           (string-append "virtual "
-                                          (code:type-name return-type))))
+                 (type (if (not (is-a? o <foreign>)) type-name
+                           (string-append "virtual " type-name)))
                  (name (code:event-slot-name trigger))
                  (formals (map c++:->formal formals))
                  (statement statement))))

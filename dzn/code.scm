@@ -752,7 +752,8 @@ and pass it as argument accordingly."
       (with-root (binding-into-blocking))
       (with-root normalize:event+illegals)
       (with-root remove-otherwise)
-      (with-root code:add-calling-context))
+      (with-root code:add-calling-context)
+      (with-root reply->return))
      ast)))
 
 (define (code:normalize ast)
