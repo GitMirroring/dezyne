@@ -2,7 +2,7 @@
 //
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,7 +33,7 @@ interface ihello
   in space.BOOL hello ();
   behavior
   {
-    on hello: reply (space.BOOL.TRUE);
+    on hello: return space.BOOL.TRUE;
   }
 }
 
@@ -44,6 +44,6 @@ component hello_namespace_enum
 
   behavior
   {
-    on h.hello (): {space.BOOL b = w.hello (); reply (b);}
+    on h.hello (): {space.BOOL b = w.hello (); return b;}
   }
 }
