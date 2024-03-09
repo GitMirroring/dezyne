@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -31,9 +31,9 @@ interface ihello
 
   behavior
   {
-    on hello: {world;reply (0);}
-    on hello: {world;reply (1);}
-    on hello: {world;reply (2);}
+    on hello: {world;return 0;}
+    on hello: {world;return 1;}
+    on hello: {world;return 2;}
   }
 }
 
@@ -47,7 +47,7 @@ component inevitable_multiple_requires
   behavior
   {
     int x = 0;
-    on h.hello (): {x=wl.hello ();h.world ();reply (x);}
+    on h.hello (): {x=wl.hello ();h.world ();return x;}
     [x==0] on wl.world (): x=wl.hello();
     [x==1] on wl.world (): illegal;
     on wr.world (): {}
@@ -62,8 +62,8 @@ interface iworld
   behavior
   {
     int i = 0;
-    [i==0] on hello: {i=i+1;reply (i);}
-    [i==1] on hello: {i=0;reply (i);}
+    [i==0] on hello: {i=i+1;return i;}
+    [i==1] on hello: {i=0;return i;}
     [i==0] on inevitable: {i=i+1;world;}
   }
 }
