@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2016, 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -23,10 +23,9 @@
 //
 // Code:
 
-
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -36,8 +35,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -52,7 +51,7 @@ component adapter
   behavior
   {
     on h.hello (): blocking w.hello ();
-    on w.world (): {h.world (); h.reply ();}
+    on w.world (): {h.world (); h.return;}
   }
 }
 
@@ -81,11 +80,11 @@ component multiple_provides
 
     [side.None]
     {
-      blocking on left.hello(): {side = Side.Left; r.hello();}
-      blocking on right.hello(): {side = Side.Right; r.hello();}
+      blocking on left.hello (): {side = Side.Left; r.hello ();}
+      blocking on right.hello (): {side = Side.Right; r.hello ();}
     }
-    [side.Left] on r.world(): {side = Side.None; left.reply();}
-    [side.Right] on r.world(): {side = Side.None; right.reply();}
+    [side.Left] on r.world (): {side = Side.None; left.return;}
+    [side.Right] on r.world (): {side = Side.None; right.return;}
   }
 }
 
