@@ -10,10 +10,15 @@ test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:79:7: error: cann
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:80:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:112:14: error: cannot use typed function in recursion
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:112:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:112:7: error: type mismatch: expected `bool', found: `<unknown type>'
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:116:14: error: cannot use typed function in recursion
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:116:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:116:7: error: type mismatch: expected `bool', found: `<unknown type>'
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:14: error: cannot use typed function in recursion
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:7: error: type mismatch: expected `bool', found: `<unknown type>'
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:14: error: cannot use typed function in recursion
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:7: info: statement after call
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:7: error: type mismatch: expected `bool', found: `<unknown type>'
+test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:138:7: error: type mismatch: expected `void', found: `bool'
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:198:7: error: code will never be executed

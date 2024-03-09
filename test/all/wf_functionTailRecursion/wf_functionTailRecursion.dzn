@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -24,12 +24,12 @@
 // Code:
 
 interface Intf {
-  in void evt();
+  in void evt ();
   behavior {
-    void f() {
+    void f () {
       bool b = false;
       if (b) {
-        f();
+        f ();
         b = true;
       }
     }
@@ -39,14 +39,14 @@ interface Intf {
 }
 
 interface Intf2 {
-  in void evt();
+  in void evt ();
   behavior {
-    bool f() {
-      bool b = g();
+    bool f () {
+      bool b = g ();
       return b;
     }
-    bool g() {
-      bool b = f();
+    bool g () {
+      bool b = f ();
       return b;
     }
 
@@ -55,14 +55,14 @@ interface Intf2 {
 }
 
 interface Intf3 {
-  in void evt();
+  in void evt ();
   behavior {
-    void f() {
-      f();
+    void f () {
+      f ();
     }
-    void g() {
-      f();
-      g();
+    void g () {
+      f ();
+      g ();
     }
 
     on evt: {}
@@ -70,13 +70,13 @@ interface Intf3 {
 }
 
 interface Intf4 {
-  in void evt();
+  in void evt ();
   behavior {
-    void f() {
-      g();
+    void f () {
+      g ();
     }
-    void g() {
-      f();
+    void g () {
+      f ();
       bool b = false;
     }
 
@@ -98,7 +98,7 @@ interface Intf5
       return f ();
     }
 
-    on hello: reply (g());
+    on hello: return g ();
   }
 }
 
@@ -116,7 +116,7 @@ interface Intf6
       return f ();
     }
 
-    on hello: reply (g());
+    on hello: return g ();
   }
 }
 
@@ -135,7 +135,7 @@ interface Intf7
     }
     void g ()
     {
-      reply (f ());
+      return f ();
     }
 
     on hello: g ();
