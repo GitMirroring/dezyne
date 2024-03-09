@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -51,31 +51,31 @@ interface huge_interface
     int target = 0;
     // int future = 0;
 
-    on hello: reply (1);
-    on hello: reply (2);
-    on hello: reply (3);
-    on hello: reply (4);
-    on hello: reply (5);
-    on hello: reply (6);
-    on hello: reply (7);
-    on hello: reply (8);
-    on hello: reply (9);
+    on hello: return 1;
+    on hello: return 2;
+    on hello: return 3;
+    on hello: return 4;
+    on hello: return 5;
+    on hello: return 6;
+    on hello: return 7;
+    on hello: return 8;
+    on hello: return 9;
 
-    on bye: reply (1);
-    on bye: reply (2);
-    on bye: reply (3);
-    on bye: reply (4);
-    on bye: reply (5);
-    on bye: reply (6);
-    on bye: reply (7);
-    on bye: reply (8);
-    on bye: reply (9);
+    on bye: return 1;
+    on bye: return 2;
+    on bye: return 3;
+    on bye: return 4;
+    on bye: return 5;
+    on bye: return 6;
+    on bye: return 7;
+    on bye: return 8;
+    on bye: return 9;
 
-    on cruel0: reply (previous);
-    on cruel1: reply (past);
-    on cruel2: reply (state);
-    on cruel3: reply (target);
-    // on cruel4: reply (future);
+    on cruel0: return previous;
+    on cruel1: return past;
+    on cruel2: return state;
+    on cruel3: return target;
+    // on cruel4: return future;
 
     // on inevitable: {foo0; previous=state;}
     // on inevitable: {foo1; past=previous;}
@@ -86,31 +86,31 @@ interface huge_interface
 
     [state == 0]
       {
-        on hello: {state=1;reply (0);}
-        on bye: reply (0);
+        on hello: {state=1;return 0;}
+        on bye: return 0;
       }
     [state > 0 && state < 9]
       {
         [previous == 0]
         {
-          on hello: {state=state+1;reply (0);}
-          on bye: reply (0);
+          on hello: {state=state+1;return 0;}
+          on bye: return 0;
         }
         [previous > 0 && previous < 9]
         {
-          on hello: {state=state-1;reply (0);}
-          on bye: {state=state+1; reply (0);}
+          on hello: {state=state-1;return 0;}
+          on bye: {state=state+1;return 0;}
         }
         [previous == 9]
         {
-          on hello: reply (0);
-          on bye: {state=state-1; reply (0);}
+          on hello: return 0;
+          on bye: {state=state-1;return 0;}
         }
       }
     [state == 9]
       {
-        on hello: reply (0);
-        on bye: {state=state-1;reply (0);}
+        on hello: return 0;
+        on bye: {state=state-1;return 0;}
       }
     }
 }
