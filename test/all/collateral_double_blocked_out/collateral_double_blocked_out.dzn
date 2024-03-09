@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,7 +28,8 @@ interface ihello
   in void hello ();
   out void world ();
 
-  behavior {
+  behavior
+  {
     on hello: world;
     on hello: {}
   }
@@ -38,7 +40,8 @@ interface iworld
   in void hello ();
   out void world ();
 
-  behavior {
+  behavior
+  {
     bool idle = true;
 
     on hello: idle = false;
@@ -53,7 +56,8 @@ component collateral_double_blocked_out
   provides blocking ihello right;
   requires iworld r;
 
-  behavior {
+  behavior
+  {
     enum status {IDLE, LEFT, MIDDLE};
     status state = status.IDLE;
 
@@ -62,7 +66,7 @@ component collateral_double_blocked_out
       if (state.IDLE)
         r.hello ();
       else
-        middle.reply ();
+        middle.return;
       state=status.LEFT;
     }
     blocking on middle.hello ():
@@ -70,13 +74,13 @@ component collateral_double_blocked_out
       if (state.IDLE)
         r.hello ();
       else
-        left.reply ();
+        left.return;
       state=status.MIDDLE;
     }
     on right.hello (): right.world ();
     [state.LEFT]
-    on r.world (): {left.world (); left.reply (); state=status.IDLE;}
+    on r.world (): {left.world (); state=status.IDLE; left.return;}
     [state.MIDDLE]
-    on r.world (): {middle.world (); middle.reply (); state=status.IDLE;}
+    on r.world (): {middle.world (); state=status.IDLE; middle.return;}
   }
 }
