@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,7 +29,7 @@ interface ihello
 
   behavior
   {
-    on hello: reply (true);
+    on hello: return true;
   }
 }
 
@@ -39,6 +39,6 @@ component param_shadow
 
   behavior
   {
-    on port.hello (port, port_hello, val, value): reply (true);
+    on port.hello (port, port_hello, val, value): return true;
   }
 }
