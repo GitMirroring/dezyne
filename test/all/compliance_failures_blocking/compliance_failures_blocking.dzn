@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -40,6 +41,6 @@ component compliance_failures_blocking
   behavior
   {
     blocking on left.hello (): {}
-    on right.hello (): blocking { right.reply();}
+    on right.hello (): blocking right.return;
   }
 }
