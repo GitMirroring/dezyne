@@ -2,6 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -63,7 +64,7 @@ component collateral_double_blocked
       if (state.IDLE)
         r.hello ();
       else
-        middle.reply ();
+        middle.return;
       state=status.LEFT;
     }
     blocking on middle.hello ():
@@ -71,11 +72,11 @@ component collateral_double_blocked
       if (state.IDLE)
         r.hello ();
       else
-        left.reply ();
+        left.return;
       state=status.MIDDLE;
     }
     on right.hello (): {}
-    [state.LEFT] on r.world (): {left.reply (); state=status.IDLE;}
-    [state.MIDDLE] on r.world (): {middle.reply (); state=status.IDLE;}
+    [state.LEFT] on r.world (): {state=status.IDLE; left.return;}
+    [state.MIDDLE] on r.world (): {state=status.IDLE; middle.return;}
   }
 }
