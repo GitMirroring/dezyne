@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,19 +22,18 @@
 //
 // Code:
 
-
 interface ihello
 {
-  in bool hello();
-  in bool cruel();
-  out void world();
+  in bool hello ();
+  in bool cruel ();
+  out void world ();
   behavior
   {
     bool idle = true;
     [idle]
     {
-      on hello: {reply(true); world;}
-      on cruel: {idle = false; reply(true);}
+      on hello: {world;return true;}
+      on cruel: {idle = false; return true;}
     }
     [!idle] on inevitable: {idle = true; world;}
   }
@@ -41,8 +41,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
   behavior
   {
     on hello: world;
@@ -60,13 +60,13 @@ component deadlock_reply
     S s = S.A;
     [s.A]
     {
-      on h.hello(): {s = S.B; l.hello();}
-      on h.cruel(): {s = S.B; reply(r.cruel());}
+      on h.hello (): {s = S.B; l.hello ();}
+      on h.cruel (): {s = S.B; return r.cruel ();}
     }
     [s.B]
     {
-      on l.world(): {s = S.A; h.reply(true); h.world();}
-      on r.world(): {s = S.A; h.world(); h.reply(true);}
+      on l.world (): {s = S.A; h.world (); h.return true;}
+      on r.world (): {s = S.A; h.world (); h.return true;}
     }
   }
 }
