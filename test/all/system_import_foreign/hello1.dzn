@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,8 +29,8 @@ interface ihello1
 
   behavior
   {
-    on hello: reply (BOOL.TRUE);
-    on hello: reply (BOOL.FALSE);
+    on hello: return BOOL.TRUE;
+    on hello: return BOOL.FALSE;
   }
 }
 
