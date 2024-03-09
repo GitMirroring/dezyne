@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,11 +24,11 @@
 
 interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
   behavior
   {
-    on hello: reply(false);
+    on hello: return false;
   }
 }
 
@@ -39,10 +39,11 @@ component hello_tail_recursive_function
   behavior
   {
     bool b = false;
-    void f() {
+    void f ()
+    {
       b = !b;
-      if(b) f();
+      if (b) f ();
     }
-    on h.hello(): {f(); reply(b);}
+    on h.hello (): {f (); return b;}
   }
 }
