@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -20,8 +20,8 @@
 //
 interface I
 {
-  in void a();
-  out void b();
+  in void a ();
+  out void b ();
   behavior
   {
     on a: b;
@@ -30,8 +30,8 @@ interface I
 
 interface I2
 {
-   in void a();
-   out void b();
+   in void a ();
+   out void b ();
    behavior
    {
      bool idle = true;
@@ -47,7 +47,7 @@ component indirect_blocking_out
   requires I2 r;
   behavior
   {
-    blocking on p.a(): r.a();
-    on r.b(): {p.b(); p.reply();}
+    blocking on p.a (): r.a ();
+    on r.b (): {p.b (); p.return;}
   }
 }
