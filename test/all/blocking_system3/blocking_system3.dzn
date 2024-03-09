@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,59 +22,59 @@
 //
 // Code:
 
-interface IBlocked
+interface ihello
 {
-  in void e();
+  in void hello ();
 
   behavior
   {
-    on e:{}
+    on hello:{}
   }
 }
 
-interface IAsync
+interface iworld
 {
-  in void trigger();
-  out void notify();
+  in void hello ();
+  out void world ();
 
   behavior
   {
     bool pending = false;
-    on trigger:
+    on hello:
     {
       [!pending] pending = true;
       [pending] illegal;
     }
     on inevitable:
     {
-      [pending]{pending = false; notify;}
+      [pending]{pending = false; world;}
     }
   }
 }
 
 component Blocked
 {
-  provides blocking IBlocked provided;
+  provides blocking ihello provided;
 
-  requires IAsync required;
+  requires iworld required;
 
   behavior
   {
-    blocking on provided.e(): required.trigger();
+    blocking on provided.hello (): required.hello ();
 
-    on required.notify(): provided.reply();
+    on required.world (): provided.return;
   }
 }
 
 component blocking_system3
 {
-  provides blocking IBlocked port1;
-  provides blocking IBlocked port2;
-  provides blocking IBlocked port3;
+  provides blocking ihello port1;
+  provides blocking ihello port2;
+  provides blocking ihello port3;
 
-  requires IAsync async1;
-  requires IAsync async2;
-  requires IAsync async3;
+  requires iworld async1;
+  requires iworld async2;
+  requires iworld async3;
 
   system
   {
