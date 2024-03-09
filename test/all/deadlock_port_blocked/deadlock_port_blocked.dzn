@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2017, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -25,8 +25,8 @@
 
 interface ihello
 {
-  in void hello();
-  in void cruel();
+  in void hello ();
+  in void cruel ();
   behavior
   {
     on hello: {}
@@ -36,7 +36,7 @@ interface ihello
 
 interface iworld
 {
-  out void world();
+  out void world ();
   behavior
   {
     on inevitable: world;
@@ -52,13 +52,13 @@ component deadlock_port_blocked
     bool blocked=false;
     [!blocked]
     {
-      on h.hello(): blocking blocked=true;
-      on w.world(): {}
+      on h.hello (): blocking blocked=true;
+      on w.world (): {}
     }
     [blocked]
     {
-      on w.world(): {h.reply (); blocked=false;}
+      on w.world (): {blocked=false; h.return;}
     }
-    on h.cruel(): {}
+    on h.cruel (): {}
   }
 }
