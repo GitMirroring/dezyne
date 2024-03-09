@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
   behavior
   {
     on hello: {}
@@ -36,7 +37,7 @@ component proxy
   requires blocking ihello r;
   behavior
   {
-    on p.hello(): r.hello();
+    on p.hello (): r.hello ();
   }
 }
 
@@ -48,9 +49,9 @@ component mux
   behavior
   {
     bool blocked = false;
-    blocking on left.hello(): blocked = true;
-    [blocked] on right.hello(): {blocked = false; left.reply();}
-    [!blocked] on right.hello(): {}
+    blocking on left.hello (): blocked = true;
+    [blocked] on right.hello (): {blocked = false; left.return;}
+    [!blocked] on right.hello (): {}
   }
 }
 
