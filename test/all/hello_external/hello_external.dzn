@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -29,11 +29,12 @@
 
 interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
-  behavior {
-    on hello: reply (true);
-    on hello: reply (false);
+  behavior
+  {
+    on hello: return true;
+    on hello: return false;
   }
 }
 
@@ -42,10 +43,11 @@ component hello_external
   provides ihello h;
   requires external iworld w;
 
-  behavior {
+  behavior
+  {
     bool idle = true;
-    [idle] on h.hello (): {idle = false; w.hello (); reply (true);}
-    [!idle] on h.hello (): reply (false);
+    [idle] on h.hello (): {idle = false; w.hello (); return true;}
+    [!idle] on h.hello (): return false;
     on w.world (): idle = true;
   }
 }
@@ -54,7 +56,8 @@ interface iworld
 {
   in void hello ();
   out void world ();
-  behavior {
+  behavior
+  {
     on hello: world;
   }
 }
