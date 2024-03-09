@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -25,15 +25,15 @@
 enum E {A};
 enum EE {AA};
 interface I {
-    in E e();
+    in E e ();
     behavior {
-        on e: reply(E.A);
+        on e: return E.A;
     }
 }
 interface II {
-    in EE ee();
+    in EE ee ();
     behavior {
-        on ee: reply(EE.AA);
+        on ee: return EE.AA;
     }
 }
 
@@ -44,7 +44,7 @@ component wf_typeerror {
         subint int {0..0};
         int state = 0;
         int c = 0;
-        on p.e(): bool b = (c >= (state + 3));
-        on q.e(): reply(EE.AA);
+        on p.e (): bool b = (c >= (state + 3));
+        on q.e (): return EE.AA;
     }
 }
