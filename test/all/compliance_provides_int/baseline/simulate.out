@@ -1,4 +1,4 @@
-(header ((p) iint provides) ((sut) compliance_provides_int component))
+(header ((p) ihello provides) ((sut) compliance_provides_int component))
 (state ((p)) ((sut)))
 test/all/compliance_provides_int/compliance_provides_int.dzn:41:5: error: non-compliance
 <external>.p.hello -> ...
