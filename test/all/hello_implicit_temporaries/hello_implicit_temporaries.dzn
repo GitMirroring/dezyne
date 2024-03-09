@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,10 +28,10 @@ interface ihello
 
   behavior
   {
-    on hello: reply (false);
-    on hello: reply (true);
-    on cruel: reply (false);
-    on cruel: reply (true);
+    on hello: return false;
+    on hello: return true;
+    on cruel: return false;
+    on cruel: return true;
   }
 }
 
@@ -50,21 +50,21 @@ component hello_implicit_temporaries
     }
 
     on h.hello ():
-    if (w.hello ()) reply (w.hello ());
-    else if (foo ()) reply (!foo () && true);
-    else if (w.hello () && true) reply (w.hello () || true);
-    else reply (false);
+    if (w.hello ()) return w.hello ();
+    else if (foo ()) return !foo () && true;
+    else if (w.hello () && true) return w.hello () || true;
+    else return false;
     on h.cruel ():
     {
       bool b = true;
       if (w.hello ())
       {
-        reply (w.hello ());
+        return w.hello ();
       }
       else
       {
-        reply (false);
         b = false;
+        return false;
       }
       if (true) b = true;
       if (true) if (true) b = true;
