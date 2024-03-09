@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,9 +30,9 @@ interface ihello
 
   behavior
   {
-    on hello: reply (Bool.True);
-    on hello: {cruel; reply (Bool.True);}
-    on hello: {world; reply (Bool.True);}
+    on hello: return Bool.True;
+    on hello: {cruel; return Bool.True;}
+    on hello: {world; return Bool.True;}
   }
 }
 
@@ -41,6 +41,6 @@ component compliance_provides_enum
   provides ihello h;
   behavior
   {
-    on h.hello (): reply (ihello.Bool.False);
+    on h.hello (): return ihello.Bool.False;
   }
 }
