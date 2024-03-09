@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -51,7 +51,7 @@ interface iworld
   behavior
   {
     int i = 0;
-    [i < 3] on world: {i = i + 1;reply (i);}
-    [i == 3] on world: reply (i);
+    [i < 3] on world: {i = i + 1;return i;}
+    [i == 3] on world: return i;
   }
 }
