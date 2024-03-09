@@ -24,7 +24,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -34,8 +34,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -56,11 +56,11 @@ component multiple_provides
 
     [side.None]
     {
-      blocking on left.hello(): {side = Side.Left; r.hello();}
-      blocking on right.hello(): {r.hello(); side = Side.Right;}
+      blocking on left.hello (): {side = Side.Left; r.hello ();}
+      blocking on right.hello (): {r.hello (); side = Side.Right;}
     }
-    [side.Left] on r.world(): {side = Side.None; left.reply();}
-    [side.Right] on r.world(): {side = Side.None; right.reply();}
+    [side.Left] on r.world (): {side = Side.None; left.return;}
+    [side.Right] on r.world (): {side = Side.None; right.return;}
   }
 }
 
@@ -71,8 +71,8 @@ component block
 
   behavior
   {
-    blocking on p.hello(): r.hello();
-    on r.world(): {p.reply(); p.world();}
+    blocking on p.hello (): r.hello ();
+    on r.world (): {p.world (); p.return;}
   }
 }
 
