@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,18 +23,18 @@
 
 interface Sensor {
   enum Code { ok, nok };
-  in Code activate();
-  in void deactivate();
+  in Code activate ();
+  in void deactivate ();
   behavior {
 
-    on activate: reply(Code.ok);
-    on activate: reply(Code.nok);
+    on activate: return Code.ok;
+    on activate: return Code.nok;
     on deactivate: {}
   }
 }
 
 interface Start {
-  in void start();
+  in void start ();
   behavior {
     on start: {}
   }
