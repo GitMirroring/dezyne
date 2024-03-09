@@ -67,7 +67,7 @@ component blocking_nondet
     status i = 0;
 
     [i==0] blocking on h.hello (): {w.hello (); i=1;}
-    [i==1] on w.world (): {h.cruel (); h.reply (); i=2;}
+    [i==1] on w.world (): {h.cruel (); i=2; h.return;}
     [i==2] on w.world (): {w.hello (); h.world (); i=0;}
   }
 }
