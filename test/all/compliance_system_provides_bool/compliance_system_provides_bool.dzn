@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -16,33 +16,33 @@
 //
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-// 
+//
 // Commentary:
-// 
+//
 // Code:
 
-interface ibool
+interface ihello
 {
-  in bool hello();
+  in bool hello ();
 
   behavior
   {
-    on hello: reply (true);
+    on hello: return true;
   }
 }
 
 component compliance_provides_bool
 {
-  provides ibool p;
+  provides ihello p;
   behavior
   {
-    on p.hello(): reply (false);
+    on p.hello (): return false;
   }
 }
 
 component compliance_system_provides_bool
 {
-  provides ibool pp;
+  provides ihello pp;
 
   system
   {
