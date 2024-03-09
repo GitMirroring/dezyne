@@ -23,16 +23,16 @@
 // Code:
 
 interface Start {
-  in bool start();
+  in bool start ();
   behavior {
-    on start: reply(false);
-    on start: reply(true);
+    on start: return false;
+    on start: return true;
   }
 }
 
 component Test {
   provides Start start;
   behavior {
-    on start.start(): foo.reply();
+    on start.start (): foo.return;
   }
 }
