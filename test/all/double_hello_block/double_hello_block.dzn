@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -25,7 +25,7 @@
 
 interface ihello
 {
-  in void hello();
+  in void hello ();
 
   behavior
   {
@@ -35,8 +35,8 @@ interface ihello
 
 interface iworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
@@ -58,10 +58,10 @@ component double_hello_block
 
   behavior
   {
-    blocking on h_left.hello(): w_left.hello();
-    blocking on h_right.hello(): w_right.hello();
+    blocking on h_left.hello (): w_left.hello ();
+    blocking on h_right.hello (): w_right.hello ();
 
-    on w_left.world(): h_left.reply();
-    on w_right.world(): h_right.reply();
+    on w_left.world (): h_left.return;
+    on w_right.world (): h_right.return;
   }
 }
