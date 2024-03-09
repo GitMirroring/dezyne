@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -86,8 +87,8 @@ interface ipedals
     bool monitor = false;
     bool engaged = false;
     [!monitor] {
-      on enable: {monitor = true; reply (engaged);}
-      on enable: {monitor = true; engaged = !engaged; reply (engaged);}
+      on enable: {monitor = true; return engaged;}
+      on enable: {monitor = true; engaged = !engaged; return engaged;}
     }
     [monitor] {
       on disable: {monitor = false; engaged = false;}
