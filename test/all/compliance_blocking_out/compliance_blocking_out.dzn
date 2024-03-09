@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 // Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
@@ -50,7 +50,7 @@ component compliance_blocking_out
   {
     bool blocked = false;
     blocking on h.hello (): {blocked=true;h.cruel ();}
-    [blocked] on w.world (): {blocked=false;h.reply ();}
+    [blocked] on w.world (): {blocked=false;h.return;}
     [!blocked] on w.world (): {}
   }
 }
