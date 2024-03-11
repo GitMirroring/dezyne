@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -120,7 +120,7 @@ Languages: ~a
          (queue-size (command-line:get-number 'queue-size (%queue-size)))
          (queue-size-defer (command-line:get-number 'queue-size
                                                     (%queue-size-defer)))
-         (queue-size-external (command-line:get-number 'queue-size
+         (queue-size-external (command-line:get-number 'queue-size-external
                                                        (%queue-size-external)))
          (no-constraint? (command-line:get 'no-constraint))
          (no-unreachable? (command-line:get 'no-unreachable))
