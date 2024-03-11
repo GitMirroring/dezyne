@@ -1,0 +1,83 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Show the need for implementing collateral blocking in the simulator.
+// After blocking the mux, e.g. by running left.hello, the collateraly
+// blocking event right.hello first passes freely through the top_right
+// proxy; already leaving a trail.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+
+  behavior
+  {
+    on hello: {}
+  }
+}
+
+component proxy
+{
+  provides blocking ihello h;
+  requires blocking ihello w;
+
+  behavior
+  {
+    on h.hello (): w.hello ();
+  }
+}
+
+component muxer
+{
+  provides blocking ihello l;
+  provides blocking ihello r;
+  requires blocking ihello w;
+
+  behavior
+  {
+    on l.hello (): w.hello ();
+    on r.hello (): w.hello ();
+  }
+}
+
+component collateral_blocking
+{
+  provides blocking ihello l;
+  provides blocking ihello r;
+  requires blocking ihello w;
+
+  system
+  {
+    proxy left;
+    proxy right;
+    muxer mux;
+
+    l <=> left.h;
+    left.w <=> mux.l;
+
+    r <=> right.h;
+    right.w <=> mux.r;
+
+    mux.w <=> w;
+  }
+}

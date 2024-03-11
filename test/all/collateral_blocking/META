@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((component #f)
+ (skip ("code")))
