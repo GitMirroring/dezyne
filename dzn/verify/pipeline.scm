@@ -413,6 +413,12 @@ for MODEL, using ROOT."
     (define (flags->string)
       (string-append
        (imports->string)
+       (if (eq? (%queue-size) %default-queue-size) ""
+           (format #f " --queue-size=~a" (%queue-size)))
+       (if (eq? (%queue-size-defer) %default-queue-size-defer) ""
+           (format #f " --queue-size-defer=~a" (%queue-size-defer)))
+       (if (eq? (%queue-size-external) %default-queue-size-external) ""
+           (format #f " --queue-size-external=~a" (%queue-size-external)))
        (if (%no-unreachable?) " --no-unreachable" "")
        (flag->string 'no-constraint)
        (flag->string 'no-non-compliance)))

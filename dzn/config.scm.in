@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -36,6 +36,9 @@
             %guilemoduledir
             %guileobjectdir
             %default-languages
+            %default-queue-size
+            %default-queue-size-defer
+            %default-queue-size-external
             %license-info
             %package
             %package-name
@@ -140,10 +143,13 @@ There is NO WARRANTY, to the extent permitted by law.
   (string-split (string-trim-both "@languages@") #\space))
 
 ;;; The component queue.
-(define %queue-size (make-parameter 3))
+(define %default-queue-size 3)
+(define %queue-size (make-parameter %default-queue-size))
 
 ;;; The defer queue.
-(define %queue-size-defer (make-parameter 2))
+(define %default-queue-size-defer 2)
+(define %queue-size-defer (make-parameter %default-queue-size-defer))
 
 ;;; The external queue.
-(define %queue-size-external (make-parameter 1))
+(define %default-queue-size-external 1)
+(define %queue-size-external (make-parameter %default-queue-size-external))
