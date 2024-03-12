@@ -1410,13 +1410,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (variables (if (null? q) variables
                         (cons (string-append "q=" q-string) variables))))
     (and (not (equal? path '("client")))
-         (or (pair? variables) (pair? q))
+         (or (pair? variables) (pair? q) (.handling o))
          (string-append
           (string-join path ".")
           (if (pair? path) ":" "")
           "["
           (string-join variables ",\n")
-          "]"))))
+          "]"
+          (if (.handling o) "\nhandling" "")))))
 
 (define-method (state->string (o <system-state>))
   (let ((state-list (.state-list o)))
