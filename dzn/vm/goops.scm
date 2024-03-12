@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -334,6 +334,10 @@
   (when (pair? (.q o)) (format port " q: ~s" (map trigger->string (.q o))))
   (when (pair? (.reply o)) (format port " reply: ~a" (.reply o) ;;(map cdr (.reply o))
                                    ))
+  (when (.deferred o)
+    (format port " deferred:~a" ((compose name .instance) o)))
+  (when (.handling o)
+    (format port " handling:~a" (.handling o)))
   (display ">" port))
 
 (define-method (write (o <system-state>) port)
