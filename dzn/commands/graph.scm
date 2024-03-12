@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -72,15 +72,16 @@ Generate graph from a Dezyne model
   -I, --import=DIR+      add DIR to import path
   -L, --locations        include locations in graph
   -m, --model=MODEL      produce graph for MODEL
-  -q, --queue-size=SIZE  use queue size=SIZE for exploration [3]
+  -q, --queue-size=SIZE  use queue size=SIZE for exploration [~a]
       --queue-size-defer=SIZE
-                         use defer queue size=SIZE for verification [2]
+                         use defer queue size=SIZE for verification [~a]
       --queue-size-external=SIZE
-                         use external queue size=SIZE for verification [1]
+                         use external queue size=SIZE for verification [~a]
   -R, --remove=VARS      remove state from nodes VARS {ports,extended}
                            implies --backend=state
 
-")
+"
+                (%queue-size) (%queue-size-defer) (%queue-size-external))
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
