@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -234,7 +234,11 @@ that PC has one more collaterally blocked coroutine on the same port."
       (let loop ((labels labels) (traces '()))
         (if (null? labels) traces
             (let* ((label (car labels))
-                   (new (run-label pc label)))
+                   (cr-pc (blocked-on-boundary-collateral-release pc))
+                   (cr? (not (eq? cr-pc pc)))
+                   (run-rtc? (and cr? (not (return-trigger? label))))
+                   (new (if run-rtc? (run-to-completion cr-pc 'rtc)
+                            (run-label pc label))))
               (cond
                ((find (compose (is-status? <livelock-error>) car) new)
                 (format (current-error-port) "warning: livelock, bailing out\n")
