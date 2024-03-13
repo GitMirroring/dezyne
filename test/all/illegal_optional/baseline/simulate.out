@@ -10,16 +10,16 @@ sut.w.return <- ...
 <external>.h.return <- ...
 (state ((h) (idle . false)) ((sut) (idle . false)) ((w) (idle . false)))
 (trail "h.hello" "w.hello" "w.return" "h.return")
-test/all/illegal_optional/illegal_optional.dzn:45:3: error: illegal
+test/all/illegal_optional/illegal_optional.dzn:45:3: error: non-compliance
 ... <- <external>.w.cruel
 sut.<q> <- ...
 ... <- sut.<q>
 sut.w.cruel <- ...
 sut.w.hello -> ...
 ... -> <external>.w.hello
-<illegal>
+<non-compliance>
 (state ((h) (idle . false)) ((sut) (idle . false)) ((w) (idle . false)))
-test/all/illegal_optional/illegal_optional.dzn:45:3: error: illegal
-(trail "w.cruel" "w.hello" "<illegal>")
+test/all/illegal_optional/illegal_optional.dzn:45:3: error: non-compliance
+(trail "w.cruel" "w.hello" "<non-compliance>")
 (labels "h.hello" "h.world" "w.cruel")
 (eligible)

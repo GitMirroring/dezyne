@@ -1,1 +1,3 @@
-test/all/illegal_optional/illegal_optional.dzn:45:3: error: illegal
+test/all/illegal_optional/illegal_optional.dzn:45:3: error: non-compliance
+test/all/illegal_optional/illegal_optional.dzn:45:3: component performs: illegal
+test/all/illegal_optional/illegal_optional.dzn:29:3: port expects: -
