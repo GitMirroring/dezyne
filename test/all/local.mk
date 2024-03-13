@@ -140,6 +140,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_bottom_system			\
  %D%/blocking_cancel_race			\
  %D%/blocking_cancel_race_bool			\
+ %D%/blocking_defer				\
  %D%/blocking_double_release			\
  %D%/blocking_external				\
  %D%/blocking_function_reply			\
