@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -95,6 +95,8 @@
          (pc (if (and port (ast:provides? port)) (reset-reply pc port-name)
                  pc))
          (r:port (and port (runtime:port instance port))))
+    (unless r:port
+      (throw 'programming-error (format #f "trigger without port ~a\n" trigger)))
     (cond
      ((and (is-a? instance <runtime:component>)
            (or (get-handling pc instance)
