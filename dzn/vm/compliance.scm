@@ -248,7 +248,12 @@ provides port, mark the trace as <fork-error>, otherwise return false."
 
 (define (run-provides-port pc port-instance event)
   (%debug (current-source-location) "run-provides-port... ~a ~a" port-instance event)
-  (let* ((ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
+  (let* ((ipc (clone pc
+                     #:instance #f
+                     #:previous #f
+                     #:statement #f
+                     #:status #f
+                     #:trail '()))
          (ipc (reset-reply ipc port-instance)))
     (%debug "  ipc: ~a" ipc)
     (parameterize ((%sut port-instance)
