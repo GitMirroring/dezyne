@@ -154,6 +154,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_mux				\
  %D%/blocking_nondet				\
  %D%/blocking_normalize				\
+ %D%/blocking_optional				\
  %D%/blocking_provides_state			\
  %D%/blocking_queuefull				\
  %D%/blocking_queuefull_reply			\
