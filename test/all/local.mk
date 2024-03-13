@@ -393,6 +393,7 @@ REGRESSION_TESTS =				\
  %D%/double_hello_block				\
  %D%/double_inevitable				\
  %D%/empty_dollars				\
+ %D%/empty_system				\
  %D%/end_of_trail				\
  %D%/end_of_trail_action			\
  %D%/end_of_trail_action2			\
