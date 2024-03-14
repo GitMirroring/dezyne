@@ -651,9 +651,12 @@ the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
   (let* ((blocked (.blocked pc))
+         (defer-q (.defer pc))
          (skip? (or (and (pair? blocked)
                          (requires-trigger? event))
-                    (blocked-on-boundary? (car trace) event)))
+                    (and (null? defer-q)
+                         (return-trigger? event))
+                    (blocked-on-boundary? pc event)))
          (traces (if skip? (list trace)
                      (check-provides-compliance pc event trace)))
          (pc (car trace))
