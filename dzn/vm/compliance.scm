@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -398,11 +398,11 @@ Return a list of traces, possibly marked with <compliance-error>."
             (parameterize ((%sut port-instance))
               (display-trails port-traces)))
 
-          (let ((port-traces
-                 non-compliances
-                 (partition (negate first-non-match) port-traces)))
+          (let* ((all-port-traces port-traces)
+                 (port-traces non-compliances
+                              (partition (negate first-non-match) port-traces)))
             (cond
-             ((and (pair? (append port-traces non-compliances))
+             ((and (pair? all-port-traces)
                    (every (compose (disjoin (is-status? <illegal-error>)
                                             (is-status? <implicit-illegal-error>))
                                    car)
@@ -411,9 +411,8 @@ Return a list of traces, possibly marked with <compliance-error>."
               (map (cute zip trigger <> <>) traces
                    (append port-traces non-compliances)))
              ((and (pair? trace)
-                   (.status (car trace))
-                   (not (is-a? (.status (car trace)) <match-error>))
-                   (pair? (append port-traces non-compliances)))
+                   (and=> (.status (car trace)) (negate (is? <match-error>)))
+                   (pair? all-port-traces))
               (%%debug (current-source-location) "  exit 1")
               (let* ((statement (.statement (car trace)))
                      (trace (rewrite-trace-head (cut clone <> #:statement #f) trace))
