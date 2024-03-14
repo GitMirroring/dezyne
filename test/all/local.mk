@@ -494,6 +494,7 @@ REGRESSION_TESTS =				\
  %D%/shared_nondet				\
  %D%/shared_out_sync_provides			\
  %D%/shared_out_sync_requires			\
+ %D%/shared_reply				\
  %D%/shared_requires				\
  %D%/shared_state_defer				\
  %D%/shared_type_lookup				\
