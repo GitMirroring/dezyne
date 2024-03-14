@@ -187,6 +187,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_reorder_bypass		\
  %D%/collateral_blocking_reorder_parallel	\
  %D%/collateral_blocking_reply			\
+ %D%/collateral_blocking_shared_reply		\
  %D%/collateral_blocking_shell			\
  %D%/collateral_blocking_shell2			\
  %D%/collateral_blocking_top			\
