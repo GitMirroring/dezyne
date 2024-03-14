@@ -93,7 +93,6 @@ format."
          (port-trace-prefix
           (if (not (.status (car port-trace-prefix))) port-trace-prefix
               (cdr port-trace-prefix)))
-         (port-start (car port-trace-prefix))
          (port-instance (and=> (find .instance port-trace) .instance))
          (other-port (runtime:other-port port-instance))
          (instance (.container other-port))
