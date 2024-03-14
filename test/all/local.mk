@@ -162,6 +162,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_release				\
  %D%/blocking_requires				\
  %D%/blocking_requires_normalize		\
+ %D%/blocking_shared_reply			\
  %D%/blocking_shell				\
  %D%/blocking_skip				\
  %D%/blocking_skip_race				\
@@ -697,6 +698,7 @@ XFAIL_VERIFY =					\
  %D%/external_blocking_livelock
 
 XFAIL_SIMULATE =				\
+ %D%/blocking_shared_reply			\
  %D%/compliance_livelock
 
 XFAIL_TESTS =					\
