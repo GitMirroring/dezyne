@@ -651,11 +651,13 @@ released by a requires event, also rerun check-provides-compliance for
 the full trace, i.e., starting from the initial blocking provides
 event.  This ensures proper of zipping the port trace, including the
 port return."
-  (let* ((skip? (blocked-on-boundary? (car trace) event))
+  (let* ((blocked (.blocked pc))
+         (skip? (or (and (pair? blocked)
+                         (requires-trigger? event))
+                    (blocked-on-boundary? (car trace) event)))
          (traces (if skip? (list trace)
                      (check-provides-compliance pc event trace)))
          (pc (car trace))
-         (blocked (.blocked pc))
          (collateral (.collateral pc))
          (compliance-for-blocking?
           (or (find blocked-on-boundary? trace)
