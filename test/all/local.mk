@@ -192,6 +192,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_blocking_top			\
  %D%/collateral_double_blocked			\
  %D%/collateral_double_blocked_out		\
+ %D%/collateral_illegal				\
  %D%/comment_traceability			\
  %D%/complex_and				\
  %D%/complex_arguments0				\

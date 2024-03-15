@@ -1,0 +1,9 @@
+model: collateral_illegal
+h.hello
+w.hello
+w.return
+c.hello
+w.world
+c.cruel
+c.return
+<illegal>

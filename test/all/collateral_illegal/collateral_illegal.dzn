@@ -1,0 +1,66 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Paul (Pee) Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// This model demonstrates missing the semantics_blocking_switch_context to
+// cater for modeling events during a collateral blocked action in the context
+// of a blocking trigger, i.e. the model below must support both interleavings of
+// c.cruel and w.world.
+//
+// Code:
+
+interface icruel
+{
+  in void hello ();
+  out void cruel ();
+
+  behavior
+  {
+    on hello: cruel;
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+component collateral_illegal
+{
+  provides blocking icruel h;
+  requires blocking icruel c;
+  requires iworld w;
+
+  behavior
+  {
+    bool expect_cruel = false;
+    blocking on h.hello (): {expect_cruel = true; w.hello (); c.hello ();}
+    on w.world (): {if (expect_cruel) illegal; h.reply ();}
+    on c.cruel (): {expect_cruel = false; h.cruel ();}
+  }
+}
