@@ -227,6 +227,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_blocking_multiple_provides	\
  %D%/compliance_blocking_out			\
  %D%/compliance_defer				\
+ %D%/compliance_determinism_optional		\
  %D%/compliance_external_inevitable		\
  %D%/compliance_failures_blocking		\
  %D%/compliance_failures_blocking_race		\
@@ -309,7 +310,6 @@ REGRESSION_TESTS =				\
  %D%/defer_typed_call				\
  %D%/determinism_deadlock			\
  %D%/determinism_modeling			\
- %D%/determinism_optional			\
  %D%/determinism_silent				\
  %D%/dollars					\
  %D%/double_collateral_blocking_shell		\

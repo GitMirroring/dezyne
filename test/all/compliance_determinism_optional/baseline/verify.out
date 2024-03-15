@@ -1,4 +1,4 @@
-model: determinism_optional
+model: compliance_determinism_optional
 h.hello
 w.hello
 w.return
@@ -8,7 +8,7 @@ w.bye
 w.cruel
 w.return
 <non-deterministic>
-model: determinism_optional
+model: compliance_determinism_optional
 h.hello
 w.hello
 w.return

@@ -1,0 +1,2 @@
+test/all/compliance_determinism_optional/compliance_determinism_optional.dzn:69:5: error: component "compliance_determinism_optional" is non-deterministic
+test/all/compliance_determinism_optional/compliance_determinism_optional.dzn:68:5: error: component "compliance_determinism_optional" is non-deterministic

@@ -1,2 +1,0 @@
-test/all/determinism_optional/determinism_optional.dzn:69:5: error: component "determinism_optional" is non-deterministic
-test/all/determinism_optional/determinism_optional.dzn:68:5: error: component "determinism_optional" is non-deterministic

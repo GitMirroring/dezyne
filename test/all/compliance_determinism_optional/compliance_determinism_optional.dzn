@@ -55,7 +55,7 @@ interface iworld
   }
 }
 
-component determinism_optional
+component compliance_determinism_optional
 {
   provides ihello h;
   requires iworld w;
