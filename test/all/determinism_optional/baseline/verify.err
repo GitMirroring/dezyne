@@ -8,9 +8,9 @@ verify: iworld: check: livelock: ok
 verify: iworld: check: deterministic: ok
 verify: determinism_optional: check: deterministic: fail
 error: component determinism_optional is non-deterministic
-verify: determinism_optional: check: illegal: fail
-error: illegal action performed in model determinism_optional
+verify: determinism_optional: check: illegal: ok
 verify: determinism_optional: check: deadlock: ok
-verify: determinism_optional: check: unreachable: skip
+verify: determinism_optional: check: unreachable: ok
 verify: determinism_optional: check: livelock: ok
-verify: determinism_optional: check: compliance: skip
+verify: determinism_optional: check: compliance: fail
+error: component determinism_optional is non-compliant with interface(s) of provides port(s)

@@ -1,5 +1,3 @@
 model: deadlock_blocking_compliance
 h.hello
-h.world
 <non-compliance>
-<deadlock>

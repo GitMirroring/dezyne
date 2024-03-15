@@ -7,9 +7,9 @@ verify: iworld: check: unreachable: ok
 verify: iworld: check: livelock: ok
 verify: iworld: check: deterministic: ok
 verify: compliance_reply_illegal: check: deterministic: ok
-verify: compliance_reply_illegal: check: illegal: fail
-error: illegal action performed in model compliance_reply_illegal
+verify: compliance_reply_illegal: check: illegal: ok
 verify: compliance_reply_illegal: check: deadlock: ok
-verify: compliance_reply_illegal: check: unreachable: skip
+verify: compliance_reply_illegal: check: unreachable: ok
 verify: compliance_reply_illegal: check: livelock: ok
-verify: compliance_reply_illegal: check: compliance: skip
+verify: compliance_reply_illegal: check: compliance: fail
+error: component compliance_reply_illegal is non-compliant with interface(s) of provides port(s)

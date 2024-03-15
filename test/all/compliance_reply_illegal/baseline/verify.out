@@ -6,8 +6,4 @@ h.return
 h.world
 w.world
 w.false
-h.false
 <non-compliance>
-h.hello
-w.hello
-<illegal>

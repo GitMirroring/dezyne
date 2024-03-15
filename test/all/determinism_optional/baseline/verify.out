@@ -17,11 +17,4 @@ w.world
 w.bye
 w.cruel
 w.return
-h.cruel
-h.hello
-w.hello
-w.return
-h.return
-h.hello
-w.hello
-<illegal>
+<non-compliance>

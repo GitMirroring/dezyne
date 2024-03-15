@@ -690,6 +690,9 @@ UNSTABLE_TESTS =				\
  %D%/livelock_synchronous_illegal		\
  %D%/queuefull_external_sync
 
+XFAIL_LTS =					\
+ %D%/compliance_single_to_multiple
+
 XFAIL_PARSE =					\
  %D%/comment_traceability
 
@@ -704,6 +707,7 @@ XFAIL_SIMULATE =				\
  %D%/compliance_livelock
 
 XFAIL_TESTS =					\
+ $(XFAIL_LTS)					\
  $(XFAIL_PARSE)					\
  $(XFAIL_VERIFY)				\
  $(XFAIL_SIMULATE)

@@ -320,6 +320,9 @@
 
 (define %declarative-illegal-action (sm:action (prefix "declarative_illegal")))
 (define %illegal-action (sm:action (prefix "illegal")))
+
+(define (%compliant-action o)
+  (sm:action (prefix (if o (port-prefix "compliance" o) "compliance"))))
 (define %constrained-legal-action (sm:action (prefix "constrained_legal")))
 (define %constrained-illegal-action (sm:action (prefix "constrained_illegal")))
 (define %defer-end-action (sm:action (prefix "defer_end")))
@@ -3876,6 +3879,7 @@
                                  (list
                                   (%in-action p)
                                   (%blocking-action p)
+                                  (%compliant-action p)
                                   (%out-action p)
                                   (%reply-action p)
                                   (%flush-action p)
@@ -3899,12 +3903,162 @@
               (process component-assembly-allow)
               (events
                (sm:comm-events (sm:process-statement component-assembly-comm)))))))
+         (component-compliant
+          (sm:process
+            (name "component_compliant")
+            (statement
+             (sm:union*
+              (append
+               (map (lambda (p)
+                      (sm:sum
+                       (type (%actions (.type p)))
+                       (statement
+                        (sm:sequence*
+                         (sm:invoke (%in-action p) #:keep-constructor? #t)
+                         (sm:goto (name name))))))
+                    provides)
+               (map (lambda (p)
+                      (sm:sum
+                       (type (%actions (.type p)))
+                       (statement
+                        (sm:sequence*
+                         (sm:invoke (%out-action p) #:keep-constructor? #t)
+                         (sm:union* (sm:sequence* (%compliant-action p)
+                                                  (sm:goto (name name)))
+                                    (sm:goto (name "Non_Compliance")))))))
+                    provides)
+               (map (lambda (p)
+                      (sm:sum
+                       (type (%replies (.type p)))
+                       (statement
+                        (sm:sequence*
+                         (sm:invoke (%reply-action p))
+                         (sm:union* (sm:sequence* (%compliant-action p)
+                                                  (sm:goto (name name)))
+                                    (sm:goto (name "Non_Compliance")))))))
+                    provides)
+               (map (lambda (p)
+                      (sm:sum
+                       (type (%modeling (.type p)))
+                       (statement
+                        (sm:sequence*
+                         (sm:invoke (%internal-action p))
+                         (sm:goto (name name))))))
+                    requires))))))
+         (component-compliant-parallel
+          (sm:process (name "component_compliant_parallel")
+                      (statement
+                       (sm:parallel* (sm:goto (name "component_assembly_rename"))
+                                     (sm:goto (name "component_compliant"))))))
+         (component-compliant-comm
+          (sm:process
+            (name "component_compliant_comm")
+            (statement
+             (sm:comm
+              (process component-compliant-parallel)
+              (events
+               `(,@(map
+                    (lambda (p)
+                      (sm:comm-event (from (sm:multi-event
+                                            (events
+                                             (list (%compliant-action p)))))))
+                    provides)
+                 ,(sm:comm-event (from (sm:multi-event
+                                        (events
+                                         (list %non-compliant-action)))))
+                 ,@(map
+                    (lambda (p)
+                      (sm:comm-event (from (sm:multi-event
+                                            (events
+                                             (list (%in-action p)))))))
+                    provides)
+                 ,@(map
+                    (lambda (p)
+                      (sm:comm-event (from (sm:multi-event
+                                            (events
+                                             (list (%out-action p)))))))
+                    provides)
+                 ,@(map
+                    (lambda (p)
+                      (sm:comm-event (from (sm:multi-event
+                                            (events
+                                             (list (%reply-action p)))))))
+                    provides)
+                 ,@(map
+                    (lambda (p)
+                      (sm:comm-event (from
+                                      (sm:multi-event
+                                       (events
+                                        (list (%internal-action p)))))))
+                    requires)))))))
+         (component-compliant-allow
+          (sm:process
+            (name "component_compliant_allow")
+            (statement
+             (sm:allow
+              (process component-compliant-comm)
+              (events (cons* %queue-empty-action
+                             %queue-not-empty-action
+                             %constrained-legal-action
+                             %declarative-illegal-action
+                             %defer-end-action
+                             (%defer-qout-action o)
+                             (%defer-skip-action o)
+                             %illegal-action
+                             %missing-reply-action
+                             %queue-full-action
+                             %range-error-action
+                             %recurse-action
+                             %return-action
+                             %second-reply-action
+                             %tag-action
+                             %tau-void-action
+                             (%end-action o)
+                             (append
+                              (append-map
+                               (lambda (i)
+                                 (list
+                                  (%tau-event-action i)
+                                  (%tau-modeling-action i)
+                                  (%tau-reply-action i)))
+                               interfaces)
+                              (append-map
+                               (lambda (p)
+                                 (list
+                                  (%blocking-action p)
+                                  (%flush-action p)
+                                  (%state-action p)))
+                               provides)
+                              (append-map
+                               (lambda (p)
+                                 (list
+                                  (%in-action p)
+                                  (%reply-action p)
+                                  (%qout-action p)
+                                  (%end-action p)
+                                  (%state-action p)
+                                  (%qin-action p)
+                                  (%flush-action p)
+                                  (%port-queue-full-action p)
+                                  (%switch-context-action p)))
+                               requires)
+                              (filter-map (conjoin ast:external? %state-action)
+                                          requires))))))))
+         (component-compliant-rename
+          (sm:process
+            (name "component_compliant_rename")
+            (statement
+             (sm:rename
+              (process component-compliant-allow)
+              (events
+               (sm:comm-events (sm:process-statement component-compliant-comm)))))))
          (component
           (sm:process
             (name "component")
             (statement
              (sm:hide
-              (process component-assembly-rename)
+              (process (if (%no-constraint?) component-assembly-rename
+                           component-compliant-rename))
               (events (cons* %constrained-legal-action
                              %defer-end-action
                              (%defer-skip-action o)
@@ -3915,6 +4069,7 @@
                              %tau-void-action
                              (%end-action o)
                              (append
+                              (map %compliant-action provides)
                               (append-map
                                (lambda (i)
                                  (list
@@ -3933,37 +4088,16 @@
           component-assembly-comm
           component-assembly-allow
           component-assembly-rename
+          component-compliant
+          component-compliant-parallel
+          component-compliant-comm
+          component-compliant-allow
+          component-compliant-rename
           component)))
 
 (define-method (interface-constraint-processes (o <interface>))
   (let ((constraint (makreel:constraint o)))
     (list
-     (sm:comment* (makreel:caption (model-prefix "constraint" o)))
-     (sm:process
-       (name (model-prefix "constraint_any" o))
-       (statement
-        (sm:union*
-         (sm:sum (type (%actions o))
-                 (statement
-                  (sm:sequence*
-                   (sm:invoke (%in-action o) #:keep-constructor? #t)
-                   %constrained-legal-action
-                   (sm:goto (name name)))))
-         (sm:sum (type (%actions o))
-                 (statement
-                  (sm:sequence*
-                   (sm:invoke (%out-action o) #:keep-constructor? #t)
-                   (sm:goto (name name)))))
-         (sm:sum (type (%replies o))
-                 (statement
-                  (sm:sequence*
-                   (sm:invoke (%reply-action o))
-                   (sm:goto (name name)))))
-         (sm:sum (type (%state o))
-                 (statement
-                  (sm:sequence*
-                   (sm:invoke (%state-action o))
-                   (sm:goto (name name))))))))
      (sm:comment* constraint))))
 
 (define-method (provides-constraint-processes (o <port>))
@@ -3976,6 +4110,8 @@
               (process (model-prefix "constraint_start" interface))
               (events
                (list
+                (sm:rename-event (from (%compliant-action #f))
+                                 (to (%compliant-action o)))
                 (sm:rename-event (from (%in-action interface))
                                  (to (%in-action o)))
                 (sm:rename-event (from (%out-action interface))
@@ -4017,6 +4153,7 @@
                                  (append-map
                                   (lambda (p)
                                     (list
+                                     (%compliant-action p)
                                      (%in-action p)
                                      (%out-action p)
                                      (%reply-action p)
@@ -4095,6 +4232,7 @@
                                (lambda (p)
                                  (list
                                   (%blocking-action p)
+                                  (%compliant-action p)
                                   (%flush-action p)))
                                provides)
                               (append-map

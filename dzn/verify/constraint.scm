@@ -143,7 +143,7 @@ to current-output-port."
                   " + ~a . Constrained_Illegal\n"
                   trigger)))
 
-      (define* (print-tree transitions #:key first? (seen '()))
+      (define* (print-tree transitions #:key first? (seen '()) trigger-p?)
         (let* ((transition (car transitions))
                (events (map edge-label transitions))
                (transitions (cdr transitions))
@@ -165,7 +165,9 @@ to current-output-port."
           (when fork?
             (format #t "("))
           (unless error?
-            (format #t "~a . " event))
+            (format #t "~a . ~a" event (if (or (trigger? event)
+                                               (state? event)) ""
+                                               "compliance . ")))
           (when (and first? (trigger? event))
             (format #t "constrained_legal . "))
           (let ((next (next transition)))
@@ -175,13 +177,13 @@ to current-output-port."
                    (let ((to (edge-to transition)))
                      (format #t "~aconstraint~a" name to)))
                   (else
-                   (print-tree next))))
+                   (print-tree next #:trigger-p? (or trigger-p? (trigger? event))))))
           (when any?
             (for-each
-             (cute format #t "\n + ~a . non_compliance . ~aconstraint_any" <> name)
+             (cute format #t "\n + ~a . Non_Compliance" <>)
              actions)
             (for-each
-             (cute format #t "\n + ~a . non_compliance . ~aconstraint_any" <> name)
+             (cute format #t "\n + ~a . Non_Compliance" <>)
              replies))
           (when (pair? transitions)
             (format #t "\n")
@@ -200,7 +202,7 @@ to current-output-port."
         (when (pair? transitions)
           (print-tree transitions #:first? #t))
         (for-each
-         (cute format #t " + ~a . ~aconstraint_any\n" <> name)
+         (cute format #t " + ~a . Non_Compliance\n" <>)
          actions)))
 
     (define (print-node i node)
@@ -208,7 +210,8 @@ to current-output-port."
              (labels (map edge-label transitions)))
         (when (or (= i initial)
                   (any state? labels))
-          (format #t "\nproc ~aconstraint~a\n = delta\n" name (node-state node))
+          (format #t "\nproc ~aconstraint~a\n = delta\n"
+                  name (node-state node))
           (when (pair? (node-edges node))
             (print-transitions transitions))
           (format #t ";\n"))))
