@@ -1309,9 +1309,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (define (variables-prefixed-with-name port)
     (map (match-lambda
            ((variable . value)
-            (cons (string-append ((compose .name .ast .instance) port)
-                                 "."
-                                 variable) value)))
+            (let* ((prefix ((compose .name .ast .instance) port))
+                   (name (string-append prefix "." variable)))
+              `(,name . ,value))))
          (.variables port)))
 
   (let ((ports (filter (compose (cute eq? (.instance component) <>)
