@@ -1119,11 +1119,14 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (define (assign state variable value)
     (let ((name (.name variable)))
       (or (range-error variable value)
-          (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))))
+          (let* ((variables (.variables state))
+                 (variables (assoc-set! (copy-tree variables) name value)))
+            (clone state #:variables variables)))))
 
   (define (update-variable update-list variable state)
     (let ((name (string->symbol (.name variable))))
-      (or (and=> (assoc-ref update-list name) (compose (cut assign state variable <>) sexp->value))
+      (or (and=> (assoc-ref update-list name)
+                 (compose (cute assign state variable <>) sexp->value))
           state)))
 
   (define (update-state event state pc)
@@ -1246,7 +1249,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (let* ((name (.name variable))
          (state (get-state pc))
          (value (eval-expression pc expression))
-         (state (clone state #:variables (assoc-set! (copy-tree (.variables state)) name value)))
+         (variables (assoc-set! (copy-tree (.variables state)) name value))
+         (state (clone state #:variables variables))
          (pc (set-state pc state))
          (error (range-error variable value)))
     (if (not error) pc
@@ -1314,13 +1318,12 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
               `(,name . ,value))))
          (.variables port)))
 
-  (let ((ports (filter (compose (cute eq? (.instance component) <>)
-                                .container .instance)
-                       state-list)))
-    (clone component
-           #:variables (append
-                        (append-map variables-prefixed-with-name ports)
-                        (.variables component)))))
+  (let* ((ports (filter (compose (cute eq? (.instance component) <>)
+                                 .container .instance)
+                        state-list))
+         (port-variables (append-map variables-prefixed-with-name ports))
+         (variables (append port-variables (.variables component))))
+    (clone component #:variables variables)))
 
 (define-method (serialize (o <system-state>) port)
   (let* ((state-list (.state-list o))
