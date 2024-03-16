@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 rdelim)
   #:use-module (json)
 
   #:use-module (dzn ast display)
@@ -734,7 +735,12 @@ RTC-LTS->LTS."
                    (%queue-size-external queue-size-external)
                    (%sut (runtime:get-sut root model)))
       (parameterize ((%instances (runtime:create-instances (%sut))))
+        (when (%debug?)
+          (%debug "sut: ~a\n" (%sut))
+          (%debug "instances\n")
+          (for-each (cute write-line <> (current-error-port)) (%instances)))
         (let* ((pc (make-pc))
                (rtc-lts pc->state-number state-count (pc->rtc-lts pc))
-               (lts state-count (rtc-lts->lts rtc-lts pc->state-number state-count)))
+               (lts state-count
+                    (rtc-lts->lts rtc-lts pc->state-number state-count)))
           (lts->aut lts state-count))))))
