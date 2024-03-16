@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -1024,6 +1024,10 @@ memoizations to work."
                  (%queue-size-external queue-size-external)
                  (%strict? strict?)
                  (%sut sut))
+    (when (%debug?)
+      (%debug "sut: ~a\n" sut)
+      (%debug "instances\n")
+      (for-each (cute write-line <> (current-error-port)) instances))
     (run-trail trail
                #:deadlock-check? deadlock-check?
                #:interface-determinism-check? interface-determinism-check?
