@@ -770,10 +770,9 @@ until RTC?."
         traces)))))
 
 (define-method (run-requires-flush (pc <program-counter>) event)
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (string->trigger event))
-         (trigger (clone trigger #:parent component))
+  (let* ((trigger (string->trigger event))
          (port-name (.port.name trigger))
+         (trigger (trigger->component-trigger trigger))
          (port-instance (runtime:port-name->instance port-name))
          (component-port (runtime:other-port port-instance))
          (component-trigger (trigger->component-trigger component-port
