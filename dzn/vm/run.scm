@@ -803,10 +803,9 @@ until RTC?."
                  (and trigger
                       (equal? (trigger->string trigger) event)))))))
   (%debug (current-source-location) "run-requires... ~s" event)
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (string->trigger event))
-         (trigger (clone trigger #:parent component))
+  (let* ((trigger (string->trigger event))
          (port-name (.port.name trigger))
+         (trigger (trigger->component-trigger trigger))
          (r:port (runtime:port-name->instance port-name))
          (interface ((compose .type .ast) r:port))
          (modeling-names (modeling-names interface))
