@@ -679,8 +679,8 @@ until RTC?."
           (map (cute rewrite-trace-head (cute update-state pc <>) <>) traces)))))
 
 (define-method (run-silent (pc <program-counter>) event)
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+  (let* ((trigger (string->trigger event))
+         (trigger (trigger->component-trigger trigger))
          (port-name (.port.name trigger))
          (port-instance (runtime:port-name->instance port-name))
          (traces (run-silent pc port-instance)))
