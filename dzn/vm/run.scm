@@ -733,9 +733,9 @@ until RTC?."
                  (let ((trigger (trigger->component-trigger port-instance
                                                             trigger)))
                    (equal? (trigger->string trigger) event)))))))
-  (let* ((component ((compose .type .ast) (%sut)))
-         (trigger (clone (string->trigger event) #:parent component))
+  (let* ((trigger (string->trigger event))
          (port-name (.port.name trigger))
+         (trigger (trigger->component-trigger trigger))
          (port-instance (runtime:port-name->instance port-name))
          (traces (run-external-modeling pc port-instance))
          (traces (filter (cute event-executed? port-instance <>) traces)))
