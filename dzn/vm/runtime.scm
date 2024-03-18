@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -34,7 +34,6 @@
             %instances
             ast->runtime:instance
             runtime:%sut-model
-            runtime:%sut-port?
             runtime:ast-model
             runtime:get-sut
             runtime:boundary-port?
@@ -194,9 +193,6 @@
 
 (define-method (runtime:system-port? (o <runtime:port>))
   (is-a? (.container o) <runtime:system>))
-
-(define-method (runtime:%sut-port? (o <runtime:port>))
-  (eq? (.container o) (%sut)))
 
 (define-method (runtime:container-eq? (a <runtime:instance>) (b <runtime:instance>))
   (equal? (runtime:id-container-path a) (runtime:id-container-path b)))
