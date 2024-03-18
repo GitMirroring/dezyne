@@ -1,7 +1,7 @@
-t.e
+h.hello
 sut.log.log.log
 sut.log.log.return
 sut.log.log.log
 sut.log.log.return
-t.f
-t.return
+h.world
+h.return

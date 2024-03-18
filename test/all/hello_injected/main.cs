@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,18 +23,20 @@
 
 using System;
 
-class main {
-  public static void Main(String[] args) {
-    dzn.Locator locator = new dzn.Locator();
-    dzn.Runtime runtime = new dzn.Runtime();
-    hello_injected sut = new hello_injected(locator.set(runtime), "sut");
+class main
+{
+  public static void Main (String[] args)
+  {
+    dzn.Locator locator = new dzn.Locator ();
+    dzn.Runtime runtime = new dzn.Runtime ();
+    hello_injected sut = new hello_injected (locator.set (runtime), "sut");
 
-    sut.t.out_port.f = () => {System.Console.Error.WriteLine("sut.m.t.f -> <external>.t.f");};
-    sut.t.meta.require.name = "t";
+    sut.h.out_port.world = () => {System.Console.Error.WriteLine ("sut.m.h.world -> <external>.h.world");};
+    sut.h.meta.require.name = "h";
 
     //dzn::check_bindings (sut);
     //dzn::dump_tree (sut);
 
-    sut.t.in_port.e();
+    sut.h.in_port.hello ();
   }
 }

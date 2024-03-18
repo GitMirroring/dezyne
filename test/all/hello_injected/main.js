@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,16 +33,15 @@ dzn = have_dzn_p () ? dzn : require ('dzn/runtime');
 dzn.extend (dzn, require ('hello_injected'));
 
 function main() {
-  var loc = new dzn.locator();
-  var rt = new dzn.runtime();
-  var sut = new dzn.hello_injected(loc.set(rt), {name:'sut'});
-  sut.t._dzn.meta.requires = {name: 't', component: null};
-  sut.t._dzn.meta.provides.name = '';
-  sut.t._dzn.meta.requires.name = 't';
+  var locator = new dzn.locator ();
+  var runtime = new dzn.runtime ();
+  var sut = new dzn.hello_injected(locator.set(runtime), {name:'sut'});
+  sut.h._dzn.meta.requires = {name: 'h', component: null};
+  sut.h._dzn.meta.provides.name = '';
+  sut.h._dzn.meta.requires.name = 'h';
+  sut.h.out.world = function () {console.error ('sut.m.h.world -> <external>.h.world');};
 
-  sut.t.out.f = function() {console.error('sut.m.t.f -> <external>.t.f');};
-
-  sut.t.in.e();
+  sut.h.in.hello ();
 }
 
 main();

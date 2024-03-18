@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,39 +22,12 @@
 //
 // Code:
 
-interface itop
-{
-  in void e();
-  out void f();
-  behavior
-  {
-    on e: f;
-  }
-}
-
-interface imiddle
-{
-  in void e();
-  out void f();
-  behavior
-  {
-    on e: f;
-  }
-}
-
-interface ibottom
-{
-  in void e();
-  out void f();
-  behavior
-  {
-    on e: f;
-  }
-}
+import ihelloworld.dzn;
+import helloworld.dzn;
 
 interface ilogger
 {
-  in void log();
+  in void log ();
   behavior
   {
     on log:{}
@@ -66,43 +39,34 @@ component logger
   provides ilogger log;
   behavior
   {
-    on log.log(): {}
+    on log.log (): {}
   }
 }
 
-component middle
+component helloworld_injected
 {
-  provides itop t;
-  requires ibottom b;
+  provides ihelloworld h;
+  requires ihelloworld w;
   requires injected ilogger l;
 
   behavior
   {
-    on t.e(): {l.log(); b.e();}
-    on b.f(): {l.log(); t.f();}
-  }
-}
-
-component bottom
-{
-  provides ibottom b;
-  behavior
-  {
-    on b.e(): b.f();
+    on h.hello (): {l.log (); w.hello ();}
+    on w.world (): {l.log (); h.world ();}
   }
 }
 
 component hello_injected
 {
-  provides itop t;
+  provides ihelloworld h;
   system
   {
     logger log;
-    middle m;
-    bottom b;
+    helloworld_injected top;
+    helloworld bottom;
 
-    m.t <=> t;
-    m.b <=> b.b;
+    h <=> top.h;
+    top.w <=> bottom.h;
     log.log <=> *;
   }
 }

@@ -1,5 +1,5 @@
 // Dezyne --- Dezyne command line tools
-// Copyright © 2016, 2019, 2023 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2019, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,10 +29,10 @@
 #include <stdlib.h>
 
 void
-f (itop *self)
+h_out_world (ihelloworld *self)
 {
   (void)self;
-  fprintf (stderr, "sut.m.t.f -> <external>.t.f\n");
+  fprintf (stderr, "sut.m.h.world -> <external>.h.world\n");
 }
 
 int
@@ -46,10 +46,10 @@ main ()
   hello_injected sut;
   dzn_meta meta = {"sut", 0};
   hello_injected_init (&sut, &locator, &meta);
-  sut.t->meta.requires.name = "t";
-  sut.t->meta.requires.component = 0;
-  sut.t->out.f = f;
+  sut.h->meta.requires.name = "h";
+  sut.h->meta.requires.component = 0;
+  sut.h->out.world = h_out_world;
 
-  sut.t->in.e (sut.t);
+  sut.h->in.hello (sut.h);
   return 0;
 }

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -24,6 +24,8 @@
 (define-module (main)
   #:use-module (oop goops)
   #:use-module (dzn runtime)
+  #:use-module (ihelloworld)
+  #:use-module (helloworld)
   #:use-module (hello_injected)
   #:duplicates (merge-generics)
   #:export (main))
@@ -34,10 +36,10 @@
          (locator (dzn:set! locator runtime))
          (sut (make <hello_injected> #:locator locator #:name "sut")))
 
-    (set! (.name (.out (.t sut))) "t")
-    (set! (.out (.t sut))
-          (make <itop.out>
-            #:name "t"
-            #:f (lambda _ (format (current-error-port) "sut.m.t.f -> <external>.t.f\n"))))
+    (set! (.name (.out (.h sut))) "h")
+    (set! (.out (.h sut))
+          (make <ihelloworld.out>
+            #:name "h"
+            #:world (lambda _ (format (current-error-port) "sut.m.h.world -> <external>.h.world\n"))))
 
-    (action sut .t .in .e)))
+    (action sut .h .in .hello)))
