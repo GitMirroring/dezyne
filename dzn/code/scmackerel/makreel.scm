@@ -3077,7 +3077,7 @@
                 (map (cute qout-actions <> name) requires)))))))
     ;; switch-context-actions but goto
     ;; semantics_unblocked_switch_context with switch=h'port
-    (define (switch-context-actions+switch=p p name)
+    (define (unblocked-switch-context-actions+switch=p p name)
       (sm:sequence*
        (%switch-context-action p)
        (sm:goto (name "semantics_unblocked_switch_context")
@@ -3104,9 +3104,9 @@
                        (cute handle-defer-qout+goto-main <> name)
                        provides))))
                ,@(handle-qout name))))
-          ,@(map (cute switch-context-actions+switch=p <> name) requires)))))))
+          ,@(map (cute unblocked-switch-context-actions+switch=p <> name) requires)))))))
 
-(define-method (semantics-modeling+switch-context (o <component>))
+(define-method (unblocked-semantics-modeling+switch-context (o <component>))
   ;; handle switch_context: collateral blocking => allow
   ;; requires modeling for other ports
   (let ((requires (ast:requires-port* o)))
@@ -3120,9 +3120,29 @@
              (cute modeling+switch-context <> name "semantics_unblocked")
              requires)))))))
 
+(define-method (blocking-semantics-modeling+switch-context (o <component>))
+  ;; handle switch_context: collateral blocking => allow
+  ;; requires modeling for other ports
+  (let ((requires (ast:requires-port* o)))
+    (sm:process
+      (name "semantics_blocking_switch_context")
+      (formals '("blocking: Set (provides_ports), released: List (provides_ports), reply: reply_values" "switch: requires_ports"))
+      (statement
+       (sm:union*
+        `(,%sm:delta
+          ,@(append-map
+             (cute modeling+switch-context <> name "semantics_blocking")
+             requires)))))))
+
 (define-method (semantics-blocking (o <component>))
   (let ((provides (ast:provides-port* o))
         (requires (ast:requires-port* o)))
+    (define (blocking-switch-context-actions+switch=p p name)
+      (sm:sequence*
+       (%switch-context-action p)
+       (sm:goto (name "semantics_blocking_switch_context")
+                (arguments (list (string-append "switch="
+                                                (port-prefix "port" p)))))))
     (define (reordered p name)
       (let ((interface (.type p)))
         (sm:sequence*
@@ -3204,7 +3224,7 @@
           ,@(append-map (seq (cute provides-reply <> name)
                              (cute out-actions <> name))
                         provides)
-          ,@(map (cute switch-context-actions <> name) requires)))))))
+          ,@(map (cute blocking-switch-context-actions+switch=p <> name) requires)))))))
 
 (define-method (semantics-skip-blocking (o <component>))
   (let ((provides (ast:provides-port* o))
@@ -3740,11 +3760,14 @@
           (semantics-unblocked o)
           (sm:comment* "% semantics_unblocked\n")
 
-          (semantics-modeling+switch-context o)
+          (unblocked-semantics-modeling+switch-context o)
           (sm:comment* "% semantics_unblocked switch-context\n")
 
           (semantics-blocking o)
           (sm:comment* "% semantics_blocking\n")
+
+          (blocking-semantics-modeling+switch-context o)
+          (sm:comment* "% semantics_blocking switch-context\n")
 
           (semantics-skip-blocking o)
           (sm:comment* "% semantics_skip blocked\n")
