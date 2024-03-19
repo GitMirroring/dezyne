@@ -1,0 +1,4 @@
+;;; -*- scheme -*-
+((model "hello_header")
+ (trace-format "trace")
+ (skip ("build" "lts")))

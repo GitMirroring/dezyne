@@ -1,0 +1,123 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+
+// The simulator output topologically sorts the instances in the header
+// while following the ordering for siblings as in the Dezyne code.
+
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+
+  behavior
+  {
+    on hello: {}
+    on optional: world;
+  }
+}
+
+component proxy
+{
+  provides ihello h;
+  requires ihello w;
+
+  behavior
+  {
+    subint int {0..0};
+    int i = 0;      // non-alphabetic ordering preserved in header
+    bool b = false;
+    on h.hello (): w.hello ();
+    on w.world (): h.world ();
+  }
+}
+
+component proxy_system
+{
+  provides ihello h;
+  requires ihello w;
+
+  system
+  {
+    proxy inner;
+
+    h <=> inner.h;
+    inner.w <=> w;
+  }
+}
+
+component spider
+{
+  provides ihello ht;
+  provides ihello hd;
+  requires ihello wd;
+  requires ihello wb;
+
+  behavior
+  {
+    on ht.hello (): wb.hello ();
+    on wb.world (): ht.world ();
+
+    on hd.hello (): wd.hello ();
+    on wd.world (): hd.world ();
+  }
+}
+
+component spider_system
+{
+  provides ihello ht;
+  provides ihello hd;
+  requires ihello wd;
+  requires ihello wb;
+
+  system
+  {
+    spider inner;
+
+    ht <=> inner.ht;
+    hd <=> inner.hd;
+    inner.wd <=> wd;
+    inner.wb <=> wb;
+  }
+}
+
+component hello_header
+{
+  provides ihello ht; // non-alphabetic ordering preserved in header
+  provides ihello hm;
+  requires ihello wm;
+  requires ihello wb;
+
+  system
+  {
+    proxy_system top;     // non-alphabetic ordering preserved in header
+    spider_system middle;
+    proxy_system bottom;
+
+    ht <=> top.h;
+    hm <=> middle.hd;
+    top.w <=> middle.ht;
+    middle.wb <=> bottom.h;
+    bottom.w <=> wb;
+    middle.wd <=> wm;
+  }
+}
