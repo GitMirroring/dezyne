@@ -64,7 +64,7 @@ if $verify; then
     elif [ "$model" = '#f' ]; then
         model=
     elif [ -n $model ]; then
-        model="--model $model"
+        model="--model=$model"
     fi
     determinism=$(grep -Eo 'no-interface-determinism[?] #t' $dir/META | cut -d' ' -f 2 | tr -d '"')
     if [ "$determinism" = true ]; then
@@ -85,6 +85,14 @@ if $verify; then
 fi
 
 if $simulate; then
+    model=$(grep -Eo '[(]model [^)]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
+    if [ -z "$model" ]; then
+        model=
+    elif [ "$model" = '#f' ]; then
+        model=
+    elif [ -n $model ]; then
+        model="--model=$model"
+    fi
     format=$(grep -Eo 'trace-format "[^")}]*"' $dir/META | cut -d' ' -f 2 | tr -d '"')
     if [ -z "$format" ]; then
         format="trace"
@@ -96,9 +104,9 @@ if $simulate; then
     fi
 
     mkdir -p $dir/baseline
-    ./pre-inst-env dzn simulate --strict --format=$format       \
-        $flags $queue_size_external $dir/$base.dzn < $dir/trace \
-        > $dir/baseline/simulate.out                            \
+    ./pre-inst-env dzn simulate --strict --format=$format $model        \
+        $flags $queue_size_external $dir/$base.dzn < $dir/trace         \
+        > $dir/baseline/simulate.out                                    \
         2> $dir/baseline/simulate.err
 fi
 
