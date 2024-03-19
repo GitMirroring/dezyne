@@ -45,7 +45,8 @@ ifndef WARN_FLAGS
 WARN_FLAGS=					\
  -Wall						\
  -Wextra					\
- -Werror
+ -Werror					\
+ -Wshadow
 endif
 NOWARN_FLAGS=					\
  -Wno-unused-variable				\
