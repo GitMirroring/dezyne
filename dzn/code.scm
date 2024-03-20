@@ -466,12 +466,14 @@
 ;;;
 ;;; Constraint.
 ;;;
-(define-method (code:capture-name (o <variable>))
+(define-method (code:capture-name (o <variable>) (d <defer>))
   (string-append "dzn"
                  "_"
                  "capture"
                  "_"
-                 (.name o)))
+                 (.name o)
+                 "_"
+                 (number->string (.offset (.location d)))))
 
 (define-method (code:defer-condition (o <defer>))
   (not (or (and=> (.arguments o)(compose null? .elements))

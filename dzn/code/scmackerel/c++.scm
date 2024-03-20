@@ -275,14 +275,14 @@ std::basic_ostream<Char, Traits> &")
         (sm:assign* var (ast->code expression)))))
 
 (define-method (ast->code (o <defer>))
-  (define (variable->defer-variable o)
+  (define (variable->defer-variable v)
     (sm:variable
-     (type (code:type-name (ast:type o)))
-     (name (code:capture-name o))
-     (expression (code:member-name o))))
-  (define (variable->equality o)
-    (sm:equal* (c++:ast->expression o)
-               (code:capture-name o)))
+     (type (code:type-name (ast:type v)))
+     (name (code:capture-name v o))
+     (expression (code:member-name v))))
+  (define (variable->equality v)
+    (sm:equal* (c++:ast->expression v)
+               (code:capture-name v o)))
   (let* ((variables (ast:defer-variable* o))
          (locals (code:capture-local o))
          (equality (code:defer-equality* o))
@@ -302,7 +302,7 @@ std::basic_ostream<Char, Traits> &")
                               (sm:function
                                (captures
                                 (cons* "this"
-                                       (map code:capture-name variables)))
+                                       (map (cute code:capture-name <> o) variables)))
                                (statement
                                 (sm:compound*
                                  (sm:return* condition))))
