@@ -578,11 +578,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                       (rewrite-trace-head
                        (cut update-state <> port-instance port-pc)
                        port-trace))
-                     (trace (zip trigger trace (car non-compliances)))
-                     (trace
-                      (rewrite-trace-head
-                       (cut clone <> #:skip-compliance? #t)
-                       trace)))
+                     (trace (zip trigger trace (car non-compliances))))
                 (list trace))))))))
 
     (define (check-provides-fork-and-zip port trace)
@@ -772,7 +768,6 @@ port return."
                                            ast:provides?)
                                     (equal? (trigger->string rtc-block-trigger)
                                             event))
-                               (symbol? event)
                                (not (.port (string->trigger event))))))
                   (if skip? (loop traces (cdr pcs))
                       (loop

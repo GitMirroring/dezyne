@@ -754,7 +754,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                #:defer (.defer pc)
                #:external-q (.external-q pc)
                #:released (.released pc)
-               #:skip-compliance? (.skip-compliance? pc)
                #:state (.state pc)
                #:trail (.trail pc))))
     (%debug (current-source-location) "  ~s ~s <block> ~a [~a] => [~a]"
@@ -1444,7 +1443,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      "<deadlock>")
     (_
      (string-join
-      (cons (state->string (.state o) (not (.skip-compliance? o)))
+      (cons (state->string (.state o) #t)
             (append
              (let* ((instance (.instance o))
                     (statement (.statement o))
