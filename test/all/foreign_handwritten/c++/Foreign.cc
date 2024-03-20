@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -24,10 +24,10 @@
 
 #include <foreign_handwritten.hh>
 
-Foreign::Foreign (const dzn::locator &dzn_locator)
-  : dzn_meta{"", "Foreign", 0, {}, {}, {[this]{w.dzn_check_bindings ();}}}
-, dzn_runtime (dzn_locator.get<dzn::runtime> ())
-, dzn_locator (dzn_locator)
+Foreign::Foreign (dzn::locator const & locator)
+  : dzn_meta {"", "Foreign", 0, {}, {}, {[this]{w.dzn_check_bindings ();}}}
+, dzn_runtime (locator.get<dzn::runtime> ())
+, dzn_locator (locator)
 , w ({{"w", &w, this, &dzn_meta}, {"", 0, 0, 0}})
 {
   dzn_meta.require = {};
