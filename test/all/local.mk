@@ -473,7 +473,7 @@ REGRESSION_TESTS =				\
  %D%/range_return				\
  %D%/reply_expression				\
  %D%/requires_twice				\
- %D%/resolve_formal				\
+ %D%/resolve_formal_shadow			\
  %D%/resolve_member				\
  %D%/reuse_body					\
  %D%/second_reply				\

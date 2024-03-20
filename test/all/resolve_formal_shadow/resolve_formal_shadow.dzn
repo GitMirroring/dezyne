@@ -33,7 +33,7 @@ interface ihello
   }
 }
 
-component resolve_formal
+component resolve_formal_shadow
 {
   provides ihello p;
   requires ihello r;
