@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2020, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -27,10 +27,10 @@
 namespace library
 {
 
-foreign::foreign (const dzn::locator &dzn_locator)
+foreign::foreign (dzn::locator const &locator)
   : dzn_meta{"", "foreign", 0, {}, {}, {[this]{w.dzn_check_bindings ();}}}
-, dzn_runtime (dzn_locator.get<dzn::runtime> ())
-, dzn_locator (dzn_locator)
+, dzn_runtime (locator.get<dzn::runtime> ())
+, dzn_locator (locator)
 , w ({{"w", &w, this, &dzn_meta}, {"", 0, 0, 0}})
 {
   w.in.world = [&] {};
