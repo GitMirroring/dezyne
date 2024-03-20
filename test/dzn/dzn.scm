@@ -614,8 +614,12 @@ are weak-bisim equivalent"
          (out (string-append file-name "/out"))
          (out-lang (string-append out "/" language))
          (thread-pool? (thread-pool? file-name))
+         (shadow? (and (string=? language "c++")
+                       (or (string-contains file-name "alpha")
+                           (string-contains file-name "shadow"))))
          (command `("make"
                     "-f" ,(string-append "test/lib/build." language ".make")
+                    ,@(if shadow? '("WARN_FLAGS=-Wall -Wextra -Werror") '())
                     ,(string-append "LANGUAGE=" language)
                     ,(string-append "IN=" file-name)
                     ,(string-append "OUT=" out-lang)
