@@ -127,6 +127,10 @@ remove_finished_coroutines (std::list<coroutine> &coroutines)
   });
 }
 
+pump::deadline::deadline (size_t id, size_t ms)
+  : id (id)
+  , time (std::chrono::steady_clock::now () + std::chrono::milliseconds (ms))
+{}
 
 pump::pump ()
   : unblocked ()
@@ -212,7 +216,7 @@ pump::operator () ()
         if (queue.empty () && deferred.empty ())
           {
             if (timers.size ())
-              condition.wait_until (lock, timers.begin ()->first.t, work_p);
+              condition.wait_until (lock, timers.begin ()->first.time, work_p);
             else
               condition.wait (lock, work_p);
           }

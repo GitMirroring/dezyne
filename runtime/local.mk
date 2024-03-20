@@ -105,6 +105,7 @@ dist_noinst_DATA += %D%/c++/dzn/config.hh.in %D%/c++/dzn/meta.hh.in
 
 runtime_cxxdir = $(pkgdatadir)/runtime/c++
 dist_runtime_cxx_DATA =				\
+ %D%/c++/coroutine.cc				\
  %D%/c++/pump.cc				\
  %D%/c++/runtime.cc                             \
  %D%/c++/std-async.cc				\
@@ -114,6 +115,7 @@ if have_mutex
 lib_LTLIBRARIES += %D%/libdzn-c++.la
 %C%_libdzn_c___la_HEADERS = $(dist_runtime_cxx_dzn_DATA)
 %C%_libdzn_c___la_SOURCES =			\
+ %D%/c++/coroutine.cc				\
  %D%/c++/pump.cc				\
  %D%/c++/runtime.cc
 

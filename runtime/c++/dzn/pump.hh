@@ -62,14 +62,12 @@ struct pump
   struct deadline
   {
     size_t id;
-    std::chrono::steady_clock::time_point t;
-    deadline (size_t id, size_t ms)
-      : id (id)
-      , t (std::chrono::steady_clock::now () + std::chrono::milliseconds (ms))
-    {}
-    bool expired (std::chrono::steady_clock::time_point const& now) const {return t <= now;}
-    bool operator < (deadline const& d) const
-    {return t < d.t || (t == d.t && id < d.id);}
+    std::chrono::steady_clock::time_point time;
+    deadline (size_t identifier, size_t ms);
+    bool expired (std::chrono::steady_clock::time_point const& now) const
+    {return time <= now;}
+    bool operator < (deadline const& that) const
+    {return this->time < that.time || (this->time == that.time && this->id < that.id);}
   };
 
   std::map<deadline, std::function<void ()>> timers;

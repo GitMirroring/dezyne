@@ -1,9 +1,9 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019 - 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016 - 2024 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -244,7 +244,7 @@ struct event<R (Args...)>
   std::ostream* os;
   char const* name;
 
-  std::function<R (Args...)> f;
+  std::function<R (Args...)> e;
   event ()
     : dzn_strict_p (false)
     , reply ()
@@ -282,7 +282,7 @@ struct event<R (Args...)>
   }
   operator bool () const
   {
-    return static_cast<bool> (this->f);
+    return static_cast<bool> (this->e);
   }
   event& operator = (event const& that)
   {
@@ -295,15 +295,15 @@ struct event<R (Args...)>
     assert (that.dzn_locator);
     assert (that.dzn_runtime);
 
-    std::function<R (Args...)> g (that.f);
-    this->f = [g,this] (Args...args)
+    std::function<R (Args...)> g (that.e);
+    this->e = [g,this] (Args...args)
     {
       struct RAII
       {
         event* that;
         std::string reply_string;
-        RAII (event* that)
-          : that (that)
+        RAII (event* other)
+          : that (other)
         {
           that->port_update (that->name);
         }
@@ -314,8 +314,8 @@ struct event<R (Args...)>
         }
         ~RAII ()
         {
-          this->reply_string = ::dzn::to_string (that->reply);
-          that->port_update (this->reply_string.c_str ());
+          reply_string = ::dzn::to_string (that->reply);
+          that->port_update (reply_string.c_str ());
         }
       } raii (this);
       return raii (g (args...));
@@ -329,7 +329,7 @@ struct event<R (Args...)>
   }
   event& operator = (std::function<R (Args...)>const & f)
   {
-    this->f = [f,this] (Args ... args) -> decltype (f (args...))
+    this->e = [f,this] (Args ... args) -> decltype (f (args...))
     {
       if (!this->dzn_strict_p) return f (args...);
 
@@ -372,7 +372,7 @@ struct event<R (Args...)>
   }
   R operator () (Args...args)
   {
-    return this->f (args...);
+    return this->e (args...);
   }
 };
 
@@ -392,7 +392,7 @@ struct event<void (Args...)>
   std::ostream* os;
   char const* name;
 
-  std::function<void (Args...)> f;
+  std::function<void (Args...)> e;
   event ()
     : dzn_strict_p (false)
     , port ()
@@ -429,7 +429,7 @@ struct event<void (Args...)>
   }
   operator bool () const
   {
-    return static_cast<bool> (this->f);
+    return static_cast<bool> (this->e);
   }
   event& operator = (event const& that)
   {
@@ -442,15 +442,15 @@ struct event<void (Args...)>
     assert (that.dzn_locator);
     assert (that.dzn_runtime);
 
-    std::function<void (Args...)> g (that.f);
-    this->f = [g,this] (Args...args)
+    std::function<void (Args...)> g (that.e);
+    this->e = [g,this] (Args...args)
     {
       struct RAII
       {
         event* that;
         char const* reply_string;
-        RAII (event* that)
-          : that (that)
+        RAII (event* other)
+          : that (other)
           , reply_string ("return")
         {
           that->port_update (that->name);
@@ -471,7 +471,7 @@ struct event<void (Args...)>
   }
   event& operator = (std::function<void (Args...)> const& f)
   {
-    this->f = [f,this] (Args... args) -> decltype (f (args...))
+    this->e = [f,this] (Args... args) -> decltype (f (args...))
     {
       if (!dzn_strict_p) return f (args...);
 
@@ -508,7 +508,7 @@ struct event<void (Args...)>
   }
   void operator () (Args...args)
   {
-    this->f (args...);
+    this->e (args...);
   }
 };
 
@@ -532,7 +532,7 @@ struct event<void (Args...)>
   dzn::runtime* dzn_runtime;
   std::ostream* os;
   char const* name;
-  std::function<void (Args...)> f;
+  std::function<void (Args...)> e;
 
   event ()
     : dzn_strict_p (false)
@@ -570,7 +570,7 @@ struct event<void (Args...)>
   }
   operator bool () const
   {
-    return static_cast<bool> (this->f);
+    return static_cast<bool> (this->e);
   }
   event& operator = (event const& that)
   {
@@ -583,8 +583,8 @@ struct event<void (Args...)>
     assert (that.dzn_locator);
     assert (that.dzn_runtime);
 
-    std::function<void (Args...)> g (that.f);
-    this->f = [g,this] (Args...args)
+    std::function<void (Args...)> g (that.e);
+    this->e = [g,this] (Args...args)
     {
       this->port_update (this->name);
       return g (args...);
@@ -598,7 +598,7 @@ struct event<void (Args...)>
   }
   event& operator = (std::function<void (Args...)> const& f)
   {
-    this->f = [f,this] (Args...args)
+    this->e = [f,this] (Args...args)
     {
       if (!this->dzn_strict_p) return f (args...);
 
@@ -635,7 +635,7 @@ struct event<void (Args...)>
   }
   void operator () (Args...args) const
   {
-    return this->f (args...);
+    return this->e (args...);
   }
 };
 }
