@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022 janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -128,7 +128,6 @@ int main ()
           sync.push (std::async (std::launch::async, [&, pit]
           {
             pit->second ();
-            std::unique_lock<std::mutex> lock (mutex);
           }));
           lock.unlock ();
         }
