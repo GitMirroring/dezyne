@@ -392,6 +392,26 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (trail (map cdr trail)))
               (member event-name trail)))
 
+          (define (truncate-to-observable trace count)
+            (define observable?
+              (conjoin
+               trace->trail
+               (compose not string-null? cdr trace->trail)
+               (if (is-a? (%sut) <runtime:port>) (const #t)
+                   (compose (cute string-prefix? port-prefix <>)
+                            cdr trace->trail))))
+            (let* ((trace (reverse trace))
+                   (trace
+                    (let loop ((trace trace) (count count))
+                      (let ((i (list-index observable? trace)))
+                        (if (not i) trace
+                            (let ((prefix (list-head trace i)))
+                              (if (zero? count) prefix
+                                  (let ((prefix trace (split-at trace (1+ i))))
+                                    (append prefix
+                                            (loop trace (1- count)))))))))))
+              (reverse trace)))
+
           (when (> (dzn:debugity) 0)
             (%debug (current-source-location) "[c] sut-trail:~s" (map cdr sut-trail))
             (%debug (current-source-location) "[c] port-traces[~s]:" (length port-traces))
@@ -496,6 +516,21 @@ Return a list of traces, possibly marked with <compliance-error>."
                            (not (any (cute event-on-trail? (.event.name trigger) <>)
                                      non-compliances))
                            trigger))
+                     (port-trails (parameterize ((%sut port-instance))
+                                    (map trace->string-trail non-compliances)))
+                     (sut-trail (map cdr sut-trail))
+                     (shortest (apply min (map length port-trails)))
+                     (truncate? (>= (length sut-trail) shortest))
+                     (trace (if (not truncate?) trace
+                                (truncate-to-observable trace shortest)))
+                     (not-acceptance? (conjoin
+                                       .statement
+                                       (compose
+                                        not
+                                        (cute ast:equal? <> component-acceptance)
+                                        .statement)))
+                     (trace (if (not truncate?) (cdr trace)
+                                (drop-while not-acceptance? trace)))
                      (pc (clone pc
                                 #:previous #f
                                 #:status (make <compliance-error>
@@ -505,8 +540,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                                            #:port-acceptance port-acceptances
                                            #:trigger compliance-trigger))))
                 (if (null? trace) (list (cons pc (car non-compliances)))
-                    (let* ((tail (cdr trace))
-                           (trace (cons pc tail)))
+                    (let ((trace (cons pc trace)))
                       (list (zip trigger trace (car non-compliances)))))))
              (else
               (%%debug (current-source-location) "  exit 8")

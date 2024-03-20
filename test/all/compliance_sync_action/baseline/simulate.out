@@ -5,11 +5,9 @@ test/all/compliance_sync_action/compliance_sync_action.dzn:43:20: error: non-com
 ... -> sut.h.hello
 ... <- sut.h.cruel
 <external>.h.cruel <- ...
-... <- sut.h.return
-<external>.h.return <- ...
 <non-compliance>
 (state ((h)) ((sut)))
 test/all/compliance_sync_action/compliance_sync_action.dzn:43:20: error: non-compliance
-(trail "h.hello" "h.cruel" "h.return" "<non-compliance>")
+(trail "h.hello" "h.cruel" "<non-compliance>")
 (labels "h.hello")
 (eligible)
