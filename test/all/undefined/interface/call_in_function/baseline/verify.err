@@ -1,0 +1,2 @@
+test/all/undefined/interface/call_in_function/call_in_function.dzn:23:3: error: event `hello' is not used in behavior of interface `call_in_function'
+test/all/undefined/interface/call_in_function/call_in_function.dzn:28:7: error: undefined function call: "hello"
