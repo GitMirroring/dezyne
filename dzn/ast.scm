@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -1032,7 +1032,13 @@ to bottom."
         (find (lambda (s) (eq? (.node o) (.node s))) (succ* o)))))
 
 (define-method (ast:recursive? (o <function>))
-  (ast:graph-cyclic? ast:function* o))
+  (define (clean-function* o)
+    "This is used by silence:annotate-functions, which is called
+pre-well-formnedness checking (which seems to be only because that is
+also reponsible for annotating #:recursive on functions, which is needed
+by well-formednes), when ast:function* may return non-function ASTs."
+    (filter (cute as <> <function>) (ast:function* o)))
+  (ast:graph-cyclic? clean-function* o))
 
 (define-method (ast:continuation* (o <ast>))
   "Return a naive list of continuations.  A <declarative-compound>
