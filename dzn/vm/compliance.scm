@@ -689,6 +689,7 @@ port return."
             (if (null? pcs) traces
                 (let* ((trail (trace->trail (car pcs)))
                        (event (match trail ((ast . event) event) (_ event)))
+                       (event (format #f "~a" event))
                        (cpc (last trace))
                        (cpc (reset-replies cpc))
                        (cpc (clone cpc #:instance #f))

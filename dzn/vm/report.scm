@@ -284,7 +284,7 @@
     (cons q-out (trigger->string trigger))))
 
 (define-method (pc->event (pc <program-counter>) (o <trigger-return>))
-  (pc->event (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+  (pc->event (.instance pc) o))
 
 (define-method (pc->event (o <runtime:port>) (return <trigger-return>))
   (cons return
@@ -342,7 +342,7 @@
             (format #f "~a.~a" (trace-name r:port) (.event.name action)))))))
 
 (define-method (pc->component-event (pc <program-counter>) (o <trigger-return>))
-  (pc->component-event (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+  (pc->component-event (.instance pc) o))
 
 (define-method (pc->component-event (o <runtime:component>) (return <trigger-return>))
   (cons return
@@ -520,7 +520,7 @@
           (format #f "~a.~a <- ..." (runtime:instance->string r:port) (.event.name trigger)))))
 
 (define-method (pc->arrow (pc <program-counter>) (o <trigger-return>))
-  (pc->arrow (.instance pc) (clone o #:event.name (format #f "~a" (.event.name o)))))
+  (pc->arrow (.instance pc) o))
 
 (define-method (pc->arrow (o <runtime:port>) (return <trigger-return>))
   (cons return
