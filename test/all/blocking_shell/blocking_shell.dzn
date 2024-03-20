@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -90,16 +90,16 @@ component blocked
     TYPE type = TYPE.VOID;
 
     bool b = true;
-    Int i = 1;
+    Int i_ = 1;
     Enum r = Enum.NOK;
 
     on bottom_p.hello_void(): blocking {type = TYPE.VOID; bottom_r.hello_void();}
     on bottom_p.hello_bool(): blocking {type = TYPE.BOOL; b = bottom_r.hello_bool();}
-    on bottom_p.hello_int(): blocking {type = TYPE.INT; i = bottom_r.hello_int();}
+    on bottom_p.hello_int(): blocking {type = TYPE.INT; i_ = bottom_r.hello_int();}
     on bottom_p.hello_enum(i,j): blocking {type = TYPE.ENUM; r = bottom_r.hello_enum(i,j); if(r.NOK) reply(r);}
     [type.VOID] on bottom_r.world(i): {bottom_p.world(i); bottom_p.reply();}
     [type.BOOL] on bottom_r.world(i): {bottom_p.world(i); bottom_p.reply(true);}
-    [type.INT]  on bottom_r.world(j): {bottom_p.world(j); bottom_p.reply(i); i = 1;}
+    [type.INT]  on bottom_r.world(j): {bottom_p.world(j); bottom_p.reply(i_); i_ = 1;}
     [type.ENUM] on bottom_r.world(j): {bottom_p.world(j); bottom_p.reply(r);}
   }
 }
