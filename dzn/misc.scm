@@ -34,6 +34,7 @@
             %debug?
             alist->hash-table
             atom?
+            common-prefix
             conjoin
             debug
             delete-adjacent-duplicates
@@ -200,6 +201,13 @@ the next element."
        (let ((tail (cons next rest)))
          (if (= head next) (loop tail)
              (cons head (loop tail))))))))
+
+(define (common-prefix lst-a lst-b)
+  (if (or (null? lst-a) (null? lst-b)) '()
+      (let ((car-a lst-a (car+cdr lst-a))
+            (car-b lst-b (car+cdr lst-b)))
+        (if (not (eq? car-a car-b)) '()
+            (cons car-a (common-prefix lst-a lst-b))))))
 
 
 ;;;
