@@ -47,6 +47,12 @@ Run verify for all defer tests
 
     make check TESTS="$(find test/all -maxdepth 1 -type d -a -name '*defer*')" RUN_FLAGS=--stage=verify
 
+Run lts for all external tests (external was not added to names when it
+became required for thread-safe-shells, also there are two unstable
+external tests that cannot be added to TESTS):
+
+    make check TESTS="$(git grep -l external -- test/all/*/*.dzn | xargs dirname)" RUN_FLAGS=--stage=lts
+
 * The Perfect GNU Emacs Setup
 
 ** See emacs/dzn-dzn.el
@@ -102,7 +108,7 @@ make publish
 #+END_SRC
 
 * Legalese
-Copyright © 2019,2020,2021,2022,2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2019,2020,2021,2022,2023,2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
