@@ -817,17 +817,18 @@ are weak-bisim equivalent"
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
                        ;; FIXME: --structured-output with -eweak-trace still writes to disk
-                       (with-directory-excursion out-lang
-                         (receive (status stdout stderr)
-                             (observe
-                              `("ltscompare" "--counter-example" "--structured-output"
-                                "-eweak-trace"
-                                ,(string-append "--tau=" (string-join taus+modeling ","))
-                                ,(string-append "../traces/" base-name ".aut")
-                                ,(string-append base-name ".aut"))
-                              "")
-                           (display stdout)
-                           (zero? (ltscompare-status? status stdout))))))))))))
+                       (receive (status stdout stderr)
+                           (observe
+                            `("ltscompare"
+                              "--counter-example"
+                              "--structured-output"
+                              "-eweak-trace"
+                              ,(string-append "--tau=" (string-join taus+modeling ","))
+                              ,(string-append out "/traces/" base-name ".aut")
+                              ,(string-append out-lang "/" base-name ".aut"))
+                            "")
+                         (display stdout)
+                         (zero? (ltscompare-status? status stdout)))))))))))
 
 
 ;;;
