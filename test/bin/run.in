@@ -3,7 +3,7 @@
 !#
 
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -113,8 +113,9 @@ Examples:
              (setenv "languages" (string-join languages)))
            (let* ((command `(,run ,file-name ,@args))
                   (command (if (not timeout) command
-                               `("timeout" ,timeout ,@command))))
-            (exit (zero? (apply system* command)))))
+                               `("timeout" ,timeout ,@command)))
+                  (status (apply system* command)))
+            (exit (/ status 256))))
           (else
            (when timeout
              (alarm (string->number timeout)))
