@@ -248,6 +248,7 @@
       ((h t ...) o)
       (_ (format #f "~a" o))))
   (let* ((trail (string-join (string-split trail #\,) " "))
+         (trail (string-join (string-split trail #\;) " "))
          (trail (with-input-from-string trail read-input-file))
          (trail (map event->string trail))
          (loop-index (list-index (cute equal? <> "<loop>") trail))
