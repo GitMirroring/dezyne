@@ -1,7 +1,7 @@
 // dzn-runtime -- Dezyne runtime library
 //
 // Copyright © 2014, 2015, 2016, 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2015 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of dzn-runtime.
@@ -116,7 +116,7 @@ runtime::performs_flush (dzn::component *component)
 bool
 runtime::skip_block (dzn::component *component, void *port)
 {
-  return states.at (component).skip == port;
+  return states[component].skip == port;
 }
 
 void
@@ -128,7 +128,7 @@ runtime::set_skip_block (dzn::component *component, void *port)
 void
 runtime::reset_skip_block (dzn::component *component)
 {
-  states.at (component).skip = nullptr;
+  states[component].skip = nullptr;
 }
 
 void
