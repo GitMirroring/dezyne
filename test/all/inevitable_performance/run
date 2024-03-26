@@ -2,6 +2,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2024 Paul Hoogendijk <paul@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -19,4 +20,4 @@
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 #
 set -x
-timeout 2 dzn simulate -t '' test/all/inevitable_performance/inevitable_performance.dzn
+test/bin/cpu-timeout 2 "dzn simulate -t '' test/all/inevitable_performance/inevitable_performance.dzn"
