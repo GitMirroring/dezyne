@@ -85,6 +85,7 @@ bin_SCRIPTS =					\
 
 EXTRA_DIST +=					\
  bin/dzn.in					\
+ test/bin/cpu-timeout				\
  test/bin/semantics.sh
 
 dist_noinst_DATA =
