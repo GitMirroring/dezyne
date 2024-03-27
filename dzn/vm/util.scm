@@ -733,7 +733,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
          (pcs (filter (compose (cute eq? <> instance) .instance) pcs))
          (triggers (filter-map .trigger pcs)))
     (and (pair? triggers)
-         (last triggers))))
+         (or (find (is? <q-trigger>) triggers)
+             (last triggers)))))
 
 
 ;;;
