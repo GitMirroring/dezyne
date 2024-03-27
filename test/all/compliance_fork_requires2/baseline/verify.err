@@ -1,0 +1,15 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: iworld: check: deadlock: ok
+verify: iworld: check: unreachable: ok
+verify: iworld: check: livelock: ok
+verify: iworld: check: deterministic: ok
+verify: compliance_fork_requires2: check: deterministic: ok
+verify: compliance_fork_requires2: check: illegal: ok
+verify: compliance_fork_requires2: check: deadlock: ok
+verify: compliance_fork_requires2: check: unreachable: ok
+verify: compliance_fork_requires2: check: livelock: ok
+verify: compliance_fork_requires2: check: compliance: fail
+error: component compliance_fork_requires2 is non-compliant with interface(s) of provides port(s)

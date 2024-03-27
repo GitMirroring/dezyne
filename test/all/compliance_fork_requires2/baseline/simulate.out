@@ -1,0 +1,21 @@
+(header ((left) ihello provides) ((right) iworld provides) ((sut) compliance_fork_requires2 component) ((r) iworld requires))
+(state ((left)) ((right)) ((sut)) ((r)))
+test/all/compliance_fork_requires2/compliance_fork_requires2.dzn:55:19: error: non-compliance
+<external>.right.cruel -> ...
+... -> sut.right.cruel
+sut.r.cruel -> ...
+... -> <external>.r.cruel
+... <- <external>.r.world
+sut.<q> <- ...
+... <- <external>.r.return
+sut.r.return <- ...
+... <- sut.<q>
+sut.r.world <- ...
+... <- sut.left.world
+<external>.left.world <- ...
+<non-compliance>
+(state ((left)) ((right)) ((sut)) ((r)))
+test/all/compliance_fork_requires2/compliance_fork_requires2.dzn:55:19: error: non-compliance
+(trail "right.cruel" "r.cruel" "r.world" "r.return" "left.world" "<non-compliance>")
+(labels "left.hello" "right.cruel" "r.world")
+(eligible)
