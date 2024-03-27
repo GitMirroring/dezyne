@@ -158,16 +158,32 @@ that PC has one more collaterally blocked coroutine on the same port."
                              ,@(if external? '(external) '()))))
 
     (define (blocked-prefix pc)
-      (let* ((blocking-pc (rtc-block-pc (cdar (.blocked pc))))
-             (blocking-pc (.previous blocking-pc))
-             (blocked-from (and=> blocking-pc pc->state-number))
-             (pc+traces (hash-ref lts blocked-from)))
-        (match pc+traces
-          ((pc . traces)
-           (or (find (compose pair? .blocked car) traces)
-               '()))
-          (_
-           '()))))
+      (let ((to (pc->state-number pc)))
+        (if (= to 1) '()
+            (let ((alist (hash-table->alist lts)))
+              (define* (follow-blocked alist pc #:key (seen (list to)))
+                (let* ((to (pc->state-number pc))
+                       (trace (any
+                               (match-lambda
+                                 ((from pc traces ...)
+                                  (find
+                                   (conjoin
+                                    pair?
+                                    (compose pair? .blocked car)
+                                    (compose (cute eq? <> to)
+                                             pc->state-number car)
+                                    (compose not (cute memq <> seen)
+                                             pc->state-number last))
+                                   traces)))
+                               alist))
+                       (pc' (and=> trace last))
+                       (from (and=> pc' pc->state-number))
+                       (trace (or trace '())))
+                  (if (or (not from) (eq? from 1)) trace
+                      (let ((seen (cons from seen))
+                            (tail (follow-blocked alist pc' #:seen seen)))
+                        (append trace tail)))))
+              (follow-blocked alist pc)))))
 
     (define (check-compliance-blocked trace)
       (let ((orig-pc (last trace)))
@@ -191,10 +207,11 @@ that PC has one more collaterally blocked coroutine on the same port."
                                                        full-trace)))
                (illegal? (is-status? <implicit-illegal-error>))
                (checked (filter (compose not illegal? car) checked))
-               (pcs (map car checked))
-               (corrected (if (not (= 1 (length pcs))) trace
-                              (cons (car pcs) trace))))
-          corrected)))
+               (prefix-length (length blocked-prefix))
+               (drop-prefix? (and (pair? checked)
+                                  (> (length (car checked)) prefix-length))))
+          (if (not drop-prefix?) trace
+              (drop-right (car checked) prefix-length)))))
 
     (define (run-label orig-pc label)
       (%debug (current-source-location) "run-label ~a" label)
@@ -222,19 +239,26 @@ that PC has one more collaterally blocked coroutine on the same port."
                                               (append-map run-flush flush))))
                          (append traces
                                  (run-to-completion** orig-pc label))))))
-             (blocked? (not (eq? bob-pc orig-pc)))
+             (blocked (.blocked orig-pc))
+             (blocked? (pair? blocked))
+             (blocked? (or blocked?
+                           (not (eq? bob-pc orig-pc))))
+             (double-blocked? (find (compose pair? .blocked)
+                                    (map cdr blocked)))
              (skip-compliance? (or (.skip-compliance? orig-pc)
                                    (is-a? (%sut) <runtime:port>)
-                                   (null? traces)))
+                                   (null? traces)
+                                   double-blocked?))
              (traces (map (cute append <> (list orig-pc)) traces))
              (traces (cond
-                      ((and (not skip-compliance?) (not blocked?))
+                      ((and (not skip-compliance?)
+                            (not blocked?))
                        (let* ((cpc orig-pc)
                               (cpc (reset-replies cpc))
                               (cpc (clone cpc #:instance #f)))
                          (check-provides-compliance* cpc label traces)))
                       ((and blocked?
-                            (not (.skip-compliance? orig-pc))
+                            (not skip-compliance?)
                             (not (eq? label 'defer))
                             (not (or (.status pc)
                                      (is-a? (%sut) <runtime:port>)
