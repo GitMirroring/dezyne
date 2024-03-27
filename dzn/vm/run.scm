@@ -353,6 +353,7 @@ program-counters produced by taking a step."
                     (instance (.instance pc))
                     (update-state?
                      (and (is-a? instance <runtime:component>)
+                          (not (is-a? (%sut) <runtime:port>))
                           (is-a? o <action>)
                           (ast:out? o)))
                     (pc (if (not update-state?) pc
