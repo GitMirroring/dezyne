@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
@@ -96,6 +96,8 @@
        (let ((errno (system-error-errno (cons key args))))
          (format (current-error-port) "~a: ~a\n"
                  (strerror errno) file-name)))
+      ((quit)
+       (apply exit args))
       (else
        (apply format (current-error-port) "internal error: ~a: ~a: ~s\n"
               file-name key args)))))

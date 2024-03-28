@@ -29,12 +29,17 @@
   #:use-module (srfi srfi-71)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 poe)
+
+  #:use-module (dzn ast)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn ast lookup)
   #:use-module (dzn code)
   #:use-module (dzn config)
   #:use-module (dzn misc)
   #:use-module (dzn shell-util)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
+  #:use-module (dzn parse)
   #:export (%languages
             parse-opts
             main))
@@ -110,6 +115,7 @@ Languages: ~a
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file-name (car files))
+         (debug? (dzn:command-line:get 'debug #f))
          (dir (option-ref options 'output #f))
          (calling-context (option-ref options 'calling-context #f))
          (language (option-ref options 'language %default-language))
@@ -123,6 +129,25 @@ Languages: ~a
          (no-constraint? (command-line:get 'no-constraint))
          (no-unreachable? (command-line:get 'no-unreachable))
          (shell (multi-opt options 'shell)))
+
+    (define (shell-error ast model-name)
+      (let* ((model (ast:lookup ast model-name))
+             (message
+              (cond
+               ((not model)
+                (format #f "No such model for --shell: `~a'." model-name))
+               ((not (is-a? model <system>))
+                (format #f "Option `--shell' cannot be used with ~a: `~a'."
+                        (ast-name model)
+                        (ast:dotted-name model)))
+               ((ast:imported? model)
+                (format #f "Option `--shell' cannot be used with imported `~a'."
+                        (ast:dotted-name model)))
+               (else
+                #f))))
+        (and message
+             (make <error> #:ast (or model ast) #:message message))))
+
     (parameterize ((%calling-context calling-context)
                    (%no-constraint? no-constraint?)
                    (%language language)
@@ -135,11 +160,18 @@ Languages: ~a
       ;; Parse --model=MODEL cuts MODEL from AST; avoid that
       (let* ((parse-options (filter (compose not (cut eq? <> 'model) car)
                                     options))
-             (ast (parse parse-options file-name)))
-        (code ast
-              #:calling-context calling-context
-              #:dir dir
-              #:model model
-              #:language language
-              #:locations? locations?
-              #:shell shell)))))
+             (ast (parse parse-options file-name))
+             (errors (filter-map (cute shell-error ast <>) shell)))
+        (parse:call-with-handle-exceptions
+         (lambda _
+           (when (pair? errors)
+             (apply throw 'well-formedness-error errors))
+           (code ast
+                 #:calling-context calling-context
+                 #:dir dir
+                 #:model model
+                 #:language language
+                 #:locations? locations?
+                 #:shell shell))
+         #:backtrace? debug?
+         #:file-name file-name)))))
