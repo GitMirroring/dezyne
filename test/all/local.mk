@@ -804,6 +804,9 @@ PARSER_TESTS =					\
  %D%/undefined/interface/trigger		\
  %D%/undefined/var
 
+USAGE_TESTS = 					\
+ %D%/usage/code/shell
+
 UNSTABLE_TESTS =				\
  %D%/illegal_external_nonsynchronous		\
  %D%/livelock_synchronous_illegal		\
@@ -845,7 +848,8 @@ FULL_TESTS =					\
  $(DOC_SEMANTICS_TESTS)				\
  $(PARSER_TESTS)				\
  $(REGRESSION_TESTS)				\
- $(UNSTABLE_TESTS)
+ $(UNSTABLE_TESTS)				\
+ $(USAGE_TESTS)
 
 dzn_exampledir = $(pkgdatadir)/examples
 nodist_dzn_example_DATA =			\

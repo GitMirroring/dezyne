@@ -1,0 +1,5 @@
+test/all/usage/code/shell/shell.dzn:20:1: error: No such model for --shell: `foo'.
+test/all/usage/code/shell/../../../system_defer/hello_defer.dzn:24:1: error: Option `--shell' cannot be used with extern: `T'.
+test/all/usage/code/shell/../../../system_defer/hello_defer.dzn:26:1: error: Option `--shell' cannot be used with interface: `ihello'.
+test/all/usage/code/shell/../../../system_defer/hello_defer.dzn:39:1: error: Option `--shell' cannot be used with component: `hello_defer'.
+test/all/usage/code/shell/../../../system_defer/system_defer.dzn:27:1: error: Option `--shell' cannot be used with imported `system_defer'.
