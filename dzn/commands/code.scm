@@ -66,7 +66,6 @@
             (locations (single-char #\L))
             (model (single-char #\m) (value #t))
             (no-constraint (single-char #\C))
-            (no-non-compliance (single-char #\D))
             (no-unreachable (single-char #\U))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))
@@ -85,7 +84,6 @@ Generate code for Dezyne models in DZN-FILE
 
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
   -C, --no-constraint         do not use a constraining process
-  -D, --no-non-compliance     do not generate constraint-any processes
   -h, --help                  display this help and exit
   -I, --import=DIR+           add DIR to import path
       --init=PROCESS          use init PROCESS for mCRL2

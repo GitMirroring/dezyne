@@ -2754,10 +2754,6 @@ stderr.  @xref{Getting Started}.
 @itemx -C
 Do not use a constraining process.
 
-@item --no-non-compliance
-@itemx -D
-Do not generate `constraint-any' processes.
-
 @item --no-unreachable
 @itemx -U
 Do not generate tags for the unreachable code check.
@@ -3348,10 +3344,6 @@ Generate traces for model @var{model}.
 @itemx -C
 Do not use a constraining process.
 
-@item --no-non-compliance
-@itemx -D
-Report deadlock upon a non-compliance error.
-
 @item --output=@var{dir}
 @itemx -o @var{dir}
 Write trace files to directory @var{dir}.
@@ -3424,10 +3416,6 @@ Do not use a constraining process.
 
 @item --no-interfaces
 Do not verify interfaces.
-
-@item --no-non-compliance
-@itemx -D
-Report deadlock upon a non-compliance error.
 
 @item --no-unreachable
 @itemx -U

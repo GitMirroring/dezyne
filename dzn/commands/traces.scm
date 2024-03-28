@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
@@ -57,7 +57,6 @@
             (traces (single-char #\t))
             (model (single-char #\m) (value #t))
             (no-constraint (single-char #\C))
-            (no-non-compliance (single-char #\D))
             (output (single-char #\o) (value #t))
             (queue-size (single-char #\q) (value #t))
             (queue-size-defer (value #t))
@@ -73,7 +72,6 @@ Usage: dzn traces [OPTION]... DZN-FILE
 Generate exhaustive set of traces for Dezyne model
 
   -C, --no-constraint         do not use a constraining process
-  -D, --no-non-compliance     report deadlock upon non-compliance
   -f, --flush                 include <flush> events in trace
   -h, --help                  display this help and exit
   -i, --illegal               include traces that lead to an illegal

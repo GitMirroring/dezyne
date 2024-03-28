@@ -420,8 +420,7 @@ for MODEL, using ROOT."
        (if (eq? (%queue-size-external) %default-queue-size-external) ""
            (format #f " --queue-size-external=~a" (%queue-size-external)))
        (if (%no-unreachable?) " --no-unreachable" "")
-       (flag->string 'no-constraint)
-       (flag->string 'no-non-compliance)))
+       (flag->string 'no-constraint)))
     (let ((file-name (ast:source-file root))
           (model-name (makreel:unticked-dotted-name model)))
       (match command

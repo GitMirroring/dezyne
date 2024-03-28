@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -156,8 +156,7 @@ to current-output-port."
                             (filter (negate (cute member <> events)) replies)))
                (actions (if (> (length action-events) 1) '()
                             (filter (negate (cute member <> events)) actions)))
-               (any? (and (not (command-line:get 'no-non-compliance))
-                          (not first?)
+               (any? (and (not first?)
                           (or action? (reply? event))))
                (fork? (or any? (pair? transitions)))
                (error? (error? event)))
@@ -196,15 +195,13 @@ to current-output-port."
 
       (let* ((illegals transitions (partition transition-illegal? transitions))
              (top-actions (filter-map (compose action? edge-label) transitions))
-             (actions (filter (negate (cute member <> top-actions)) actions))
-             (any? (not (command-line:get 'no-non-compliance))))
+             (actions (filter (negate (cute member <> top-actions)) actions)))
         (for-each print-illegal-transition illegals)
         (when (pair? transitions)
           (print-tree transitions #:first? #t))
-        (when any?
-          (for-each
-           (cute format #t " + ~a . ~aconstraint_any\n" <> name)
-           actions))))
+        (for-each
+         (cute format #t " + ~a . ~aconstraint_any\n" <> name)
+         actions)))
 
     (define (print-node i node)
       (let* ((transitions (node-edges node))
