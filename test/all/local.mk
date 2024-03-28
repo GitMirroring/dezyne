@@ -713,7 +713,8 @@ FULL_TESTS =					\
  $(HELLO_TESTS)					\
  $(SEMANTICS_TESTS)				\
  $(PARSER_TESTS)				\
- $(REGRESSION_TESTS)
+ $(REGRESSION_TESTS)				\
+ $(UNSTABLE_TESTS)
 
 dzn_exampledir = $(pkgdatadir)/examples
 nodist_dzn_example_DATA =			\
