@@ -5,6 +5,32 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.18.2 since 2.18.1
+** Code
+  - The C++ runtime headers can now be compiled with `-Werror -Wshadow';
+    An extra file `coroutine.cc' was added.
+** Simulation
+  - The simulator now supports semicolon (`;') separated input trails.
+  - The simulator now truncates the trace leading up to a non-compliance
+    error at the first offending event.
+** Verification
+  - The `-D,--non-non-compliance' option was removed.
+** Noteworthy bug fixes
+  - A false negative illegal in collateral blocking context will now be
+    reported correctly by verify.
+  - A false positive non-compliance error in blocking context is no
+    longer reported by the simulator.
+  - A forking compliance error in multiple provides context will now be
+    displayed correctly again by simulate.  This was a regression
+    introduced in 2.18.0.
+  - The simulator will now prioritize the reporting of an illegal error
+    over a non-compliance, also without using `--no-compliance'.
+  - A crash in the `--language=json' output has been fixed when not
+    removing a behavior containing functions.
+  - The performance degradation of 2.18.0's verify that notably impacts
+    armoring components that weren't upgraded to take advantage of the
+    2.17 `implicit interface constraints' feature yet, has been reduced.
+
 * Changes in 2.18.1 since 2.18.0
 ** Code
   - C++ runtime facilitates shared-state strictness through the
