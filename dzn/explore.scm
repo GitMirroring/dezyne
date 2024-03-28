@@ -141,7 +141,21 @@ that PC has one more collaterally blocked coroutine on the same port."
          (state-number-table (make-hash-table))
          (state-number-count (list 1))
          (pc->state-number (pc->state-number state-number-table
-                                             state-number-count)))
+                                             state-number-count))
+         (model ((compose .type .ast %sut)))
+         (defers (append-map
+                  (cute tree-collect-filter
+                        (negate (disjoin (is? <expression>)
+                                         (is? <location>)))
+                        (is? <defer>)
+                        <>)
+                  (ast:model** model)))
+         (defer? (pair? defers))
+         (external? (and (not (is-a? (%sut) <runtime:port>))
+                         (pair? (ast:external-port* model))))
+         (synthetic-labels `(,@(if defer? '(defer) '())
+                             flush
+                             ,@(if external? '(external) '()))))
 
     (define (blocked-prefix pc)
       (let* ((blocking-pc (rtc-block-pc (cdar (.blocked pc))))
@@ -257,7 +271,7 @@ that PC has one more collaterally blocked coroutine on the same port."
         (unless (or (.status pc) (hash-ref lts from))
           (let* ((labels (labels pc))
                  (labels (if (is-a? (%sut) <runtime:port>) labels
-                             (cons* 'defer 'external 'flush labels)))
+                             (append synthetic-labels labels)))
                  (traces (run-labels pc labels)))
             (when (or (is-a? (%sut) <runtime:port>)
                       (any pair? traces))

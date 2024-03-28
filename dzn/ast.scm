@@ -65,6 +65,7 @@
             ast:in-event*
             ast:in-triggers
             ast:in?
+            ast:external-port*
             ast:injected-port*
             ast:injected?
             ast:inout?
@@ -414,6 +415,9 @@
 
 (define-method (ast:other-direction (o <trigger>))
   ((compose ast:other-direction .event) o))
+
+(define-method (ast:external-port* (o <component-model>))
+  (filter ast:external? (ast:port* o)))
 
 (define-method (ast:injected-port* (o <component-model>))
   (filter ast:injected? (ast:port* o)))
