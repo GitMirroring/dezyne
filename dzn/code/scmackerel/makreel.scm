@@ -4013,6 +4013,7 @@
                   (process provides-constraint-parallel)
                   (events (cons* %constrained-legal-action
                                  %constrained-illegal-action
+                                 %non-compliant-action
                                  (append-map
                                   (lambda (p)
                                     (list
