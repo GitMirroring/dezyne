@@ -341,7 +341,10 @@
       (list pc)))))
 
 (define-method (step (pc <program-counter>) (o <assign>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (%debug "  ~s ~s ~a => ~a=~a\n"
+          ((compose name .instance) pc) (and=> (.trigger pc) trigger->string)
+          (name o)
+          (.variable.name o) (->sexp (eval-expression pc (.expression o))))
   (let* ((pc (assign pc (.variable o) (.expression o)))
          (status (.status pc)))
     (if (is-a? status <range-error>)
