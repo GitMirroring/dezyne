@@ -415,8 +415,16 @@ Return a list of traces, possibly marked with <compliance-error>."
           (when (> (dzn:debugity) 0)
             (%debug (current-source-location) "[c] sut-trail:~s" (map cdr sut-trail))
             (%debug (current-source-location) "[c] port-traces[~s]:" (length port-traces))
-            (parameterize ((%sut port-instance))
-              (display-trails port-traces)))
+            (for-each (lambda (i trace)
+                        (let* ((trail (parameterize ((%sut port-instance))
+                                        (trace->string-trail trace)))
+                               (pc (car trace))
+                               (state (serialize (get-state pc port-instance))))
+                          (format (current-error-port) "  ~a: ~a\n" i trail)
+                          (format (current-error-port) "     ~a\n" state)))
+                      (iota (length port-traces))
+                      port-traces)
+            (newline (current-error-port)))
 
           (let* ((all-port-traces port-traces)
                  (port-traces non-compliances
