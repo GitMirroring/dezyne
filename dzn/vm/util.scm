@@ -1507,7 +1507,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                  `("blocked-on-boundary:"
                    ,@(map trigger->string (blocked-on-boundary-statements o))))
              (if (null? (.external-q o)) '()
-                 (list (external-q->string (.external-q o))))
+                 (list "ext-q:" (external-q->string (.external-q o))))
              (let ((defer (.defer o)))
                (if (null? defer) '()
                    `("defer:"
