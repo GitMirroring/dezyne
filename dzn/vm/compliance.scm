@@ -420,7 +420,8 @@ Return a list of traces, possibly marked with <compliance-error>."
 
           (let* ((all-port-traces port-traces)
                  (port-traces non-compliances
-                              (partition (negate first-non-match) port-traces)))
+                              (partition (negate first-non-match) port-traces))
+                 (sut-trail-length (length sut-trail)))
             (cond
              ((and (pair? all-port-traces)
                    (every (compose (disjoin (is-status? <illegal-error>)
@@ -440,9 +441,24 @@ Return a list of traces, possibly marked with <compliance-error>."
                      (trace (rewrite-trace-head (cut clone <> #:statement statement) trace)))
                 (list trace)))
              ((and (pair? port-traces)
+                   (pair? trace)
+                   (null? sut-trail))
+              (%%debug (current-source-location) "  exit 2-")
+              (list trace))
+             ((and (pair? port-traces)
                    (pair? trace))
               (%%debug (current-source-location) "  exit 2")
-              (let* ((port-pcs (map
+              (let* ((port-trails (parameterize ((%sut port-instance))
+                                    (map trace->string-trail port-traces)))
+                     (shortest (apply min (map length port-trails)))
+                     (truncate? (and (not (zero? sut-trail-length))
+                                     (< sut-trail-length shortest)))
+                     (port-traces (if (not truncate?) port-traces
+                                      (parameterize ((%sut port-instance))
+                                        (map (cute truncate-to-observable <>
+                                                   sut-trail-length)
+                                             port-traces))))
+                     (port-pcs (map
                                 (compose (cut clone pc #:state <>) .state car)
                                 port-traces))
                      (pc (car trace))
@@ -518,19 +534,17 @@ Return a list of traces, possibly marked with <compliance-error>."
                            trigger))
                      (port-trails (parameterize ((%sut port-instance))
                                     (map trace->string-trail non-compliances)))
-                     (sut-trail (map cdr sut-trail))
                      (shortest (apply min (map length port-trails)))
                      (truncate? (>= (length sut-trail) shortest))
                      (trace (if (not truncate?) trace
                                 (truncate-to-observable trace shortest)))
-                     (not-acceptance? (conjoin
-                                       .statement
-                                       (compose
-                                        not
-                                        (cute ast:equal? <> component-acceptance)
-                                        .statement)))
-                     (trace (if (not truncate?) (cdr trace)
-                                (drop-while not-acceptance? trace)))
+                     (acceptance? (conjoin
+                                   .statement
+                                   (compose
+                                    (cute ast:equal? <> component-acceptance)
+                                    .statement)))
+                     (trace (if (null? sut-trail) trace
+                                (drop-while (negate acceptance?) trace)))
                      (pc (clone pc
                                 #:previous #f
                                 #:status (make <compliance-error>
