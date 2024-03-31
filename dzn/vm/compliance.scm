@@ -404,12 +404,11 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (trace
                     (let loop ((trace trace) (count count))
                       (let ((i (list-index observable? trace)))
-                        (if (not i) trace
-                            (let ((prefix (list-head trace i)))
-                              (if (zero? count) prefix
-                                  (let ((prefix trace (split-at trace (1+ i))))
-                                    (append prefix
-                                            (loop trace (1- count)))))))))))
+                        (if (not i) (if (zero? count) '() trace)
+                            (if (zero? count) '()
+                                (let ((prefix trace (split-at trace (1+ i))))
+                                  (append prefix
+                                          (loop trace (1- count))))))))))
               (reverse trace)))
 
           (when (> (dzn:debugity) 0)
@@ -459,11 +458,17 @@ Return a list of traces, possibly marked with <compliance-error>."
               (let* ((port-trails (parameterize ((%sut port-instance))
                                     (map trace->string-trail port-traces)))
                      (shortest (apply min (map length port-trails)))
-                     (truncate? (and (not (zero? sut-trail-length))
-                                     (< sut-trail-length shortest)))
+                     (truncate? (and (pair? sut-trail)
+                                     (not (is-a? (car (last sut-trail))
+                                                 <trigger-return>))
+                                     (< sut-trail-length shortest)
+                                     (and trigger
+                                          (not (and=> (.port trigger)
+                                                      ast:requires?)))))
                      (port-traces (if (not truncate?) port-traces
                                       (parameterize ((%sut port-instance))
-                                        (map (cute truncate-to-observable <>
+                                        (map (cute truncate-to-observable
+                                                   <>
                                                    sut-trail-length)
                                              port-traces))))
                      (port-pcs (map

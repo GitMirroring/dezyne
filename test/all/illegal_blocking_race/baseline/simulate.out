@@ -20,7 +20,7 @@ sut.rt.return <- ...
 ... <- sut.<q>
 sut.rt.complete <- ...
 <illegal>
-(state ((pt) (active . true)) ((sut)) ((rb)) ((rt) (active . false)))
+(state ((pt) (active . false)) ((sut)) ((rb)) ((rt) (active . false)))
 test/all/illegal_blocking_race/illegal_blocking_race.dzn:54:3: error: illegal
 (trail "pt.request" "rt.request" "rt.return" "rb.block" "rt.complete" "rb.return" "rt.cancel" "rt.return" "<illegal>")
 (labels "pt.cancel" "pt.request" "rt.complete")
