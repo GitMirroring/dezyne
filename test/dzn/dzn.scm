@@ -813,7 +813,9 @@ are weak-bisim equivalent"
                             (blocking (delete-duplicates blocking))
                             (modeling (append modeling '("inevitable" "optional")))
                             (taus (append taus flushes blocking))
-                            (taus+modeling (append taus modeling)))
+                            (taus+modeling (append taus modeling))
+                            (makreel-aut (string-append out "/traces/" base-name ".aut"))
+                            (lts-aut (string-append out-lang "/" base-name ".aut")))
                        (with-output-to-file makreel-lts-file
                          (cute display makreel-lts))
                        ;; FIXME: --structured-output with -eweak-trace still writes to disk
@@ -824,11 +826,38 @@ are weak-bisim equivalent"
                               "--structured-output"
                               "-eweak-trace"
                               ,(string-append "--tau=" (string-join taus+modeling ","))
-                              ,(string-append out "/traces/" base-name ".aut")
-                              ,(string-append out-lang "/" base-name ".aut"))
+                              ,makreel-aut
+                              ,lts-aut)
                             "")
                          (display stdout)
-                         (zero? (ltscompare-status? status stdout)))))))))))
+                         (let ((result (zero? (ltscompare-status? status stdout))))
+                           (unless result
+                             (format (current-error-port) "\nYou may try:\n")
+                             (let ((command
+                                    `("ltscompare"
+                                      "--counter-example"
+                                      "--structured-output"
+                                      "-pweak-trace-ac"
+                                      ,(string-append
+                                        "--tau='"
+                                        (string-join taus+modeling ",")
+                                        "'"))))
+                               (format (current-error-port)
+                                       "    ~a\n"
+                                       (string-join
+                                        `(,@command
+                                          ,makreel-aut
+                                          ,lts-aut)))
+                               (format (current-error-port) "and/or:\n")
+                               (format (current-error-port)
+                                       "    ~a\n"
+                                       (string-join
+                                        `(,@command
+                                          ,lts-aut
+                                          ,makreel-aut)))
+                               (format (current-error-port)
+                                       "manually for more information\n")))
+                           result))))))))))
 
 
 ;;;
