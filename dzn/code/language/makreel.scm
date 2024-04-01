@@ -478,8 +478,8 @@
      (tree-map (tick-names- names) o))
     (_ o)))
 
-(define* (makreel:add-action-reply o)
-  (define* (add-action-reply o)
+(define (makreel:add-action-reply o)
+  (define (add-action-reply o)
     (match o
       ((and ($ <action>) (? ast:requires?) (? ast:blocking?))
        (make <compound> #:elements (add-action-reply (list o))))
