@@ -199,6 +199,7 @@ that PC has one more collaterally blocked coroutine on the same port."
       (let ((orig-pc (last trace)))
         (let* ((blocked-prefix (blocked-prefix orig-pc))
                (q-trigger (and (null? blocked-prefix)
+                               (not (is-a? (%sut) <runtime:system>))
                                (and=>
                                 (as (.q (get-state orig-pc (%sut))) <pair>)
                                 car)))
@@ -270,8 +271,7 @@ that PC has one more collaterally blocked coroutine on the same port."
                             (not skip-compliance?)
                             (not (eq? label 'defer))
                             (not (or (.status pc)
-                                     (is-a? (%sut) <runtime:port>)
-                                     (is-a? (%sut) <runtime:system>))))
+                                     (is-a? (%sut) <runtime:port>))))
                        (map check-compliance-blocked traces))
                       (else
                        traces)))
