@@ -276,9 +276,7 @@
       (not (.statement pc))))
 
 (define-method (rtc? (trace <list>))
-  (let ((pc (car trace)))
-    (or (.status pc)
-        (not (.statement pc)))))
+  (rtc? (car trace)))
 
 (define (external-q->string external-q)
   (define q->string
