@@ -177,10 +177,10 @@ valid PCs that are executing an imperative statement."
 <trigger-return> on a blocking requires port, unless already blocked on
 this statement.  Otherwise, return #f.
 
-Blocking and resettiing the STATEMENT on the TRACE makes RTC?  true,
-which creates an opening to accept new modeling events.  Continuation of
-the <action> or <trigger-return> happens when revisiting this method
-with a TRACE that has BLOCKED still set to this port."
+Blocking and resetting the #:statement on TRACE makes RTC? true, which
+creates an opening to accept new modeling events.  Continuation of the
+<action> or <trigger-return> happens when revisiting this method with a
+TRACE that has BLOCKED still set to this port."
 
   (define (modeling-traces pc instance)
     (let* ((port (.ast instance))
