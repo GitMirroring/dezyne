@@ -153,8 +153,8 @@
   (step (pop-pc pc))) ;; .previous == #f => RTC
 
 (define-method (step (pc <program-counter>) (o <statement>))
-  (%debug "MISSING: ~a ~a\n" ((compose name .instance) pc) (name o))
-  '())
+  (throw 'programming-error
+         (format #f "statement not implemented: ~a\n" (ast-name o))))
 
 (define-method (step (pc <program-counter>) (o <defer>))
   (let* ((defer (.defer pc)))
