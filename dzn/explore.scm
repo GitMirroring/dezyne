@@ -73,7 +73,7 @@
     (cond
      ((eq? event 'defer)
       (if (null? (.defer pc)) '()
-          (run-defer-event pc event)))
+          (run-defer-event pc "<defer>")))
      ((eq? event 'flush)
       (if (or (pair? (.blocked pc)) (pair? (.defer pc))) '()
           (let ((components (filter (is? <runtime:component>) (%instances))))
