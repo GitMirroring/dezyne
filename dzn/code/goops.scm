@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -59,21 +59,21 @@
 
 (define-ast <action-reply> (<statement>)
   (action)
-  (port.name)
-  (event.name)
   (variable.name))
 
 (define-ast <state> (<statement>))
 
+(define-method (.port.name (o <action-reply>))
+  (.port.name (.action o)))
+
+(define-method (.event.name (o <action-reply>))
+  (.event.name (.action o)))
+
 (define-method (.port (o <action-reply>))
-  (and (.port.name o) (ast:lookup o (.port.name o))))
+  (.port (.action o)))
 
 (define-method (.event (o <action-reply>))
-  (let* ((port-name (.port.name o))
-         (port (.port o))
-         (interface (if port (.type port)
-                        (ast:parent o <interface>))))
-    (ast:lookup interface (.event.name o))))
+  (.event (.action o)))
 
 (define-method (.variable (o <action-reply>))
   (and=> (.variable.name o) (cute ast:lookup-variable o <>)))

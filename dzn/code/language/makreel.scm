@@ -504,10 +504,7 @@
       (((and statement ($ <action>)
              (? ast:requires?) (? ast:blocking?))
         rest ...)
-       (let ((action-reply (make <action-reply>
-                             #:action statement
-                             #:port.name (.port.name statement)
-                             #:event.name (.event.name statement))))
+       (let ((action-reply (make <action-reply> #:action statement)))
          (cons* statement action-reply (add-action-reply rest))))
       (((and statement (or ($ <assign>) ($ <variable>))
              (= .expression
@@ -518,8 +515,6 @@
                         (.variable.name statement)))
               (action-reply (make <action-reply>
                               #:action action
-                              #:port.name (.port.name action)
-                              #:event.name (.event.name action)
                               #:variable.name name)))
          (cons* statement action-reply (add-action-reply rest))))
       ((statement rest ...)
