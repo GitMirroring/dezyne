@@ -200,9 +200,11 @@ that PC has one more collaterally blocked coroutine on the same port."
       (%debug (current-source-location) "run-label ~a" label)
       (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
              (defer? (eq? label 'defer))
-             (sw-pc (if defer? orig-pc
+             (port (and (string? label) (.port (string->trigger label))))
+             (switch? (not defer?))
+             (sw-pc (if (not switch?) orig-pc
                         (switch-context orig-pc)))
-             (bob-pc (if defer? orig-pc
+             (bob-pc (if (not switch?) orig-pc
                          (blocked-on-boundary-switch-context orig-pc)))
              (traces (cond
                       ((and (eq? orig-pc sw-pc)
@@ -244,8 +246,9 @@ that PC has one more collaterally blocked coroutine on the same port."
                          (filter-implicit-illegal-only traces)))
              (traces (filter (compose not (is-status? <blocked-error>) car)
                              traces))
-             (traces (filter (compose not (cute collateral? <> pc) car) traces)))
-        (map (cute rewrite-trace-head prune-defer <>) traces)))
+             (traces (filter (compose not (cute collateral? <> pc) car) traces))
+             (traces (map (cute rewrite-trace-head prune-defer <>) traces)))
+        traces))
 
     (define (run-labels pc labels)
       (%debug (current-source-location) "run-labels ~a" labels)
