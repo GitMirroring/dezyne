@@ -157,33 +157,43 @@ that PC has one more collaterally blocked coroutine on the same port."
                              flush
                              ,@(if external? '(external) '()))))
 
+    (define* (follow-blocked-unmemoized alist pc #:key (seen '()))
+      (let* ((to (pc->state-number pc))
+             (trace (any
+                     (match-lambda
+                       ((from pc traces ...)
+                        (find
+                         (conjoin
+                          pair?
+                          (compose pair? .blocked car)
+                          (compose (cute eq? <> to)
+                                   pc->state-number car)
+                          (compose not (cute memq <> seen)
+                                   pc->state-number last))
+                         traces)))
+                     alist))
+             (pc' (and=> trace last))
+             (from (and=> pc' pc->state-number))
+             (trace (or trace '())))
+        (if (or (not from) (eq? from 1)) trace
+            (let ((seen (cons from seen))
+                  (tail (follow-blocked alist pc' #:seen seen)))
+              (append trace tail)))))
+
+    (define follow-blocked
+      (let ((cache (make-hash-table)))
+        (lambda* (alist pc #:key (seen '()))
+          (let ((to (pc->state-number pc)))
+            (or (hashq-ref cache to)
+                (let ((trace (follow-blocked-unmemoized alist pc #:seen seen)))
+                  (hashq-set! cache to trace)
+                  trace))))))
+
     (define (blocked-prefix pc)
       (let ((to (pc->state-number pc)))
         (if (= to 1) '()
             (let ((alist (hash-table->alist lts)))
-              (define* (follow-blocked alist pc #:key (seen (list to)))
-                (let* ((to (pc->state-number pc))
-                       (trace (any
-                               (match-lambda
-                                 ((from pc traces ...)
-                                  (find
-                                   (conjoin
-                                    pair?
-                                    (compose pair? .blocked car)
-                                    (compose (cute eq? <> to)
-                                             pc->state-number car)
-                                    (compose not (cute memq <> seen)
-                                             pc->state-number last))
-                                   traces)))
-                               alist))
-                       (pc' (and=> trace last))
-                       (from (and=> pc' pc->state-number))
-                       (trace (or trace '())))
-                  (if (or (not from) (eq? from 1)) trace
-                      (let ((seen (cons from seen))
-                            (tail (follow-blocked alist pc' #:seen seen)))
-                        (append trace tail)))))
-              (follow-blocked alist pc)))))
+              (follow-blocked alist pc #:seen (list to))))))
 
     (define (check-compliance-blocked trace)
       (let ((orig-pc (last trace)))
