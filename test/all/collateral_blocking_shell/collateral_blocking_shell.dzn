@@ -67,12 +67,9 @@ component Blocked
   behavior
   {
     bool idle = true;
-    bool idle_w0 = true;
-    bool idle_w1 = true;
-    [idle] blocking on h.hello (): {w0.hello (); w1.hello (); idle = false; idle_w0 = false; idle_w1 = false;}
+    blocking on h.hello (): {w0.hello (); w1.hello (); idle = false;}
     on h.cruel(): {}
-    on w0.world (): { idle_w0 = true; if (idle_w1) { h.reply(); idle = true; } }
-    on w1.world (): { idle_w1 = true; if (idle_w0) { h.reply(); idle = true; } }
+    on w0.world (), w1.world (): { if (!idle) idle = true; else h.reply(); }
   }
 }
 
