@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -151,8 +151,6 @@
           ((sm:if? code)
            (set-field code (sm:if-else) guard))
           (code
-           (pke "code" code)
-           (pke "guard" guard)
            (throw 'programming-error "have code and guard"))
           (else
            guard)))
