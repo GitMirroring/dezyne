@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -174,7 +174,9 @@
   (append
    (next-method pc o)
    (if (ast:modeling? (.trigger pc)) '()
-       (list (make-implicit-illegal pc o)))))
+       (let* ((illegal (make-implicit-illegal pc o))
+              (pc (clone pc #:statement illegal)))
+         (list pc)))))
 
 (define-method (step (pc <program-counter>) (o <declarative-compound>))
   (map (cut clone pc #:statement <>) (ast:statement* o)))
@@ -212,6 +214,11 @@
           ((mark-liveness? pc statement))
           (else
            (list (clone pc #:statement statement))))))
+
+(define-method (step (pc <program-counter>) (o <declarative-illegal>))
+  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
+  (let ((error (make <implicit-illegal-error> #:message "illegal" #:ast o)))
+    (list (clone pc #:status error))))
 
 (define-method (step (pc <program-counter>) (o <illegal>))
   (let ((error (make <illegal-error> #:message "illegal" #:ast o)))

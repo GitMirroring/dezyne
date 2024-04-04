@@ -1762,6 +1762,10 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                  (clone pc #:status (car errors)))))
     pc))
 
-(define-method (make-implicit-illegal (pc <program-counter>) (o <ast>))
-  (let ((illegal (make <implicit-illegal-error> #:ast o #:message "illegal")))
-    (clone pc #:previous #f #:status illegal)))
+(define-method (make-implicit-illegal (pc <program-counter>) (o <initial-compound>))
+  (let* ((location (.location o))
+         (illegal (make <declarative-illegal> #:location location))
+         (trigger (.trigger pc))
+         (triggers (make <triggers> #:elements (list trigger)))
+         (on (make <on> #:statement illegal #:triggers triggers #:location location)))
+    (clone on #:parent o)))

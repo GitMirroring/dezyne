@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -131,7 +131,7 @@
 (define-method (pc-event? (pc <program-counter>) (o <defer-qout>))
   #t)
 
-(define-method (pc-event? (pc <program-counter>) (o <initial-compound>))
+(define-method (pc-event? (pc <program-counter>) (o <on>))
   (pc-event? (.instance pc) (.trigger pc)))
 
 (define-method (pc-event? (o <runtime:port>) (trigger <trigger>))
@@ -231,16 +231,16 @@
 (define-method (pc->event (pc <program-counter>) (o <statement>))
   (pc->event (.instance pc) o))
 
-(define-method (pc->event (pc <program-counter>) (o <initial-compound>))
+(define-method (pc->event (pc <program-counter>) (o <on>))
   (pc->event (.instance pc) o (.trigger pc)))
 
-(define-method (pc->event (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
+(define-method (pc->event (o <runtime:port>) (on <on>) (trigger <trigger>))
   (cons trigger
         (if (is-a? (%sut) <runtime:port>)
             (format #f "~a" (.event.name trigger))
             (format #f "~a.~a" (trace-name o) (.event.name trigger)))))
 
-(define-method (pc->event (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
+(define-method (pc->event (o <runtime:component>) (on <on>) (trigger <trigger>))
   (cons trigger
         (let* ((port (.port trigger))
                (r:other-port (runtime:other-port (runtime:port o port))))
@@ -316,16 +316,16 @@
 (define-method (pc->component-event (pc <program-counter>) (o <statement>))
   (pc->component-event (.instance pc) o))
 
-(define-method (pc->component-event (pc <program-counter>) (o <initial-compound>))
+(define-method (pc->component-event (pc <program-counter>) (o <on>))
   (pc->component-event (.instance pc) o (.trigger pc)))
 
-(define-method (pc->component-event (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
+(define-method (pc->component-event (o <runtime:port>) (on <on>) (trigger <trigger>))
   (cons trigger
         (if (is-a? (%sut) <runtime:port>)
             (format #f "~a" (.event.name trigger))
             (format #f "~a.~a" (.name (.ast o)) (.event.name trigger)))))
 
-(define-method (pc->component-event (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
+(define-method (pc->component-event (o <runtime:component>) (on <on>) (trigger <trigger>))
   (cons trigger
         (let* ((port (.port trigger))
                (r:port (runtime:port o port)))
@@ -380,7 +380,7 @@
 (define-method (pc-arrow? (pc <program-counter>) (o <statement>))
   (pc-arrow? (.instance pc) o))
 
-(define-method (pc-arrow? (pc <program-counter>) (o <initial-compound>))
+(define-method (pc-arrow? (pc <program-counter>) (o <on>))
   (pc-arrow? (.instance pc) (.trigger pc)))
 
 (define-method (pc-arrow? (o <runtime:port>) (trigger <trigger>))
@@ -440,10 +440,10 @@
 (define-method (pc->arrow (pc <program-counter>) (o <statement>))
   (pc->arrow (.instance pc) o))
 
-(define-method (pc->arrow (pc <program-counter>) (o <initial-compound>))
+(define-method (pc->arrow (pc <program-counter>) (o <on>))
   (pc->arrow (.instance pc) o (.trigger pc)))
 
-(define-method (pc->arrow (o <runtime:port>) (compound <initial-compound>) (trigger <trigger>))
+(define-method (pc->arrow (o <runtime:port>) (on <on>) (trigger <trigger>))
   (cons trigger
         (if (or (ast:provides? o)
                 (and (is-a? (%sut) <runtime:port>)
@@ -451,7 +451,7 @@
             (format #f "~a.~a -> ..." (runtime:instance->string o) (.event.name trigger))
             (format #f "... -> ~a.~a" (runtime:instance->string o) (.event.name trigger)))))
 
-(define-method (pc->arrow (o <runtime:port>) (compound <initial-compound>) (trigger <synth-trigger>))
+(define-method (pc->arrow (o <runtime:port>) (on <on>) (trigger <synth-trigger>))
   (cons trigger
         (if (or (ast:provides? o)
                 (and (is-a? (%sut) <runtime:port>)
@@ -459,7 +459,7 @@
             (format #f "... <- ~a.~a" (runtime:instance->string o) (.event.name trigger))
             (format #f "~a.~a <- ..." (runtime:instance->string o) (.event.name trigger)))))
 
-(define-method (pc->arrow (o <runtime:component>) (compound <initial-compound>) (trigger <trigger>))
+(define-method (pc->arrow (o <runtime:component>) (on <on>) (trigger <trigger>))
   (cons trigger
         (let* ((port (.port trigger))
                (r:port (runtime:port o port))
@@ -573,7 +573,7 @@
   (if (and=> (.status o) (negate (is? <end-of-trail>))) (pc-event? o)
       (pc-step? o (.statement o))))
 
-(define-method (pc-step? (pc <program-counter>) (o <initial-compound>))
+(define-method (pc-step? (pc <program-counter>) (o <on>))
   (pc-arrow? (.instance pc) (.trigger pc)))
 
 (define-method (pc-step? (pc <program-counter>) (o <statement>))
@@ -662,14 +662,14 @@ Add (synthesize) missing PCs for <q-in>, <q-out> and <trigger-return>."
                    (trigger (.trigger pc))
                    (trigger (make <synth-trigger> #:event.name (.event.name trigger)))
                    (trigger (clone trigger #:parent interface))
-                   (initial-compound (make <initial-compound>))
+                   (initial-compound (make <on>))
                    (initial-compound (clone initial-compound #:parent interface))
                    (trigger-pc (clone pc
                                       #:trigger trigger
                                       #:statement initial-compound)))
               (loop (cdr trace) (cons* trigger-pc pc result))))
            ((and (is-a? (%sut) <runtime:port>)
-                 (is-a? statement <initial-compound>))
+                 (is-a? statement <on>))
             (let ((client-pc (clone pc #:instance (car (%instances)))))
               (loop (cdr trace) (cons* client-pc pc result))))
            ((and (is-a? (%sut) <runtime:port>)

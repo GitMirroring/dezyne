@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -101,7 +101,7 @@ format."
                        other-port))
          (trace-index (or (and=> (list-index
                                   (conjoin
-                                   (compose (is? <initial-compound>) .statement)
+                                   (compose (is? <on>) .statement)
                                    (compose (cute ast:equal? <> trigger) .trigger)
                                    (compose (cute eq? <> instance) .instance))
                                   trace)
@@ -318,13 +318,13 @@ Return a list of traces, possibly marked with <compliance-error>."
                 (if (ast:provides? component-trigger)
                     (conjoin
                      (compose (cute eq? <> instance) .instance)
-                     (compose (is? <initial-compound>) .statement)
+                     (compose (is? <on>) .statement)
                      (compose (cute ast:equal? <> component-trigger) .trigger))
                     (conjoin
                      .trigger
                      (compose ast:modeling? .trigger)
                      (compose (is? <runtime:port>) .instance)
-                     (compose (is? <initial-compound>) .statement)))
+                     (compose (is? <on>) .statement)))
                 trace))
            (trace (if (not at) trace
                       (list-head trace (1+ at))))
@@ -345,7 +345,7 @@ Return a list of traces, possibly marked with <compliance-error>."
          (component (runtime:ast-model instance))
          (provides-event (any (conjoin
                                (compose (cute eq? <> instance) .instance)
-                               (compose (is? <initial-compound>) .statement)
+                               (compose (is? <on>) .statement)
                                .trigger)
                               (reverse trace)))
          (event-name (and event (.event.name (string->trigger event))))
@@ -626,7 +626,7 @@ on TRACE."
          (component (runtime:ast-model instance))
          (provides-event (any (conjoin
                                (compose (cute eq? <> instance) .instance)
-                               (compose (is? <initial-compound>) .statement)
+                               (compose (is? <on>) .statement)
                                .trigger)
                               (reverse trace)))
          (event-name (and event (.event.name (string->trigger event))))
@@ -739,7 +739,7 @@ port return."
                    (find (compose pair? .blocked) trace))))
          (pcs (filter
                (conjoin
-                (compose (is? <initial-compound>) .statement)
+                (compose (is? <on>) .statement)
                 (compose ast:provides? .trigger))
                (reverse trace))))
     (cond
@@ -815,7 +815,7 @@ update TRACES."
          (start-index (list-index
                        (conjoin
                         (compose (cute eq? <> instance) .instance)
-                        (compose (cute is-a? <> <initial-compound>) .statement))
+                        (compose (cute is-a? <> <on>) .statement))
                        trace))
          (internal-compliance? (and start-index
                                     (not (runtime:boundary-port? r:other-port))
