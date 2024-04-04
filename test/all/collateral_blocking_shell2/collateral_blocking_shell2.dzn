@@ -2,7 +2,7 @@
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -78,7 +78,7 @@ component Blocked
 component Bottom
 {
   provides blocking iworld p;
-  requires external blocking iworld r;
+  requires blocking iworld r;
 
   behavior
   {
@@ -88,18 +88,34 @@ component Bottom
   }
 }
 
+component Adapter
+{
+  provides blocking iworld h;
+  requires external iworld w;
+  behavior
+  {
+    blocking on h.hello (): w.hello ();
+    on w.world (): {h.world (); h.reply ();}
+
+    blocking on h.cruel (): w.cruel ();
+    on w.bye (): {h.bye (); h.reply ();}
+  }
+}
+
 component collateral_blocking_shell2
 {
   provides blocking ihello h;
-  requires external blocking iworld w;
+  requires external iworld w;
 
   system
   {
     Blocked blocked;
     Bottom bottom;
+    Adapter adapter;
 
     h <=> blocked.h;
     blocked.w <=> bottom.p;
-    bottom.r <=> w;
+    bottom.r <=> adapter.h;
+    adapter.w <=> w;
   }
 }
