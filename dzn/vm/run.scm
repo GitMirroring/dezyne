@@ -597,11 +597,12 @@ with EVENT as first step, until RTC?."
                                      (else (trigger->string event))))
                  (sut (%sut))
                  (root (ast:parent (.ast sut) <root>))
-                 (key (string-append
-                       (number->string (.id root))
-                       (parameterize ((%sut #f)) (runtime:dotted-name sut))
-                       (pc->string pc)
-                       event-string)))
+                 (key (parameterize ((%sut #f))
+                        (string-append
+                         (number->string (.id root))
+                         (runtime:dotted-name sut)
+                         (pc->string pc)
+                         event-string))))
             (gc-buffer key)
             (or (hash-ref cache key)
                 (let ((result (run-to-completion-unmemoized pc event)))
