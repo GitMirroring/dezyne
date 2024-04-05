@@ -200,6 +200,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_defer				\
  %D%/blocking_double_release			\
  %D%/blocking_external				\
+ %D%/blocking_external2				\
  %D%/blocking_function_reply			\
  %D%/blocking_function_reply2			\
  %D%/blocking_function_skip			\
