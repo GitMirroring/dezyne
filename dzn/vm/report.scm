@@ -822,8 +822,20 @@ the location of the executed <on>-statement."
                (pc (if (not trigger) pc (clone pc #:trigger trigger))))
           (cons pc (loop (cdr trace)))))))
 
-(define (location-prefix o)
-  (format #f "~a: " (or (and=> o ast:location->string) "<unknown-file>")))
+(define-method (location-prefix (o <string>))
+  (format #f "~a: " o))
+
+(define-method (location-prefix (o <boolean>))
+  (location-prefix "<unknown-file>:0:0"))
+
+(define-method (location-prefix (o <ast>))
+  (location-prefix (ast:location->string o)))
+
+(define-method (location-prefix (o <interface>))
+  (location-prefix (ast:statement o)))
+
+(define-method (location-prefix (o <component>))
+  (location-prefix (ast:statement o)))
 
 (define* (display-trace trace #:key locations? state? verbose?)
   "Write TRACE as split-arrows trace to stdout.  When LOCATIONS?,
