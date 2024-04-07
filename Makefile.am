@@ -294,15 +294,35 @@ $(srcdir)/doc/stamp-vti:
 	mv $@-t $@
 
 if in_git_p
+DIST_CONFIGURE_FLAGS=
 dist: auto-clean
 auto-clean: maintainer-clean-vti man-clean
 	rm -f INSTALL
-	rm -f configure libtool Makefile.in
-	git clean -fdx -- build-aux
+	rm -f aclocal.m4 configure libtool Makefile.in
+	git clean -fdx -- '.am*' build-aux
 	./autogen.sh
-	./configure
+	./configure $(DIST_CONFIGURE_FLAGS)
+
 man-clean:
 	rm -f $(srcdir)/doc/*.1
+
+# Assert that Autotools cache is up to date with Git, by checking
+# PACKAGE_VERSION against HEAD.  Indented to get past Automake.
+ ifeq ($(MAKECMDGOALS),dist)
+ git_version = $(shell build-aux/git-version-gen .tarball-version)
+ ifneq ($(PACKAGE_VERSION),$(git_version))
+ $(warning Autotools cache out of date.)
+ $(info Autotools cache version: $(PACKAGE_VERSION).)
+ $(info Git version: $(git_version).)
+ $(info Please run ./autogen.sh && ./configure $(DIST_CONFIGURE_FLAGS))
+ ifneq ($(DEZYNE_ALLOW_IRREPRODUCIBLE_TARBALL),yes)
+ $(error Cannot create reproducible tarball)
+ else
+ $(warning Tarball will be irreproducible; distdir will not get removed!)
+ endif # !DEZYNE_ALLOW_IRREPRODUCIBLE_TARBALL
+ endif # PACKAGE_VERSION != git_version
+ endif # MAKECMDGOALS dist
+
 endif
 
 # Distribution
@@ -342,13 +362,13 @@ endif
 
 # Reproducible tarball
 # Be friendly to Debian; avoid using EPOCH
-GZIP_ENV = --no-name
-am__tar = $${TAR-tar} \
- --sort=name \
- --mode=go=rX,u+rw,a-s \
- --mtime=@$$(cat "$$tardir"/.tarball-timestamp) \
- --owner=0 --group=0 --numeric-owner \
- -cf - \
+override GZIP_ENV = --best --no-name
+override am__tar = $${TAR-tar}			\
+ --sort=name					\
+ --mode=go=rX,u+rw,a-s				\
+ --mtime=@$$(cat "$$tardir"/.tarball-timestamp)	\
+ --owner=0 --group=0 --numeric-owner		\
+ -cf -						\
  "$$tardir"
 
 tag:
@@ -441,11 +461,13 @@ endif
 .PHONY: gen-ChangeLog
 gen-ChangeLog $(distdir)/ChangeLog: config.status
 	$(AM_V_GEN)if test -e .git; then				\
-	  { 								\
+	  {								\
+	    export LC_ALL=en_US.UTF-8;					\
+	    export TZ=UTC0;						\
 	    $(top_srcdir)/build-aux/gitlog-to-changelog			\
 	    && echo							\
 	    && sed -n -e '/^Copyright/,$$p' < $(top_srcdir)/ChangeLog;	\
-	  } 								\
+	  }								\
 	    > $(distdir)/cl-t;						\
 	  rm -f $(distdir)/ChangeLog;					\
 	  mv $(distdir)/cl-t $(distdir)/ChangeLog;			\
