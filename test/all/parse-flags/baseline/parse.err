@@ -1,11 +1,11 @@
-parse --fall-back test/all/hello_interface/hello_interface.dzn
-parse --fall-back --parse-tree test/all/hello_interface/hello_interface.dzn
---verbose parse parse --parse-tree test/all/hello_interface/hello_interface.dzn
-parse --parse-tree -o- test/all/hello_interface/hello_interface.dzn
-parse --preprocess test/all/hello_interface/hello_interface.dzn
-parse --preprocess test/all/hello_interface/hello_interface.dzn | --verbose parse -
---verbose parse test/all/hello_interface/hello_interface.dzn
-parse test/all/hello_interface/hello_interface.dzn -o-
+parse --fall-back test/all/ihelloworld/ihelloworld.dzn
+parse --fall-back --parse-tree test/all/ihelloworld/ihelloworld.dzn
+--verbose parse parse --parse-tree test/all/ihelloworld/ihelloworld.dzn
+parse --parse-tree -o- test/all/ihelloworld/ihelloworld.dzn
+parse --preprocess test/all/ihelloworld/ihelloworld.dzn
+parse --preprocess test/all/ihelloworld/ihelloworld.dzn | --verbose parse -
+--verbose parse test/all/ihelloworld/ihelloworld.dzn
+parse test/all/ihelloworld/ihelloworld.dzn -o-
 parse --fall-back test/language/interface1.dzn
 test/language/interface1.dzn:1:1: `import, dollars, type, namespace, interface, component, EOF' expected
 parse --fall-back --parse-tree test/language/interface1.dzn

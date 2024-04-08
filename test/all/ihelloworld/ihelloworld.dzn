@@ -23,10 +23,10 @@
 //
 // Code:
 
-interface hello_interface
+interface ihelloworld
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {

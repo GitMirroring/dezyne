@@ -34,7 +34,10 @@ SMOKE_TESTS =					\
  %D%/hello					\
  %D%/compliance_provides_bool
 
-HELLO_TESTS =					\
+SEMANTIC_TESTS = 				\
+ %D%/ihelloworld
+
+FEATURE_TESTS =					\
  %D%/compliance0				\
  %D%/compliance_external			\
  %D%/deadlock_component0			\
@@ -77,7 +80,6 @@ HELLO_TESTS =					\
  %D%/hello_inevitable				\
  %D%/hello_injected				\
  %D%/hello_int					\
- %D%/hello_interface				\
  %D%/hello_local				\
  %D%/hello_local_bool				\
  %D%/hello_locations				\
@@ -112,7 +114,7 @@ HELLO_TESTS =					\
  %D%/state-diagram				\
  %D%/unreachable_component
 
-SEMANTICS_TESTS =				\
+DOC_SEMANTICS_TESTS =				\
  %D%/direct_in					\
  %D%/direct_out					\
  %D%/indirect_out				\
@@ -743,10 +745,16 @@ XFAIL_TESTS =					\
  $(XFAIL_VERIFY)				\
  $(XFAIL_SIMULATE)
 
+HELLO_TESTS =					\
+ $(SMOKE_TESTS)					\
+ $(SEMANTIC_TESTS)				\
+ $(FEATURE_TESTS)
+
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
+ $(SEMANTIC_TESTS)				\
  $(HELLO_TESTS)					\
- $(SEMANTICS_TESTS)				\
+ $(DOC_SEMANTICS_TESTS)				\
  $(PARSER_TESTS)				\
  $(REGRESSION_TESTS)				\
  $(UNSTABLE_TESTS)

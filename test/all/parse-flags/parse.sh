@@ -19,7 +19,7 @@
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 #
 TESTS="
-test/all/hello_interface/hello_interface.dzn
+test/all/ihelloworld/ihelloworld.dzn
 test/language/interface1.dzn
 test/all/parse_import_path/parse_import_path.dzn
 test/all/parse_non_existent_import/parse_non_existent_import.dzn
