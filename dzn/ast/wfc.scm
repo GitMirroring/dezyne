@@ -984,7 +984,7 @@
             `(,(wfc-error o (format #f "undefined function call: ~s" (.function.name o))))))
 
 (define (feature-supported? feature)
-  (or (member (%language) '("dzn" "makreel"))
+  (or (member (%language) '("dzn" "json" "makreel"))
       (member (%language) (assoc-ref %feature-alist feature))))
 
 (define (single-quote string)
