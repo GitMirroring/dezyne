@@ -39,7 +39,8 @@ SEMANTIC_TESTS =				\
  %D%/ihelloworld				\
 						\
  %D%/hello_requires				\
- %D%/helloworld
+ %D%/helloworld					\
+ %D%/helloworld_requires
 
 FEATURE_TESTS =					\
  %D%/compliance0				\
