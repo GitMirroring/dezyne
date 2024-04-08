@@ -35,6 +35,7 @@ SMOKE_TESTS =					\
  %D%/compliance_provides_bool
 
 SEMANTIC_TESTS =				\
+ %D%/ihello					\
  %D%/ihelloworld				\
 						\
  %D%/helloworld
