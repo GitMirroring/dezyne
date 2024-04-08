@@ -34,8 +34,10 @@ SMOKE_TESTS =					\
  %D%/hello					\
  %D%/compliance_provides_bool
 
-SEMANTIC_TESTS = 				\
- %D%/ihelloworld
+SEMANTIC_TESTS =				\
+ %D%/ihelloworld				\
+						\
+ %D%/helloworld
 
 FEATURE_TESTS =					\
  %D%/compliance0				\
@@ -101,7 +103,6 @@ FEATURE_TESTS =					\
  %D%/hello_two					\
  %D%/hello_usuk					\
  %D%/hello_void					\
- %D%/helloworld					\
  %D%/ihello_mock				\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
