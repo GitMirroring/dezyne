@@ -163,6 +163,7 @@ FEATURE_TESTS =					\
  %D%/hello_reorder				\
  %D%/hello_reply				\
  %D%/hello_shared				\
+ %D%/hello_shell				\
  %D%/hello_system				\
  %D%/hello_trigger_list				\
  %D%/hello_two					\
