@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017, 2021, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -36,7 +36,7 @@
   #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code)
-  #:use-module (dzn code goops)
+  #:use-module (dzn code ast)
   #:use-module (dzn code scmackerel c)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code util)

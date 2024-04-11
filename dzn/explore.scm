@@ -723,7 +723,8 @@ RTC-LTS->LTS."
 
 (define* (lts ast #:key model queue-size queue-size-defer queue-size-external)
   "Entry-point for dzn explore --lts."
-  (let* ((root (vm:normalize ast))
+  (let* ((model-name (ast:dotted-name model))
+         (root (vm:normalize ast))
          (model (ast:get-model root (ast:dotted-name model))))
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))

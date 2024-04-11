@@ -4,7 +4,7 @@
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019, 2020, 2023 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -39,7 +39,8 @@
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast util)
   #:use-module (dzn ast)
-  #:use-module (dzn code goops)
+  #:use-module (dzn code ast)
+  #:use-module (dzn code shared)
   #:use-module (dzn code language dzn)
   #:use-module (dzn code scmackerel makreel)
   #:use-module (dzn code util)

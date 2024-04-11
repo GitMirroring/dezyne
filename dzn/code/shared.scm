@@ -20,77 +20,22 @@
 ;;; You should have received a copy of the GNU Affero General Public
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (dzn code goops)
-  #:use-module (srfi srfi-26)
-
+(define-module (dzn code shared)
   #:use-module (dzn ast)
   #:use-module (dzn ast ast)
-  #:use-module (dzn ast lookup)
-  #:export (<action-reply>
-            <port-pair>
-            <shared-state>
-            <shared-transition>
-            <shared-value>
-            <state>
-            .action
-            .assign
-            .other
+  #:use-module (dzn code ast)
+  #:export (.assign
             .prefix
             .state
+
             code:prefix-equal?
-            code:shared-value*)
-  #:re-export (.event.name
-               .from
-               .to
-               .port
-               .port.name
-               .value
-               ast:statement*))
+            code:shared-value*))
 
-;;;
-;;; Ast extension.
-;;;
-(define-ast <port-pair> (<ast>)
-  (port)
-  (other))
-
-(define-method (.port.name (o <port-pair>)) (.name (.port o)))
-(define-method (.other.name (o <port-pair>)) (.name (.other o)))
-
-(define-ast <action-reply> (<statement>)
-  (action)
-  (variable.name))
-
-(define-ast <state> (<statement>))
-
-(define-method (.port.name (o <action-reply>))
-  (.port.name (.action o)))
-
-(define-method (.event.name (o <action-reply>))
-  (.event.name (.action o)))
-
-(define-method (.port (o <action-reply>))
-  (.port (.action o)))
-
-(define-method (.event (o <action-reply>))
-  (.event (.action o)))
-
-(define-method (.variable (o <action-reply>))
-  (and=> (.variable.name o) (cute ast:lookup-variable o <>)))
-
-(define-method (ast:type (o <action-reply>))
-  ((compose ast:type .event) o))
-
-(define-method (ast:in? (o <action-reply>))
-  (and=> (.event o) ast:in?))
-
-(define-method (ast:out? (o <action-reply>))
-  (and=> (.event o) ast:out?))
-
-
 ;;;
 ;;; Shared-state.
 ;;;
+(define-ast <state> (<statement>))
+
 (define-ast <shared-transition> (<ast>)
   (from)
   (prefix)

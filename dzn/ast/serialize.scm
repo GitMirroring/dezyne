@@ -1,7 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
+;;; Copyright © 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -30,7 +29,10 @@
 
   #:use-module (dzn ast ast)
   #:use-module (dzn ast util)
-  #:use-module (dzn command-line)
+  #:use-module (dzn code ast)
+  #:use-module (dzn vm goops)
+  #:use-module (dzn command-line) ;%locations?
+  #:use-module (dzn misc)
 
   #:export (ast:serialize))
 

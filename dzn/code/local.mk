@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -22,7 +22,8 @@
 # Code:
 
 dist_%C%_scm_DATA =				\
- %D%/goops.scm					\
+ %D%/ast.scm					\
+ %D%/shared.scm					\
  %D%/util.scm
 
 dist_nocompile_%C%_scm_DATA =
