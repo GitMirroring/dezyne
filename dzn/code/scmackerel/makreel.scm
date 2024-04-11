@@ -3792,20 +3792,20 @@
           component-semantics-allow
           component-semantics)))
 
-(define-method (component-processes (o <component>))
+(define-method (component-assembly-processes (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (component-parallel
-          (sm:process (name "component_parallel")
+         (component-assembly-parallel
+          (sm:process (name "component_assembly_parallel")
                       (statement
                        (sm:parallel* (sm:goto (name "component_constrained"))
                                      (sm:goto (name "req_and_queue"))))))
-         (component-comm
+         (component-assembly-comm
           (sm:process
-            (name "component_comm")
+            (name "component_assembly_comm")
             (statement
              (sm:comm
-              (process component-parallel)
+              (process component-assembly-parallel)
               (events
                (cons*
                 (sm:comm-event (from (sm:multi-event
@@ -3841,12 +3841,12 @@
                                            (list (%state-action p)))))))
                   (filter (negate ast:external?) requires)))))))))
          (interfaces (ast:interface* o))
-         (component-allow
+         (component-assembly-allow
           (sm:process
-            (name "component_allow")
+            (name "component_assembly_allow")
             (statement
              (sm:allow
-              (process component-comm)
+              (process component-assembly-comm)
               (events (cons* %constrained-legal-action
                              %declarative-illegal-action
                              %defer-end-action
@@ -3891,20 +3891,20 @@
                                requires)
                               (filter-map (conjoin ast:external? %state-action)
                                           requires))))))))
-         (component-rename
+         (component-assembly-rename
           (sm:process
-            (name "component_rename")
+            (name "component_assembly_rename")
             (statement
              (sm:rename
-              (process component-allow)
+              (process component-assembly-allow)
               (events
-               (sm:comm-events (sm:process-statement component-comm)))))))
+               (sm:comm-events (sm:process-statement component-assembly-comm)))))))
          (component
           (sm:process
             (name "component")
             (statement
              (sm:hide
-              (process component-rename)
+              (process component-assembly-rename)
               (events (cons* %constrained-legal-action
                              %defer-end-action
                              (%defer-skip-action o)
@@ -3929,10 +3929,10 @@
                                   (%end-action p)
                                   (%switch-context-action p)))
                                requires)))))))))
-    (list component-parallel
-          component-comm
-          component-allow
-          component-rename
+    (list component-assembly-parallel
+          component-assembly-comm
+          component-assembly-allow
+          component-assembly-rename
           component)))
 
 (define-method (interface-constraint-processes (o <interface>))
@@ -4173,7 +4173,7 @@
                 (constraint-processes o)))
            (static-defer-processes
             (file-comments "defer.mcrl2"))
-           (component-processes (component-processes o))
+           (component-assembly-processes (component-assembly-processes o))
            (return-type (%return-type o))
            (returns-type (%returns-type o))
            (processes `(,(makreel:caption "PORT PROCESSES")
@@ -4204,7 +4204,7 @@
                         ,(makreel:caption "COMPONENT CONSTRAINED")
                         ,@constraint-processes
                         ,(makreel:caption "COMPONENT ASSEMBLY")
-                        ,@component-processes))
+                        ,@component-assembly-processes))
            (provides-ports-type
             (sm:type (name "provides_ports")
                      (entities (cons* %no-port-predicate
