@@ -40,6 +40,7 @@ SEMANTIC_TESTS =				\
  %D%/ihelloworld				\
 						\
  %D%/hello_requires				\
+ %D%/hello_world				\
  %D%/helloworld					\
  %D%/helloworld_requires
 
