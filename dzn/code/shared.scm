@@ -34,7 +34,7 @@
 ;;;
 ;;; Shared-state.
 ;;;
-(define-ast <state> (<statement>))
+(define-ast <share-state> (<statement>))
 
 (define-ast <shared-transition> (<ast>)
   (from)

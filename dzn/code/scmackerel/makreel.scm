@@ -1408,7 +1408,7 @@
                          #:name (.name variable)
                          #:type.name (.type.name variable))))
 
-(define-method (ast->process (model <interface>) (o <state>) (next <ast>))
+(define-method (ast->process (model <interface>) (o <share-state>) (next <ast>))
   (let* ((members (ast:member* model))
          (members (map .name members)))
     (sm:process

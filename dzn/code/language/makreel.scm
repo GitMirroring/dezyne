@@ -584,7 +584,7 @@
            (makreel:add-state-placeholder rest)))
     (((and (? (is? <action>)) statement) rest ...)
      (cons* statement
-            (make <state>)
+            (make <share-state>)
             (makreel:add-state-placeholder rest)))
     (((and (? (is? <statement>)) statement) rest ...)
      (cons (makreel:add-state-placeholder statement)

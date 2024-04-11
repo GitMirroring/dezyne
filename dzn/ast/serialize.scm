@@ -30,6 +30,7 @@
   #:use-module (dzn ast ast)
   #:use-module (dzn ast util)
   #:use-module (dzn code ast)
+  #:use-module (dzn code shared)
   #:use-module (dzn vm goops)
   #:use-module (dzn command-line) ;%locations?
   #:use-module (dzn misc)
