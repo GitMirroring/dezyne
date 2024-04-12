@@ -347,8 +347,8 @@ or false."
          (blocked-trace (cdr pc+blocked-trace))
          (pc (reset-replies pc))
          (pc (prune-defer pc)))
-    (%debug "run-sut pc: ~s\n" pc)
-    (%debug "     event: ~s\n" event)
+    (%debug (current-source-location) "run-sut pc: ~s" pc)
+    (%debug (current-source-location) "     event: ~s" event)
     (match event
       (('state state ...)
        (run-state pc state))
@@ -360,7 +360,7 @@ or false."
                                           #:message "match"
                                           #:ast model
                                           #:input event)))
-                            (%debug "<match-error>: ~a\n" event)
+                            (%debug (current-source-location) "<match-error>: ~a" event)
                             (list (list (clone pc #:status error))))))
               (traces (map (cute append <> pc+blocked-trace) traces)))
          (if (is-a? (%sut) <runtime:port>) traces
@@ -376,7 +376,7 @@ or false."
          (check-provides-compliance* pc event traces)))
       (_
        (when (not (eq? (switch-context pc) pc))
-         (%debug "<eot> with switchable, non-rtc pc\n"))
+         (%debug (current-source-location) "<eot> with switchable, non-rtc pc"))
        (let ((trace (cons pc (cdr pc+blocked-trace))))
          (if (or (is-a? (%sut) <runtime:port>)
                  (pair? (.blocked pc))) (list trace)
@@ -395,9 +395,11 @@ optional labels only and stop when observable event seen."
                             #:trace-done? observable?
                             #:labels (const '("inevitable" "optional"))))))
     (when (%debug?)
+      (%debug (current-source-location) "modeling-lts:")
       (parameterize ((%modeling? #t))
         (pretty-print
-         (debug:lts->alist pc->state-number lts) (current-error-port))))
+         (debug:lts->alist pc->state-number lts)
+         (current-error-port))))
     lts))
 
 (define (modeling-lts-stable? lts)
@@ -689,7 +691,7 @@ status."
   (define (trail-input pc)
     (match (.trail pc)
       ((event trail ...)
-       (%debug "  pop trail ~s ~s\n" event trail)
+       (%debug "  pop trail ~s ~s" event trail)
        (values event (clone pc #:trail trail)))
       (() (values #f pc))))
 
@@ -741,7 +743,7 @@ status."
     (or (report (list (list pc)) #:trace trace)
         (parameterize ((%next-input (if (or (not (isatty? (current-input-port))) (pair? trail)) trail-input read-input)))
           (let loop ((traces (list (list pc))))
-            (%debug "run-trail #traces ~a\n" (length traces))
+            (%debug (current-source-location) "run-trail #traces ~a" (length traces))
             (let ((from-pcs (map car traces)))
               (when (interactive?)
                 (format (current-error-port) "labels: ~a\n" (string-join (labels)))
@@ -981,7 +983,8 @@ refusals-check at EOT."
       (exit EXIT_OTHER_FAILURE))
     (let* ((sut (runtime:get-sut root model))
            (instances (runtime:create-instances sut)))
-      (parameterize ((%debug? (> (dzn:debugity) 0)))
+      (parameterize ((%debug? (and (not (zero? (dzn:debugity)))
+                                   (dzn:debugity))))
         (simulate** sut instances trail
                     #:compliance-check? compliance-check?
                     #:deadlock-check? deadlock-check?

@@ -39,7 +39,8 @@
   #:use-module (dzn vm evaluate)
   #:use-module (dzn vm goops)
   #:use-module (dzn vm runtime)
-  #:export (%debug
+  #:export (%%debug
+            %debug
             %debug?
             %next-input
             %startup-info
@@ -149,15 +150,86 @@
 ;;;
 ;;; Code:
 
-;;; Debug facility
+;;; Should debug info be printed?
 (define %debug? (make-parameter #f))
-
-(define-syntax-rule (%debug fmt arg ...)
-  (when (%debug?)
-    (format (current-error-port) fmt arg ...)))
 
 ;; Is the input trail to be matched exactly?
 (define %strict? (make-parameter #f))
+
+
+;;;
+;;; Debug facility.
+;;;
+(define-method (%debug (fmt <string>) . args)
+  (when (%debug?)
+    (apply format (current-error-port) fmt args)
+    (newline (current-error-port))))
+
+(define-method (%debug (location <pair>) (fmt <string>) . args)
+  (when (%debug?)
+   (format (current-error-port) "~a:~a:~a: ~a\n"
+           (assoc-ref location 'filename)
+           (1+ (assoc-ref location 'line))
+           (assoc-ref location 'column)
+           (apply format #f fmt args))))
+
+(define-method (%debug (location <pair>) (pc <program-counter>) (fmt <string>) . args)
+  (apply %debug location fmt args)
+  (when (and (%debug?) (> (%debug?) 1))
+    (%debug pc)))
+
+(define-method (%debug-statement (pc <program-counter>) (o <top>))
+  "*rtc*")
+
+(define-method (%debug-statement (pc <program-counter>) (o <statement>))
+  (name o))
+
+(define-method (%debug-statement (pc <program-counter>) (o <assign>))
+  (format #f "~a ~a=~a" (next-method)
+          (.variable.name o)
+          (->sexp (eval-expression pc (.expression o)))))
+
+(define-method (%debug-statement (pc <program-counter>) (o <variable>))
+  (format #f "~a ~a=~a" (next-method)
+          (.name o)
+          (->sexp (eval-expression pc (.expression o)))))
+
+(define-method (%debug-statement (pc <program-counter>) (o <guard>))
+  (format #f "~a ~a=>~a" (next-method)
+          (->sexp (.expression o))
+          (true? (eval-expression pc (.expression o)))))
+
+(define-method (%debug-statement (pc <program-counter>) (o <on>))
+  (format #f "~a ~a" (next-method) (map trigger->string (ast:trigger* o))))
+
+(define-method (%debug (pc <program-counter>))
+  (when (%debug?)
+    (let* ((statement (.statement pc))
+           (location (and=> statement .location))
+           (file-name (and=> location .file-name))
+           (line (and=> location .line))
+           (column (and=> location .column))
+           (instance (.instance pc))
+           (state (.state pc)))
+      (format (current-error-port)
+              "~a:~a:~a:[~a] [~a~a] ~a\n"
+              file-name line column  (name instance)
+              (if (and=> (.trigger pc) (is? <q-trigger>)) "<q> "
+                  "")
+              (and=> (.trigger pc) trigger->string)
+              (%debug-statement pc statement))
+      (when (> (%debug?) 1)
+        (format (current-error-port)
+                "~a\n"
+                state))
+      (when (> (%debug?) 2)
+        (format (current-error-port) "~a\n" pc))
+      (unless (= (%debug?) 1)
+        (newline (current-error-port))))))
+
+(define (%%debug . rest)
+  (when (and (%debug?) (> (%debug?) 1))
+    (apply %debug rest)))
 
 
 ;;;
@@ -683,7 +755,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                #:skip-compliance? (.skip-compliance? pc)
                #:state (.state pc)
                #:trail (.trail pc))))
-    (%debug "  ~s ~s <block> ~a [~a] => [~a]\n"
+    (%debug (current-source-location) "  ~s ~s <block> ~a [~a] => [~a]"
             (name instance)
             (and=> (.trigger pc) trigger->string)
             (runtime:instance->string port)
@@ -777,8 +849,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      (let ((instance (.instance blocked-pc)))
        (if (is-a? instance <runtime:component>) pc
            (begin
-             (%debug
-              "  ~s ~s <switch-context blocked-on-boundary> ~a [~a] => [~a]\n"
+             (%debug (current-source-location)
+              "  ~s ~s <switch-context blocked-on-boundary> ~a [~a] => [~a]"
               (name instance)
               (and=> (.trigger blocked-pc) trigger->string)
               (runtime:instance->string port)
@@ -830,7 +902,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                #:running-defer? (.running-defer? pc)
                #:state (.state pc)
                #:trail (.trail pc))))
-    (%debug "  ~s ~s <collateral-block> ~a [~a] => [~a]\n"
+    (%debug (current-source-location) "  ~s ~s <collateral-block> ~a [~a] => [~a]"
             ((compose name .instance) pc)
             (and=> (.trigger pc) trigger->string)
             (runtime:instance->string blocked-port)
@@ -857,7 +929,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                (collateral-released (if blocked? collateral-released
                                         (delete r:port-collateral collateral-released)))
                (trigger (.trigger released-pc)))
-          (%debug "  ~s ~s <switch-context ~a> ~a [~a] => [~a]\n"
+          (%debug (current-source-location)
+                  "  ~s ~s <switch-context ~a> ~a [~a] => [~a]"
                   (name instance)
                   (and=> trigger trigger->string)
                   (if blocked? "block" "collateral")
@@ -887,7 +960,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
 ;;;
 
 (define-method (enqueue (pc <program-counter>) (ast <ast>) (instance <runtime:component>) (trigger <trigger>))
-  (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<enqueue>" (trigger->string trigger))
+  (%debug (current-source-location) "*enqueue*")
   (let* ((state (get-state pc instance))
          (q (.q state)))
     (if (= (length q) (%queue-size))
@@ -897,15 +970,15 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
         (set-deferred (set-state pc (clone state #:q (append q (list trigger)))) instance))))
 
 (define-method (dequeue (pc <program-counter>))
+  (%debug (current-source-location) "*dequeue*")
   (let* ((state (get-state pc))
          (q (.q state))
          (pc (set-state pc (clone state #:q (cdr q))))
          (trigger (car q)))
-    (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<dequeue>" (trigger->string trigger))
     (values pc trigger)))
 
 (define-method (enqueue-external (pc <program-counter>) (ast <ast>) (trigger <trigger>))
-  (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<enqueue-external>" (trigger->string trigger))
+  (%debug (current-source-location) "*external-enqueue*")
   (let* ((external-q (.external-q pc))
          (instance (.instance pc))
          (q (or (assoc-ref external-q instance) '())))
@@ -922,6 +995,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
           (clone pc #:external-q external-q)))))
 
 (define-method (dequeue-external (pc <program-counter>) (instance <runtime:port>))
+  (%debug (current-source-location) "*external-dequeue*")
   (let* ((external-q (.external-q pc))
          (q (assoc-ref external-q instance)))
     (if (or (not q) (null? q)) (values pc #f)
@@ -931,7 +1005,6 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                                (acons instance (cdr q) external-q)))
                (pc (clone pc #:external-q external-q))
                (trigger (car q)))
-          (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) "<dequeue-external>" (trigger->string trigger))
           (values pc trigger)))))
 
 (define-method (get-handling (pc <program-counter>) (instance <runtime:instance>))
@@ -973,7 +1046,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
     (clone pc #:defer defer)))
 
 (define-method (flush (pc <program-counter>) instance)
-  (%debug "  ~s ~s ~a\n" (name instance) (and=> (.trigger pc) trigger->string) "<flush>")
+  (%debug (current-source-location) pc "*flush*")
   (let* ((orig-pc pc)
          (trigger (and=> (as (.q (get-state pc instance)) <pair>)
                          car))
@@ -993,7 +1066,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                    (get-handling pc deferred))
                orig-pc)
               (else
-               (%debug "  flush deferred: ~s\n" deferred)
+               (%debug (current-source-location) "  flush deferred: ~s" deferred)
                (flush pc deferred))))))))
 
 (define-method (flush (pc <program-counter>))

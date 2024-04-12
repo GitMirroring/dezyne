@@ -297,7 +297,7 @@ prefix."
             (%livelock-threshold (* 2 (%livelock-threshold)))
             #f)
            ((pc tail ...)
-            (%debug "  ~s ~s <livelock>\n"
+            (%debug (current-source-location) "  ~s ~s <livelock>"
                     ((compose name .instance) pc)
                     (and=> (.trigger pc) trigger->string))
             (let ((index (and=> (list-index (cute pc-equal? <> pc)
@@ -314,9 +314,8 @@ program-counters produced by taking a step."
 
   (define* ((mark-pc input orig-pc) pc)
     (let ((statement (.statement orig-pc)))
-      (%debug "match fail, ast ~s ~a, input ~s\n" (name statement)
-              (and (is-a? statement  <action>)
-                   (and=> (trace->trail orig-pc) cdr))
+      (%debug (current-source-location) "match fail, ast ~s ~a, input ~s" (name statement)
+              (and=> (trace->trail orig-pc) cdr)
               input)
       (cond ((.status pc)
              pc)
@@ -339,6 +338,7 @@ program-counters produced by taking a step."
 
   (let loop ((trace trace))
     (let ((pc (car trace)))
+      (%debug pc)
       (cond ((.status pc)
              (list trace))
             ((livelock? trace)
@@ -647,7 +647,7 @@ until RTC?."
 (define-method (run-silent (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)
     (set-state pc (get-state port-pc port)))
-  (%debug "run-silent... ~s\n" (name port))
+  (%debug (current-source-location) "run-silent... ~s" (name port))
   (let ((modeling-names (modeling-names port)))
     (if (null? modeling-names) '()
         (let* ((ipc (clone pc #:trigger #f #:previous #f #:instance #f #:trail '() #:statement #f))
@@ -677,7 +677,7 @@ until RTC?."
   (define (update-state pc port-pc)
     (let ((pc (set-state pc (get-state port-pc port))))
       (clone pc #:external-q (.external-q port-pc) #:status (.status port-pc))))
-  (%debug "run-external-modeling... ~s\n" (name port))
+  (%debug (current-source-location) "run-external-modeling... ~s" (name port))
   (let* ((r:other-port (runtime:other-port port))
          (external? (and (ast:requires? r:other-port)
                          (ast:external? r:other-port))))
@@ -781,7 +781,7 @@ until RTC?."
                       (pc trigger (dequeue-external pc port-instance)))
                  (and trigger
                       (equal? (trigger->string trigger) event)))))))
-  (%debug "run-requires... ~s\n" event)
+  (%debug (current-source-location) "run-requires... ~s" event)
   (let* ((component ((compose .type .ast) (%sut)))
          (trigger (string->trigger event))
          (trigger (clone trigger #:parent component))
@@ -800,7 +800,7 @@ until RTC?."
         (append-map (cute run-requires-flush <> event) traces))))
 
 (define-method (run-defer-event (pc <program-counter>) event)
-  (%debug "run-defer-event ~a pc: ~s\n" event pc)
+  (%debug (current-source-location) "run-defer-event ~a pc: ~s" event pc)
   (let* ((pc (prune-defer pc))
          (defer (.defer pc))
          (trail (.trail pc))
@@ -886,7 +886,7 @@ until RTC?."
       (list trace))))
 
 (define-method (run-external (pc <program-counter>) event)
-  (%debug "run-external ~a pc: ~s\n" event pc)
+  (%debug (current-source-location) "run-external ~a pc: ~s" event pc)
   (let ((queues (.external-q pc)))
     (if (null? queues) '()
         (match (external-trigger-in-q? pc event)
@@ -899,7 +899,7 @@ until RTC?."
                   (error (make <match-error> #:ast ast #:input event
                                #:message "match"))
                   (pc (clone pc #:status error)))
-             (%debug "<match> ~a pc: ~s\n" event pc)
+             (%debug (current-source-location) "<match> ~a pc: ~s" event pc)
              (list (list pc) )))))))
 
 (define-method (run-to-completion* (pc <program-counter>) event)
@@ -909,7 +909,7 @@ until RTC?."
       (list (list (clone pc #:status illegal)))))
   (define (modeling? trace)
     (and=> (any .trigger (reverse trace)) ast:modeling?))
-  (%debug "run-to-completion*: ~a\n" event)
+  (%debug (current-source-location) "run-to-completion*: ~a" event)
   (cond
    ((is-a? (%sut) <runtime:port>)
     (run-interface pc event))
@@ -971,7 +971,7 @@ until RTC?."
             (append-map run-flush traces))))
 
 (define-method (run-to-completion*-context-switch (pc <program-counter>) event)
-  (%debug "run-to-completion*-context-switch: ~a\n" event)
+  (%debug (current-source-location) "run-to-completion*-context-switch: ~a" event)
   (let* ((orig-pc pc)
          (blocked-on-action? (blocked-on-action? pc event))
          (pc (if (and (blocked-on-boundary? pc event)

@@ -237,7 +237,7 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                   (list (cons pc trace))))))))
 
 (define (run-provides-modeling pc port-instance event)
-  (%debug "run-provides-modeling... ~a\n" event)
+  (%debug (current-source-location) "run-provides-modeling... ~a" event)
   (let* ((ipc (clone pc #:instance port-instance #:statement #f))
          (interface ((compose .type .ast) port-instance))
          (modeling-names (modeling-names interface)))
@@ -247,10 +247,10 @@ provides port, mark the trace as <fork-error>, otherwise return false."
       (append-map (cute run-to-completion ipc <>) modeling-names))))
 
 (define (run-provides-port pc port-instance event)
-  (%debug "run-provides-port... ~a ~a\n" port-instance event)
+  (%debug (current-source-location) "run-provides-port... ~a ~a" port-instance event)
   (let* ((ipc (clone pc #:previous #f #:trail '() #:status #f #:statement #f))
          (ipc (reset-reply ipc port-instance)))
-    (%debug "  ipc: ~a\n" ipc)
+    (%debug "  ipc: ~a" ipc)
     (parameterize ((%sut port-instance)
                    (%exploring? #t))
       (run-to-completion ipc event))))
@@ -280,10 +280,10 @@ provides port, mark the trace as <fork-error>, otherwise return false."
                          ;; Check prefix only as long as trace is blocked
                          (list-head port-trail (min (length port-trail)
                                                     (length sut-trail)))))
-         (foo (%debug "     port trail : ~s\n" (map cdr port-trail)))
+         (foo (%debug (current-source-location) "     port trail : ~s" (map cdr port-trail)))
          (port-name ((compose .name .ast) port-instance))
          (events (map (compose last (cut string-split <> #\.) cdr) sut-trail))
-         (foo (%debug "      sut trail : ~s\n\n" events)))
+         (foo (%debug (current-source-location) "      sut trail : ~s" events)))
     (or (any non-matching-pair? port-trail sut-trail)
         (let ((port-length (length port-trail))
               (sut-length (length sut-trail)))
@@ -363,7 +363,7 @@ Return a list of traces, possibly marked with <compliance-error>."
               (if (not internal?) (runtime:port-name->instance port-name)
                   (runtime:port instance port))))
 
-        (%debug "check-provides-compliance... ~s: ~a [~a]\n" port-name event port-event)
+        (%debug (current-source-location) "check-provides-compliance... ~s: ~a [~a]" port-name event port-event)
         (let* ((port-traces
                 (if port-event (run-provides-port pc port-instance port-event)
                     (run-provides-modeling pc port-instance event)))
@@ -389,8 +389,8 @@ Return a list of traces, possibly marked with <compliance-error>."
               (member event-name trail)))
 
           (when (> (dzn:debugity) 0)
-            (%debug "[c] sut-trail:~s\n" (map cdr sut-trail))
-            (%debug "[c] port-traces[~s]:\n" (length port-traces))
+            (%debug (current-source-location) "[c] sut-trail:~s" (map cdr sut-trail))
+            (%debug (current-source-location) "[c] port-traces[~s]:" (length port-traces))
             (parameterize ((%sut port-instance))
               (display-trails port-traces)))
 
@@ -403,14 +403,14 @@ Return a list of traces, possibly marked with <compliance-error>."
                                             (is-status? <implicit-illegal-error>))
                                    car)
                           (append port-traces non-compliances)))
-              (%debug "  exit 0\n")
+              (%%debug (current-source-location) "  exit 0")
               (map (cute zip trigger <> <>) traces
                    (append port-traces non-compliances)))
              ((and (pair? trace)
                    (.status (car trace))
                    (not (is-a? (.status (car trace)) <match-error>))
                    (pair? (append port-traces non-compliances)))
-              (%debug "  exit 1\n")
+              (%%debug (current-source-location) "  exit 1")
               (let* ((statement (.statement (car trace)))
                      (trace (rewrite-trace-head (cut clone <> #:statement #f) trace))
                      (trace (zip trigger trace (car (append port-traces non-compliances))))
@@ -418,7 +418,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                 (list trace)))
              ((and (pair? port-traces)
                    (pair? trace))
-              (%debug "  exit 2\n")
+              (%%debug (current-source-location) "  exit 2")
               (let* ((port-pcs (map
                                 (compose (cut clone pc #:state <>) .state car)
                                 port-traces))
@@ -433,29 +433,29 @@ Return a list of traces, possibly marked with <compliance-error>."
                    (not blocking?)
                    (null? port-traces)
                    (pair? sut-trail))
-              (%debug "  exit 3\n")
+              (%%debug (current-source-location) "  exit 3")
               (let ((status (make <compliance-error>
                               #:message "non-compliance"
                               #:component-acceptance (caar sut-trail)
                               #:port port-instance)))
                 (list (rewrite-trace-head (cut clone <> #:status status) trace))))
              ((null? non-compliances)
-              (%debug "  exit 4\n")
+              (%%debug (current-source-location) "  exit 4")
               (if (null? trace) '()
                   (list trace)))
              ((and (not port-event)
                    (null? sut-trail)
                    (pair? trace))
-              (%debug "  exit 5\n")
+              (%%debug (current-source-location) "  exit 5")
               (list trace))
              ((let* ((port-instance (any .instance trace))
                      (container (and=> port-instance .container)))
                 (is-a? container <runtime:foreign>))
-              (%debug "  exit 6\n")
+              (%%debug (current-source-location) "  exit 6")
               (map (cute zip trigger trace <>)
                    (append port-traces non-compliances)))
              ((%compliance-check?)
-              (%debug "  exit 7\n")
+              (%%debug (current-source-location) "  exit 7")
               (let* ((port-acceptances (map first-non-match non-compliances))
                      (port-acceptances (delete-duplicates port-acceptances
                                                           port-acceptance-equal?))
@@ -495,7 +495,7 @@ Return a list of traces, possibly marked with <compliance-error>."
                            (trace (cons pc tail)))
                       (list (zip trigger trace (car non-compliances)))))))
              (else
-              (%debug "  exit 8\n")
+              (%%debug (current-source-location) "  exit 8")
               (let* ((port-trace (car non-compliances))
                      (port-pc (last port-trace))
                      (port-instance (.instance port-pc))
@@ -584,7 +584,7 @@ on TRACE."
                                 trace)))
           (reverse trace)))
 
-      (%debug "update-port-state... ~s: ~a [~a]\n" port-name event port-event)
+      (%debug (current-source-location) "update-port-state... ~s: ~a [~a]" port-name event port-event)
       (let* ((port-traces
               (if port-event (run-provides-port pc port-instance port-event)
                   (run-provides-modeling pc port-instance event)))
@@ -611,8 +611,8 @@ on TRACE."
                                       #:provides-trigger? provides-trigger?))
 
         (when (> (dzn:debugity) 0)
-          (%debug "[u] sut-trail:~s\n" (map cdr sut-trail))
-          (%debug "[u] port-traces[~s]:\n" (length port-traces))
+          (%debug (current-source-location) "[u] sut-trail:~s" (map cdr sut-trail))
+          (%debug (current-source-location) "[u] port-traces[~s]:" (length port-traces))
           (parameterize ((%sut port-instance))
             (display-trails port-traces)))
 
@@ -621,7 +621,7 @@ on TRACE."
                (partition (negate first-non-match) port-traces)))
           (cond
            ((pair? port-traces)
-            (%debug "  [u] exit 0\n")
+            (%debug (current-source-location) "  [u] exit 0")
             (let* ((port-trace (car port-traces))
                    (port-pc (car port-trace))
                    (port-pc (clone pc #:state (.state port-pc)))
@@ -630,7 +630,7 @@ on TRACE."
                    (pc (clone pc #:instance instance)))
               pc))
            (else
-            (%debug "  [u] exit 1\n")
+            (%debug (current-source-location) "  [u] exit 1")
             orig-pc)))))))
 
 (define-method (check-provides-compliance (pc <program-counter>) event trace)
@@ -740,7 +740,7 @@ update TRACES."
                                     (not (runtime:boundary-port? r:other-port))
                                     (null? (.blocked pc)))))
 
-    (%debug "internal-check-compliance... ~s: ~a [~a]\n"
+    (%debug (current-source-location) "internal-check-compliance... ~s: ~a [~a]"
             (trace-name r:port) (trigger->string trigger) internal-compliance?)
     (if (not internal-compliance?) traces
         (let* ((sut-trace (list-head trace (1+ start-index)))

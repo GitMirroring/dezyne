@@ -84,7 +84,6 @@
     (begin-step pc (.container r:component-port) component-trigger)))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:instance>) (trigger <trigger>))
-  (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (define (trigger-runtime-port pc)
     (runtime:port (.instance pc) (.port (.trigger pc))))
   (let* ((pc (push-pc pc trigger instance))
@@ -96,13 +95,13 @@
                  pc))
          (r:port (and port (runtime:port instance port))))
     (unless r:port
-      (throw 'programming-error (format #f "trigger without port ~a\n" trigger)))
+      (throw 'programming-error (format #f "trigger without port ~a" trigger)))
     (cond
      ((and (is-a? instance <runtime:component>)
            (or (get-handling pc instance)
                (assq r:port (.blocked pc)))
            (blocked-port pc instance))
-      (%debug "<blocked-error> collateral ~a ~a\n" (name instance) (trigger->string trigger))
+      (%debug (current-source-location) "<blocked-error> collateral ~a ~a" (name instance) (trigger->string trigger))
       (let ((message (format #f "port `~a' is collaterally blocked"
                              (.name port))))
         (clone pc #:status (make <blocked-error>
@@ -118,7 +117,7 @@
         (or (assq r:port (.blocked pc))
             (and (ast:provides? trigger)
                  (member r:other-port ports ast:equal?))))
-      (%debug "<blocked-error> blocked ~a ~a\n" (name instance) (trigger->string trigger))
+      (%debug (current-source-location) "<blocked-error> blocked ~a ~a" (name instance) (trigger->string trigger))
       (let ((message (format #f "port `~a' is blocked" (.name port))))
         (clone pc #:status (make <blocked-error>
                              #:ast (.statement pc)
@@ -136,7 +135,6 @@
     (begin-step pc r:other-port trigger)))
 
 (define-method (begin-step (pc <program-counter>) (instance <runtime:port>) (trigger <trigger>))
-  (%debug "* ~s ~s ~a\n" (name instance) (trigger->string trigger) "<begin-step>")
   (let* ((pc (push-pc pc trigger instance))
          (port-name (.name (.ast instance)))
          (pc (reset-reply pc port-name)))
@@ -156,7 +154,7 @@
 
 (define-method (step (pc <program-counter>) (o <statement>))
   (throw 'programming-error
-         (format #f "statement not implemented: ~a\n" (ast-name o))))
+         (format #f "statement not implemented: ~a" (ast-name o))))
 
 (define-method (step (pc <program-counter>) (o <defer>))
   (let* ((defer (.defer pc)))
@@ -179,7 +177,6 @@
        (list (make-implicit-illegal pc o)))))
 
 (define-method (step (pc <program-counter>) (o <declarative-compound>))
-  (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (map (cut clone pc #:statement <>) (ast:statement* o)))
 
 (define (mark-liveness? pc statement)
@@ -195,7 +192,6 @@
          (list pc))))
 
 (define-method (step (pc <program-counter>) (o <guard>))
-  (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((statement (.statement o))
          (continuation (continuation pc (list statement)))
          (statement (.statement continuation)))
@@ -206,21 +202,22 @@
            (list continuation)))))
 
 (define-method (step (pc <program-counter>) (o <on>))
-  (%debug "  ~s ~s |~a ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) ((compose trigger->string car ast:trigger*) o))
-  (let ((statement (.statement o)))
-    (cond ((not (find (cute ast:trigger-equal? <> (.trigger pc)) (ast:trigger* o)))
+  (let ((statement (.statement o))
+        (trigger (.trigger pc)))
+    (cond ((not (find (cute ast:trigger-equal? <> trigger) (ast:trigger* o)))
+           (%debug (current-source-location) pc
+                   (format #f "on does not match trigger: ~a"
+                           (trigger->string trigger)))
            '())
           ((mark-liveness? pc statement))
           (else
            (list (clone pc #:statement statement))))))
 
 (define-method (step (pc <program-counter>) (o <illegal>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let ((error (make <illegal-error> #:message "illegal" #:ast o)))
     (list (clone pc #:status error))))
 
 (define-method (step (pc <program-counter>) (o <compound>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((continuation (continuation pc o))
          (statement (.statement continuation)))
     (cond ((mark-liveness? pc statement))
@@ -228,7 +225,6 @@
            (list continuation)))))
 
 (define-method (step (pc <program-counter>) (o <skip>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((continuation (continuation pc o))
          (statement (.statement continuation)))
     (cond ((mark-liveness? pc statement))
@@ -236,13 +232,11 @@
            (list continuation)))))
 
 (define-method (step (pc <program-counter>) (o <if>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (if (true? (eval-expression pc (.expression o))) (list (continuation pc ((compose list .then) o)))
       (if (.else o) (list (continuation pc ((compose list .else) o)))
           (list (statement-continuation pc o)))))
 
 (define-method (step (pc <program-counter>) (o <call>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((function (.function o))
          (args (map (cute eval-expression pc <>) (ast:argument* o)))
          (continuation-pc (continuation pc o))
@@ -259,12 +253,10 @@
         (list pc))))
 
 (define-method (step (pc <program-counter>) (o <return>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let ((pc (clone pc #:return (eval-expression pc (.expression o)))))
     (list (continuation pc o))))
 
 (define-method (step (pc <program-counter>) (o <action>))
-  (%debug "  ~s ~s ~a => ~s\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (trigger->string o))
   (cond ((ast:out? o)
          (step-action-up pc o))
         (else
@@ -341,10 +333,6 @@
       (list pc)))))
 
 (define-method (step (pc <program-counter>) (o <assign>))
-  (%debug "  ~s ~s ~a => ~a=~a\n"
-          ((compose name .instance) pc) (and=> (.trigger pc) trigger->string)
-          (name o)
-          (.variable.name o) (->sexp (eval-expression pc (.expression o))))
   (let* ((pc (assign pc (.variable o) (.expression o)))
          (status (.status pc)))
     (if (is-a? status <range-error>)
@@ -352,14 +340,12 @@
         (list (continuation pc o)))))
 
 (define-method (step (pc <program-counter>) (o <variable>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((pc (assign (push-local pc o) o (.expression o)))
          (pc (if (is-a? (.parent o) <compound>) pc
                  (pop-locals pc (list o)))))
     (list (continuation pc o))))
 
 (define-method (step (pc <program-counter>) (o <reply>))
-  (%debug "  ~s ~s ~a => ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o) (.expression o))
   (let* ((instance (.instance pc))
          (port-name (or (.port.name o)
                         (.port.name (.trigger pc))
@@ -371,7 +357,7 @@
                                    #:ast o
                                    #:previous (.parent previous)
                                    #:message "second-reply")))
-                      (%debug "second reply, previous=~a\n" (ast:location->string previous))
+                      (%debug (current-source-location) "second reply, previous=~a" (ast:location->string previous))
                       (clone pc #:status error)))
                    ((is-a? value <void>)
                     (continuation pc o))
@@ -419,12 +405,10 @@
            (list pc)))))
 
 (define-method (step (pc <program-counter>) (o <flush-return>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let ((pc (pop-pc pc)))
     (list pc)))
 
 (define-method (step (pc <program-counter>) (o <q-out>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((q-trigger (.trigger o))
          (instance (.instance pc))
          (pc (pop-pc pc))
@@ -449,11 +433,9 @@
         (list pc))))))
 
 (define-method (step (pc <program-counter>) (o <blocking>))
-  (%debug "  ~s ~s |~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (list (continuation pc o)))
 
 (define-method (step (pc <program-counter>) (o <block>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (if (not (q-empty? pc)) (let ((pc (set-handling! pc)))
                             (list (flush pc)))
       (let ((pc (continuation pc o))
@@ -478,7 +460,6 @@
   (list (continuation pc o)))
 
 (define-method (step (pc <program-counter>) (o <end-of-on>))
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (let* ((deferred (pop-deferred pc))
          (pc (reset-handling! pc))
          (trigger (.trigger pc))
@@ -538,7 +519,6 @@
                   (value (get-reply pc port-name)))
              (and typed? (not value))))))
 
-  (%debug "  ~s ~s ~a\n" ((compose name .instance) pc) (and=> (.trigger pc) trigger->string) (name o))
   (cond
    ((typed-reply? pc o)
     (let* ((trigger (.trigger pc))
@@ -546,7 +526,7 @@
            (typed? (ast:typed? type))
            (error (make <missing-reply-error> #:ast o #:type type
                         #:message "missing-reply")))
-      (%debug "missing reply\n")
+      (%debug (current-source-location) "missing reply")
       (list (clone pc #:status error))))
    (else
     (let* ((trigger (.trigger pc))

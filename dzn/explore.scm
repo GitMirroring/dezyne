@@ -179,7 +179,7 @@ that PC has one more collaterally blocked coroutine on the same port."
           corrected)))
 
     (define (run-label orig-pc label)
-      (%debug "run-label ~a\n" label)
+      (%debug (current-source-location) "run-label ~a" label)
       (let* ((orig-pc (clone orig-pc #:collateral-instance #f))
              (defer? (eq? label 'defer))
              (sw-pc (if defer? orig-pc
@@ -230,7 +230,7 @@ that PC has one more collaterally blocked coroutine on the same port."
         (map (cute rewrite-trace-head prune-defer <>) traces)))
 
     (define (run-labels pc labels)
-      (%debug "run-labels ~a\n" labels)
+      (%debug (current-source-location) "run-labels ~a" labels)
       (let loop ((labels labels) (traces '()))
         (if (null? labels) traces
             (let* ((label (car labels))
@@ -245,7 +245,7 @@ that PC has one more collaterally blocked coroutine on the same port."
     (hash-set! state-number-table "<illegal>" 0)
     (let loop ((pc pc))
       (let ((from (pc->state-number pc)))
-        (%debug "loop ~a~a\n" from (if (hash-ref lts from) ": seen!" ""))
+        (%debug (current-source-location) "loop ~a~a" from (if (hash-ref lts from) ": seen!" ""))
         (unless (or (.status pc) (hash-ref lts from))
           (let* ((labels (labels pc))
                  (labels (if (is-a? (%sut) <runtime:port>) labels
@@ -639,7 +639,8 @@ RTC-LTS->LTS."
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     (parameterize ((%compliance-check? #f)
-                   (%debug? (> (dzn:debugity) 0))
+                   (%debug? (and (not (zero? (dzn:debugity)))
+                                 (dzn:debugity)))
                    (%exploring? #t)
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
@@ -670,7 +671,8 @@ RTC-LTS->LTS."
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     (parameterize ((%compliance-check? #f)
-                   (%debug? (> (dzn:debugity) 0))
+                   (%debug? (and (not (zero? (dzn:debugity)))
+                                 (dzn:debugity)))
                    (%exploring? #t)
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
