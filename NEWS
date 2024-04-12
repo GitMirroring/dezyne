@@ -5,6 +5,50 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.19.0 since 2.18.4
+** Language
+  - The concept of a predicate function, i.e., a boolean function
+    consisting of a single expression without side effects, has been
+    added.
+  - A boolean implication operator `=>' has been added.
+  - Invariants have been added and can use both of these features.
+  - An external type (data) can now be used as the return value of
+    events and functions.
+** Commands
+  - A new command `dzn exec' has been added to run anything in a Docker
+    container, such as, `dzn exec ltsconvert ...'.
+  - A new command, `dzn hash' has been added to produce a crpytographic
+    hash of a dezyne file and its imports.
+  - The `dzn' command has a new option: `--version-number.  This may
+    simplify getting the version in environments where Dezyne is the
+    only program in use that conforms to the GNU coding standards.
+  - The `dzn hello' command has a new option: `--runtime' to display the
+    (installed) location of the runtime.
+** Parser
+  - The `dzn parse' command has a new `-D,--no-directives' option,
+    removing the need to use, know, or learn `grep -v ^#'.
+** Code
+  - Using --shell=model for a non-existent model, an imported model, or
+    a non-system model now produces an error and exits unsuccessfully.
+  - When generating C++ code, makefile dependencies are generated.
+  - The `dzn code' command now supports generating code for multiple
+    files, and for directories.
+  - The `dzn code' command has a new `-t,--touch-empty-files' option
+    to touch empty C++ execution units for consistency.
+** Verification
+  - The `--threads' option of mCRL2 202307.1 can now be used via `dzn
+    --threads=N'.
+  - When verifying multiple files or directories, imported models are
+    skipped to prevent duplicate verification.
+** Noteworthy bug fixes
+  - Trivial deadlocks in a `dzn graph' procduced LTS or state-diagram in
+    blocking external and collateral blocking defer contexts have been
+    fixed.
+  - The verify command now also respects the `--model=MODEL' selection
+    when MODEL is an interface.
+  - Using an expression as defer argument is flagged as an error by the
+    parser.
+
 * Changes in 2.18.4 since 2.18.3
 ** Verification
   - The unreachable code check now considers the use of individual
