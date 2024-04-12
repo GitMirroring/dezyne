@@ -1,0 +1,19 @@
+(header ((h) ihello provides) ((sut) system_hello_requires system) ((sut top) hello_requires component) ((sut bottom) hello_requires component) ((w) ihello requires))
+(state ((h)) ((sut top)) ((sut bottom)) ((w)))
+<external>.h.hello -> ...
+... -> sut.top.h.hello
+sut.top.w.hello -> ...
+... -> sut.bottom.h.hello
+sut.bottom.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.bottom.w.return <- ...
+... <- sut.bottom.h.return
+sut.top.w.return <- ...
+... <- sut.top.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut top)) ((sut bottom)) ((w)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+(state ((h)) ((sut top)) ((sut bottom)) ((w)))
+(labels "h.hello")
+(eligible "h.hello")
