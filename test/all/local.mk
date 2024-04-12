@@ -47,6 +47,7 @@ SEMANTIC_TESTS =				\
  %D%/hello_reply_bool_requires			\
  %D%/hello_requires				\
  %D%/hello_world				\
+ %D%/hello_world_external			\
  %D%/hello_world_requires			\
  %D%/helloworld					\
  %D%/helloworld_external			\
