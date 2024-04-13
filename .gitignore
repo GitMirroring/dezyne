@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-*.cc.x
 .deps
 .dirstamp
 .libs
@@ -27,7 +26,7 @@
 *.lo
 *.o
 *~
-/doc/*.1
+/INSTALL
 /aclocal.m4
 /autom4te.cache/*
 /build-aux/*
@@ -46,6 +45,7 @@ stamp-vti
 /config.make
 /config.status
 /configure
+/doc/*.1
 /doc/dezyne.info
 /doc/dezyne.pdf
 /doc/html/

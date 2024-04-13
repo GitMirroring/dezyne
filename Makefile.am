@@ -294,6 +294,7 @@ $(srcdir)/doc/stamp-vti:
 
 dist: auto-clean
 auto-clean: maintainer-clean-vti man-clean
+	rm -f INSTALL
 	rm -f configure libtool Makefile.in
 	git clean -fdx -- build-aux
 	./autogen.sh
