@@ -555,6 +555,7 @@ REGRESSION_TESTS =				\
  %D%/wostream
 
 PARSER_TESTS =					\
+ %D%/code-json					\
  %D%/parse-flags				\
  %D%/parse_assign_void				\
  %D%/parse_block_comment_import			\
