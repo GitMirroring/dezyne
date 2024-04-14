@@ -37,6 +37,7 @@ EXTRA_DIST =					\
  autogen.sh					\
  build-aux/git-version-gen			\
  build-aux/gitlog-to-changelog			\
+ build-aux/mdate-from-git.scm			\
  build-aux/update-semantics.sh			\
  guix.scm					\
  guix/pack/dezyne.scm
@@ -205,7 +206,7 @@ dist_man_MANS =					\
  doc/dzn-trace.1				\
  doc/dzn-verify.1
 
-# help2man reproducibility
+# Reproducible build
 SOURCE_DATE_EPOCH = $(shell git show HEAD --format=%ct --no-patch 2>/dev/null || echo 0)
 export SOURCE_DATE_EPOCH
 
@@ -351,10 +352,13 @@ am__tar = $${TAR-tar} \
 tag:
 	git tag -s v$(PACKAGE_VERSION) -m "$(PACKAGE_NAME) $(PACKAGE_VERSION)."
 
+dist-hook: gen-tarball-version
 dist-hook: gen-ChangeLog
-	echo $(VERSION) > $(distdir)/.tarball-version
+
+gen-tarball-version:
+	echo $(VERSION) > "$(distdir)/.tarball-version"
+	echo $(SOURCE_DATE_EPOCH) > $(distdir)/.tarball-timestamp
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
-	git show HEAD --format=%ct --no-patch > $(distdir)/.tarball-timestamp
 	@touch $(distdir)/.git
 	@echo Removing any test output
 	@rm -rf $(distdir)/test/all/*/out

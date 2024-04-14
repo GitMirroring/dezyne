@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019,2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2023,2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -34,3 +34,9 @@ export AUTOHEADER
 set -e
 libtoolize --version
 autoreconf -ifv
+
+# Replace Automake's build-aux/mdate-sh with build-aux/mdate-from-git, our
+# own, reproducible version.
+chmod +w build-aux/mdate-sh
+rm -f build-aux/mdate-sh
+ln -s mdate-from-git.scm build-aux/mdate-sh
