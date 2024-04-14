@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2017, 2020, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
@@ -35,6 +35,7 @@
             delete-adjacent-duplicates
             disjoin
             display-join
+            display-join*
             hash-table->alist
             json-string->alist-scm
             merge-alist2
@@ -144,7 +145,10 @@ guile-json-4 (which produces vectors)."
                 (if (null? head) heads (cons head heads))
                 (if (null? tail) tails (cons tail tails)))))))
 
-(define (display-join lst port . grammar)
+(define* (display-join* lst #:key
+                        (port (current-output-port))
+                        (display-element (cute display <> <>))
+                        (grammar '()))
   "Like STRING-JOIN but displaying to PORT, also allowing \"PRE\" 'pre
 and \"POST\" 'post in GRAMMAR."
   (define (reduce-sexp l)
@@ -170,7 +174,7 @@ and \"POST\" 'post in GRAMMAR."
       (when (pair? lst)
         (when prefix
           (display prefix port))
-        (display (car lst) port)
+        (display-element (car lst) port)
         (when suffix
           (display suffix port))
         (when (and (pair? (cdr lst)) infix)
@@ -178,6 +182,9 @@ and \"POST\" 'post in GRAMMAR."
         (loop (cdr lst))))
     (when (and post (pair? lst))
       (display post port))))
+
+(define (display-join lst port . grammar)
+  (display-join* lst #:port port #:grammar grammar))
 
 (define (delete-adjacent-duplicates lst =)
   "When LST is sorted all duplicates are adjacent one another.
