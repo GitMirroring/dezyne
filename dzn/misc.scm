@@ -31,6 +31,7 @@
   #:export (->
             <->
             alist->hash-table
+            atom?
             conjoin
             delete-adjacent-duplicates
             disjoin
@@ -78,6 +79,10 @@ arguments:
 "
   (lambda arguments
     (map (cute apply <> arguments) procedures)))
+
+(define (atom? o)
+  (and (not (pair? o))
+       (not (null? o))))
 
 (define (singleton? list)
   (and (= 1 (length list)) (car list)))
