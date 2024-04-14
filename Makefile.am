@@ -257,42 +257,6 @@ LOCAL_DEVEL_SITE = $(HOME)/src/web/dezyne.org/site/devel
 publish-local-devel: html pdf
 	$(MAKE) publish SITE=$(LOCAL_DEVEL_SITE)
 
-# Generate 'version.texi' reproducibly using metadata from Git rather
-# than using metadata from the filesystem.
-$(srcdir)/doc/version.texi:
-	$(AM_V_GEN)set -e						\
-	LC_ALL=C; export LC_ALL;					\
-	TZ=UTC0; export TZ;						\
-	timestamp=$$({ git log --pretty=format:%ct -- doc/dezyne.texi	\
-		       2>/dev/null					\
-		       || date +%s -r doc/dezyne.texi; }		\
-	                 | sort -n -r | head -n 1);			\
-	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
-	my=$$(date --date="@$$timestamp" "+%B %Y");			\
-	{ echo "@set UPDATED $$dmy";					\
-	  echo "@set UPDATED-MONTH $$my";				\
-	  echo "@set EDITION $(VERSION)";				\
-	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
-	mv $@-t $@
-
-# Generate 'stamp-vti' reproducibly using metadata from Git rather
-# than using metadata from the filesystem.
-$(srcdir)/doc/stamp-vti:
-	$(AM_V_GEN)set -e						\
-	LC_ALL=C; export LC_ALL;					\
-	TZ=UTC0; export TZ;						\
-	timestamp=$$({ git log --pretty=format:%ct -- doc/dezyne.texi	\
-		       2>/dev/null					\
-		       || date +%s -r doc/dezyne.texi; }		\
-	                 | sort -n -r | head -n 1);			\
-	dmy=$$(date --date="@$$timestamp" "+%-d %B %Y");		\
-	my=$$(date --date="@$$timestamp" "+%B %Y");			\
-	{ echo "@set UPDATED $$dmy";					\
-	  echo "@set UPDATED-MONTH $$my";				\
-	  echo "@set EDITION $(VERSION)";				\
-	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
-	mv $@-t $@
-
 if in_git_p
 DIST_CONFIGURE_FLAGS=
 dist: auto-clean
