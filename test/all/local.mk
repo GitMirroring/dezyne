@@ -51,6 +51,7 @@ SEMANTIC_TESTS =				\
  %D%/hello_world_requires			\
  %D%/helloworld					\
  %D%/helloworld_external			\
+ %D%/helloworld_external2			\
  %D%/helloworld_requires			\
 						\
  %D%/system_hello_requires
