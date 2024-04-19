@@ -28,7 +28,7 @@ AC_CONFIG_SRCDIR([dzn/parse.scm])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIRS([build-aux])
 
-AM_INIT_AUTOMAKE([silent-rules subdir-objects])
+AM_INIT_AUTOMAKE([silent-rules subdir-objects -Woverride -Wno-portability])
 AM_SILENT_RULES([yes])
 
 AM_PATH_LISPDIR
@@ -302,6 +302,16 @@ AM_CONDITIONAL([have_scheme], [test "x$have_scheme" = xtrue])
 
 languages=`echo "$enable_languages" | sed 's/, *,/,/g' | tr , ' '`
 AC_SUBST(languages)
+
+AC_MSG_CHECKING([if building from git])
+if test -e .git; then
+   in_git_p=yes
+else
+   in_git_p=no
+fi
+AC_MSG_RESULT([$in_git_p])
+AM_CONDITIONAL([in_git_p],
+  [test "x$in_git_p" = "xyes"])
 
 # Output
 AUTOHEADER=true

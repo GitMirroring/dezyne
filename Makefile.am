@@ -293,6 +293,7 @@ $(srcdir)/doc/stamp-vti:
 	  echo "@set VERSION $(VERSION)"; } > $@-t;			\
 	mv $@-t $@
 
+if in_git_p
 dist: auto-clean
 auto-clean: maintainer-clean-vti man-clean
 	rm -f INSTALL
@@ -302,6 +303,7 @@ auto-clean: maintainer-clean-vti man-clean
 	./configure
 man-clean:
 	rm -f $(srcdir)/doc/*.1
+endif
 
 # Distribution
 ##############
@@ -352,14 +354,20 @@ am__tar = $${TAR-tar} \
 tag:
 	git tag -s v$(PACKAGE_VERSION) -m "$(PACKAGE_NAME) $(PACKAGE_VERSION)."
 
+if in_git_p
+dist-hook: gen-tarball-manifest
 dist-hook: gen-tarball-version
 dist-hook: gen-ChangeLog
+else
+dist-hook: gen-tarball-version
+endif
 
 gen-tarball-version:
 	echo $(VERSION) > "$(distdir)/.tarball-version"
 	echo $(SOURCE_DATE_EPOCH) > $(distdir)/.tarball-timestamp
+
+gen-tarball-manifest:
 	git ls-tree -r --name-only HEAD > $(distdir)/.tarball-manifest
-	@touch $(distdir)/.git
 	@echo Removing any test output
 	@rm -rf $(distdir)/test/all/*/out
 
