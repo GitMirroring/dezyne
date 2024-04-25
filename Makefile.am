@@ -258,7 +258,7 @@ publish-local-devel: html pdf
 
 # Generate 'version.texi' reproducibly using metadata from Git rather
 # than using metadata from the filesystem.
-override $(srcdir)/doc/version.texi:
+$(srcdir)/doc/version.texi:
 	$(AM_V_GEN)set -e						\
 	LC_ALL=C; export LC_ALL;					\
 	TZ=UTC0; export TZ;						\
@@ -276,7 +276,7 @@ override $(srcdir)/doc/version.texi:
 
 # Generate 'stamp-vti' reproducibly using metadata from Git rather
 # than using metadata from the filesystem.
-override $(srcdir)/doc/stamp-vti:
+$(srcdir)/doc/stamp-vti:
 	$(AM_V_GEN)set -e						\
 	LC_ALL=C; export LC_ALL;					\
 	TZ=UTC0; export TZ;						\
