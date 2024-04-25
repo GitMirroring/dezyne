@@ -44,6 +44,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
 
+  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
@@ -572,8 +573,7 @@ from LABELS."
         (= (length ports)
            (length provides-ports))))
     (and (idle-node? node)
-         (not (find (compose (disjoin (cute eq? %<ack> <> )
-                                      (cute eq? %<defer> <>))
+         (not (find (compose (cute memq <> (list %<ack> %<defer>))
                              edge-label)
                     (node-edges node)))))
 
@@ -610,14 +610,21 @@ from LABELS."
       (if (memq label (list %tau %<ack>)) trace
           (append trace (list label))))
 
+    (define (illegal-node? node)
+      (let ((edges (node-edges node)))
+        (find (compose (cute eq? <> %<illegal>) edge-label) edges)))
+
     (define (trace-close trace index)
-      (let* ((node (vector-ref lts index))
-             (close-edge (node-close node)))
-        (if (or (node-allowed-end? node)
-                (not close-edge))
-            trace
-            (let ((ext-trace (trace-extend trace (edge-label close-edge))))
-              (trace-close ext-trace (edge-to close-edge))))))
+      (if (= index (vector-length lts)) trace
+          (let* ((node (vector-ref lts index))
+                 (close-edge (or (node-close node)
+                                 (illegal-node? node)))
+                 (closed? (and (or (node-allowed-end? node)
+                                   (not close-edge))
+                               (not (illegal-node? node)))))
+            (if closed? trace
+                (let ((ext-trace (trace-extend trace (edge-label close-edge))))
+                  (trace-close ext-trace (edge-to close-edge)))))))
 
     (define (trace-log trace count)
       (let ((file-name (simple-format #f "~a~a.~a" (or dir "") base count)))
@@ -631,6 +638,7 @@ from LABELS."
       (let ((generated-trace? #f))
         (and
          (not (hashq-ref done index #f))
+         (< index (vector-length lts))
          (let ((node (vector-ref lts index)))
            (hashq-set! done index #t)
            (let loop ((edges (node-edges node)) (generated-trace? #f))
@@ -641,11 +649,14 @@ from LABELS."
                     ((= edge-index index)
                      (loop (cdr edges) generated-trace?))
                     (else
-                     (let* ((ext-trace (trace-extend trace (edge-label edge)))
-                            (trace? (not (step edge-index ext-trace))))
-                       (when trace?
-                         (trace-log (trace-close ext-trace edge-index) count)
-                         (set! count (1+ count)))
+                     (let* ((trace (trace-extend trace (edge-label edge)))
+                            (trace? (not (step edge-index trace)))
+                            (closed? (= edge-index (vector-length lts))))
+                       (when (not (step edge-index trace))
+                         (let ((trace (if closed? trace
+                                          (trace-close trace edge-index))))
+                           (trace-log trace count)
+                           (set! count (1+ count))))
                        (loop (cdr edges) #t)))))))))))
 
     (annotate)
@@ -679,10 +690,27 @@ from LABELS."
             (edges (map convert-edge (node-edges node))))
         (set-fields node ((node-pred) pred) ((node-edges) edges))))
 
+    (define (illegal-node? node)
+      (let* ((edges (node-edges node))
+             (labels (map edge-label edges)))
+        (memq %<illegal> labels)))
+
+    (define ((illegal-node->deadlock deadlock) i node)
+      (if (not (illegal-node? node)) node
+          (let* ((edges (node-edges node))
+                 (edge (car edges))
+                 (edge (set-field edge (edge-to) deadlock)))
+            (set-field node (node-edges) (list edge)))))
+
+    (define (illegal-livelock->deadlock lts)
+      (let ((deadlock (vector-length lts)))
+        (vector-map (illegal-node->deadlock deadlock) lts)))
+
     (let* ((text (string-join data "\n"))
            (lts (aut-text->lts text #:pred? #t))
            (lts (vector-map-one convert-node lts))
-           (lts (if illegal? lts (remove-illegal lts)))
+           (lts (if illegal? (illegal-livelock->deadlock lts)
+                    (remove-illegal lts)))
            (initial (initial lts))
            (base (string-append model ".trace"))
            (dir (cond ((equal? out "-") #f)
