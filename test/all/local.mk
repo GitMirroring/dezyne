@@ -44,6 +44,7 @@ SEMANTIC_TESTS =				\
  %D%/ihellocruel__world				\
  %D%/ihelloworld				\
 						\
+ %D%/hello_cruelworld_requires			\
  %D%/hello_reply_bool				\
  %D%/hello_reply_bool_requires			\
  %D%/hello_requires				\
