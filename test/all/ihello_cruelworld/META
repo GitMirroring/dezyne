@@ -1,0 +1,4 @@
+;;; -*- scheme -*-
+((flush? #t)
+ (skip ("build"))
+ (comment "interface model: cannot build"))
