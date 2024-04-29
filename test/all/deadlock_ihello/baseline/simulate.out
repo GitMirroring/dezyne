@@ -1,0 +1,9 @@
+(header ((client) deadlock_ihello provides) ((sut) deadlock_ihello interface))
+(state ((client)) ((sut)))
+test/all/deadlock_ihello/deadlock_ihello.dzn:29:3: error: deadlock
+<deadlock>
+(state ((client)) ((sut)))
+test/all/deadlock_ihello/deadlock_ihello.dzn:29:3: error: deadlock
+(trail "<deadlock>")
+(labels "hello")
+(eligible)

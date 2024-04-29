@@ -67,6 +67,8 @@ SEMANTIC_TESTS =				\
  %D%/system_helloworld_requires
 
 SEMANTIC_ERROR_TESTS =				\
+ %D%/deadlock_ihello				\
+						\
  %D%/compliance_hello_world			\
  %D%/compliance_helloworld
 
@@ -75,7 +77,6 @@ FEATURE_TESTS =					\
  %D%/compliance_external			\
  %D%/deadlock_component0			\
  %D%/deadlock_implicit				\
- %D%/deadlock_interface0			\
  %D%/determinism0				\
  %D%/determinism1				\
  %D%/determinism_out				\
