@@ -1,0 +1,8 @@
+model: deadlock_ihellohello
+hello
+return
+<deadlock>
+model: deadlock_hellohello
+h.hello
+h.return
+<deadlock>

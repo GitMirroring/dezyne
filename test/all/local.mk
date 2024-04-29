@@ -72,7 +72,8 @@ SEMANTIC_ERROR_TESTS =				\
 						\
  %D%/compliance_hello_world			\
  %D%/compliance_helloworld			\
- %D%/deadlock_hello
+ %D%/deadlock_hello				\
+ %D%/deadlock_hellohello
 
 FEATURE_TESTS =					\
  %D%/compliance0				\
@@ -319,7 +320,6 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
  %D%/deadlock_blocking_replies			\
- %D%/deadlock_component1			\
  %D%/deadlock_interface_determinism		\
  %D%/deadlock_optional_out_only			\
  %D%/deadlock_port_blocked			\

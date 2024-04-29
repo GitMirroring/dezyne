@@ -1,0 +1,15 @@
+(header ((h) deadlock_ihellohello provides) ((sut) deadlock_hellohello component))
+(state ((h) (idle . true)) ((sut) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut) (idle . false)))
+(trail "h.hello" "h.return")
+test/all/deadlock_hellohello/deadlock_hellohello.dzn:30:3: error: deadlock
+<deadlock>
+(state ((h) (idle . false)) ((sut) (idle . false)))
+test/all/deadlock_hellohello/deadlock_hellohello.dzn:30:3: error: deadlock
+(trail "<deadlock>")
+(labels "h.hello")
+(eligible)

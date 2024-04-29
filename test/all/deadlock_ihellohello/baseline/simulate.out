@@ -11,5 +11,5 @@ test/all/deadlock_ihellohello/deadlock_ihellohello.dzn:29:3: error: deadlock
 (state ((client)) ((sut) (idle . false)))
 test/all/deadlock_ihellohello/deadlock_ihellohello.dzn:29:3: error: deadlock
 (trail "<deadlock>")
-(labels "hello" "inevitable")
+(labels "hello")
 (eligible)

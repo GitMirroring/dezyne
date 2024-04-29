@@ -31,6 +31,5 @@ interface deadlock_ihellohello
     bool idle=true;
 
     [idle] on hello: idle=false;
-    [!idle] on inevitable: illegal;
   }
 }
