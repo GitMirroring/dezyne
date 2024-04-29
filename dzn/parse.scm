@@ -204,7 +204,7 @@ specified in IMPORTS."
                          tree))
                (tree (tree:normalize tree)))
           (when (> (dzn:debugity) 2)
-            (format (current-error-port) "tree: ~a\n" file-name)
+            (debug "tree: ~a" file-name)
             (pretty-print tree (current-error-port)))
           tree))
       (lambda (key . args)
@@ -280,6 +280,7 @@ and the @var{tree-alist}."
 (define* (parse:annotate-ast ast)
   (let ()
     (when (> (dzn:debugity) 1)
+      (debug "ast:")
       (ast:pretty-print ast (current-error-port)))
     ast))
 
