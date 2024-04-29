@@ -73,7 +73,8 @@ SEMANTIC_ERROR_TESTS =				\
  %D%/compliance_hello_world			\
  %D%/compliance_helloworld			\
  %D%/deadlock_hello				\
- %D%/deadlock_hellohello
+ %D%/deadlock_hellohello			\
+ %D%/determinism_hello_world_external
 
 FEATURE_TESTS =					\
  %D%/compliance0				\
@@ -81,8 +82,8 @@ FEATURE_TESTS =					\
  %D%/deadlock_implicit				\
  %D%/determinism0				\
  %D%/determinism1				\
- %D%/determinism_out				\
  %D%/determinism_interface			\
+ %D%/determinism_out				\
  %D%/hello_alpha				\
  %D%/hello_block				\
  %D%/hello_blocking_external			\

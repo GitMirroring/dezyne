@@ -1,0 +1,2 @@
+test/all/determinism_hello_world_external/determinism_hello_world_external.dzn:34:20: error: component "determinism_hello_world_external" is non-deterministic
+test/all/determinism_hello_world_external/determinism_hello_world_external.dzn:35:20: error: component "determinism_hello_world_external" is non-deterministic

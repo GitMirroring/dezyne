@@ -1,0 +1,3 @@
+model: determinism_hello_world_external
+h.hello
+<non-deterministic>

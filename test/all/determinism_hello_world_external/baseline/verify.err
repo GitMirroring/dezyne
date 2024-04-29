@@ -1,0 +1,11 @@
+verify: ihello_world: check: deadlock: ok
+verify: ihello_world: check: unreachable: ok
+verify: ihello_world: check: livelock: ok
+verify: ihello_world: check: deterministic: ok
+verify: determinism_hello_world_external: check: deterministic: fail
+error: component determinism_hello_world_external is non-deterministic
+verify: determinism_hello_world_external: check: illegal: ok
+verify: determinism_hello_world_external: check: deadlock: ok
+verify: determinism_hello_world_external: check: unreachable: ok
+verify: determinism_hello_world_external: check: livelock: ok
+verify: determinism_hello_world_external: check: compliance: ok

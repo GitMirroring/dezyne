@@ -1,0 +1,13 @@
+(header ((h) ihello_world provides) ((sut) determinism_hello_world_external component) ((w) ihello_world requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+test/all/determinism_hello_world_external/determinism_hello_world_external.dzn:34:20: error: component "determinism_hello_world_external" is non-deterministic
+test/all/determinism_hello_world_external/determinism_hello_world_external.dzn:35:20: error: component "determinism_hello_world_external" is non-deterministic
+<external>.h.hello -> ...
+... -> sut.h.hello
+<non-deterministic>
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+test/all/determinism_hello_world_external/determinism_hello_world_external.dzn:34:20: error: component "determinism_hello_world_external" is non-deterministic
+test/all/determinism_hello_world_external/determinism_hello_world_external.dzn:35:20: error: component "determinism_hello_world_external" is non-deterministic
+(trail "h.hello" "<non-deterministic>")
+(labels "h.hello" "w.world")
+(eligible)
