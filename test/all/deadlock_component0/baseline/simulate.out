@@ -1,9 +1,0 @@
-(header ((i) I provides) ((sut) deadlock_component0 component))
-(state ((i)) ((sut)))
-test/all/deadlock_component0/deadlock_component0.dzn:41:3: error: deadlock
-<deadlock>
-(state ((i)) ((sut)))
-test/all/deadlock_component0/deadlock_component0.dzn:41:3: error: deadlock
-(trail "<deadlock>")
-(labels "i.e")
-(eligible)

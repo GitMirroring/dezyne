@@ -70,12 +70,12 @@ SEMANTIC_ERROR_TESTS =				\
  %D%/deadlock_ihello				\
 						\
  %D%/compliance_hello_world			\
- %D%/compliance_helloworld
+ %D%/compliance_helloworld			\
+ %D%/deadlock_hello
 
 FEATURE_TESTS =					\
  %D%/compliance0				\
  %D%/compliance_external			\
- %D%/deadlock_component0			\
  %D%/deadlock_implicit				\
  %D%/determinism0				\
  %D%/determinism1				\

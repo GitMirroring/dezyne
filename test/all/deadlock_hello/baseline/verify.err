@@ -1,0 +1,12 @@
+verify: deadlock_ihello: check: deadlock: fail
+error: deadlock in model deadlock_ihello
+verify: deadlock_ihello: check: unreachable: skip
+verify: deadlock_ihello: check: livelock: ok
+verify: deadlock_ihello: check: deterministic: ok
+verify: deadlock_hello: check: deterministic: ok
+verify: deadlock_hello: check: illegal: ok
+verify: deadlock_hello: check: deadlock: fail
+error: deadlock in model deadlock_hello
+verify: deadlock_hello: check: unreachable: skip
+verify: deadlock_hello: check: livelock: ok
+verify: deadlock_hello: check: compliance: skip
