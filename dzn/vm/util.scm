@@ -41,7 +41,6 @@
   #:use-module (dzn vm runtime)
   #:export (%%debug
             %debug
-            %debug?
             %next-input
             %startup-info
             %strict?
@@ -150,9 +149,6 @@
 ;;; Utility functions for the Dezyne VM.
 ;;;
 ;;; Code:
-
-;;; Should debug info be printed?
-(define %debug? (make-parameter #f))
 
 ;; Is the input trail to be matched exactly?
 (define %strict? (make-parameter #f))

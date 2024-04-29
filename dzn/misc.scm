@@ -30,9 +30,11 @@
 
   #:export (->
             <->
+            %debug?
             alist->hash-table
             atom?
             conjoin
+            debug
             delete-adjacent-duplicates
             disjoin
             display-join
@@ -86,14 +88,6 @@ arguments:
 
 (define (singleton? list)
   (and (= 1 (length list)) (car list)))
-
-(define (pke . stuff)
-  "Like peek (pk), writing to (CURRENT-ERROR-PORT)."
-  (newline (current-error-port))
-  (display ";;; " (current-error-port))
-  (write stuff (current-error-port))
-  (newline (current-error-port))
-  (car (last-pair stuff)))
 
 (define (alist->hash-table alist)
   (let ((table (make-hash-table (length alist))))
@@ -203,3 +197,24 @@ the next element."
        (let ((tail (cons next rest)))
          (if (= head next) (loop tail)
              (cons head (loop tail))))))))
+
+
+;;;
+;;; Debugging.
+;;;
+
+;; Should debug info be printed?
+(define %debug? (make-parameter #f))
+
+(define (pke . stuff)
+  "Like peek (pk), writing to (CURRENT-ERROR-PORT)."
+  (newline (current-error-port))
+  (display ";;; " (current-error-port))
+  (write stuff (current-error-port))
+  (newline (current-error-port))
+  (car (last-pair stuff)))
+
+(define (debug fmt . args)
+  (when (%debug?)
+    (apply format (current-error-port) fmt args)
+    (newline (current-error-port))))

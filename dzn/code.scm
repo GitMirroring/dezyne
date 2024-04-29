@@ -762,6 +762,7 @@ and pass it as argument accordingly."
 normalizations."
   (let ((root (code:normalize- ast)))
     (when (> (dzn:debugity) 1)
+      (debug "normalized root:")
       (ast:pretty-print root (current-error-port)))
     root))
 
