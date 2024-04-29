@@ -63,6 +63,7 @@ SEMANTIC_TESTS =				\
  %D%/system_hello_cruelworld_requires		\
  %D%/system_hello_requires			\
  %D%/system_hello_world_requires		\
+ %D%/system_helloworld_reply_true		\
  %D%/system_helloworld_requires
 
 SEMANTIC_ERROR_TESTS =				\
@@ -128,7 +129,6 @@ FEATURE_TESTS =					\
  %D%/hello_reply				\
  %D%/hello_shared				\
  %D%/hello_system				\
- %D%/hello_system_reply				\
  %D%/hello_trigger_list				\
  %D%/hello_two					\
  %D%/hello_usuk					\

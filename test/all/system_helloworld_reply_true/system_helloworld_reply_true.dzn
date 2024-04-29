@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -18,47 +18,18 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-interface ihello
+import ihelloworld_reply_true.dzn;
+import helloworld_reply_true.dzn;
+import helloworld_reply_true_requires.dzn;
+
+component system_helloworld_reply_true
 {
-  in bool hello();
-  out void world();
-
-  behavior
-  {
-    on hello: {world; reply(true);}
-  }
-}
-
-component proxy
-{
-  provides ihello p;
-  requires ihello r;
-
-  behavior
-  {
-    on p.hello(): reply (r.hello());
-    on r.world(): p.world();
-  }
-}
-
-component bottom
-{
-  provides ihello h;
-
-  behavior
-  {
-    on h.hello(): {h.world(); reply(true);}
-  }
-}
-
-component hello_system_reply
-{
-  provides ihello h;
+  provides ihelloworld_reply_true h;
   system
   {
-    proxy p;
-    bottom b;
-    h <=> p.p;
-    p.r <=> b.h;
+    helloworld_reply_true_requires top;
+    helloworld_reply_true bottom;
+    h <=> top.h;
+    top.w <=> bottom.h;
   }
 }
