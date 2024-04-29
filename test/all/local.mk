@@ -68,6 +68,7 @@ SEMANTIC_TESTS =				\
 
 SEMANTIC_ERROR_TESTS =				\
  %D%/deadlock_ihello				\
+ %D%/deadlock_ihellohello			\
 						\
  %D%/compliance_hello_world			\
  %D%/compliance_helloworld			\
@@ -319,7 +320,6 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_optional			\
  %D%/deadlock_blocking_replies			\
  %D%/deadlock_component1			\
- %D%/deadlock_interface1			\
  %D%/deadlock_interface_determinism		\
  %D%/deadlock_optional_out_only			\
  %D%/deadlock_port_blocked			\

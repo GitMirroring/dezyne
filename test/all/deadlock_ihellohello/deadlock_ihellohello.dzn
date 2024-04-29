@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2020, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,23 +21,16 @@
 //
 // Code:
 
-// This interface enters a live-lock after one step
-interface deadlock_interface1
+// This interface enters a deadlock after one step
+interface deadlock_ihellohello
 {
-  in void e();
+  in void hello ();
 
   behavior
   {
-    enum States {S0, S1};
-    States s = States.S0;
+    bool idle=true;
 
-    [s.S0]
-    {
-       on e: { s= States.S1; }
-    }
-    [s.S1]
-    {
-       on e: illegal;
-    }
+    [idle] on hello: idle=false;
+    [!idle] on inevitable: illegal;
   }
 }

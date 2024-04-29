@@ -1,0 +1,15 @@
+(header ((client) deadlock_ihellohello provides) ((sut) deadlock_ihellohello interface))
+(state ((client)) ((sut) (idle . true)))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut) (idle . false)))
+(trail "hello" "return")
+test/all/deadlock_ihellohello/deadlock_ihellohello.dzn:29:3: error: deadlock
+<deadlock>
+(state ((client)) ((sut) (idle . false)))
+test/all/deadlock_ihellohello/deadlock_ihellohello.dzn:29:3: error: deadlock
+(trail "<deadlock>")
+(labels "hello" "inevitable")
+(eligible)
