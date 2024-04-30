@@ -1,0 +1,10 @@
+(header ((client) livelock_ihello provides) ((sut) livelock_ihello interface))
+(state ((client)) ((sut)))
+test/all/livelock_ihello/livelock_ihello.dzn:33:5: error: livelock
+<loop>
+<livelock>
+(state ((client)) ((sut)))
+test/all/livelock_ihello/livelock_ihello.dzn:33:5: error: livelock
+(trail "<loop>" "<livelock>")
+(labels "hello" "inevitable")
+(eligible)

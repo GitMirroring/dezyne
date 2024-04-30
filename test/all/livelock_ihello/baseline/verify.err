@@ -1,0 +1,5 @@
+verify: livelock_ihello: check: deadlock: ok
+verify: livelock_ihello: check: unreachable: ok
+verify: livelock_ihello: check: livelock: fail
+error: livelock in model livelock_ihello
+verify: livelock_ihello: check: deterministic: ok
