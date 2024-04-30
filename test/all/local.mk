@@ -75,7 +75,8 @@ SEMANTIC_ERROR_TESTS =				\
  %D%/compliance_helloworld			\
  %D%/deadlock_hello				\
  %D%/deadlock_hellohello			\
- %D%/determinism_hello_world_external
+ %D%/determinism_hello_world_external		\
+ %D%/livelock_hello
 
 FEATURE_TESTS =					\
  %D%/compliance0				\
@@ -142,7 +143,6 @@ FEATURE_TESTS =					\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
  %D%/inline-functions				\
- %D%/livelock_component				\
  %D%/interface_nondet				\
  %D%/queuefull_component0			\
  %D%/semantics					\

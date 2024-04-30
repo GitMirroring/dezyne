@@ -1,4 +1,4 @@
-model: livelock_component
+model: livelock_hello
 h.hello
 <loop>
 w.hello

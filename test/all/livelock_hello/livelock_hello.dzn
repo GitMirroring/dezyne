@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,21 +22,13 @@
 //
 // Code:
 
-interface ihello
-{
-  in void hello();
-
-  behavior
-  {
-    on hello: {}
-  }
-}
+import ihello.dzn;
 
 interface iworld
 {
-  in void hello();
-  out void world();
-  out void bye();
+  in void hello ();
+  out void world ();
+  out void bye ();
 
   behavior
   {
@@ -45,15 +37,15 @@ interface iworld
   }
 }
 
-component livelock_component
+component livelock_hello
 {
   provides ihello h;
   requires iworld w;
 
   behavior
   {
-    on h.hello(): w.hello();
-    on w.world(): w.hello();
-    on w.bye(): {}
+    on h.hello (): w.hello ();
+    on w.world (): w.hello ();
+    on w.bye (): {}
   }
 }
