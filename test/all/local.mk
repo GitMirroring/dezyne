@@ -45,6 +45,7 @@ SEMANTIC_TESTS =				\
  %D%/ihelloworld				\
  %D%/ihelloworld_reply_true			\
 						\
+ %D%/hello_block				\
  %D%/hello_cruelworld_requires			\
  %D%/hello_reply_bool				\
  %D%/hello_reply_bool_requires			\
@@ -87,7 +88,6 @@ FEATURE_TESTS =					\
  %D%/determinism_interface			\
  %D%/determinism_out				\
  %D%/hello_alpha				\
- %D%/hello_block				\
  %D%/hello_blocking_external			\
  %D%/hello_bool					\
  %D%/hello_comment				\
