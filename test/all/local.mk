@@ -94,6 +94,7 @@ FEATURE_TESTS =					\
  %D%/hello_constraint				\
  %D%/hello_constraint_modeling			\
  %D%/hello_constraint_multiple_provides		\
+ %D%/hello_cruel_block				\
  %D%/hello_cxx20				\
  %D%/hello_data					\
  %D%/hello_defer				\

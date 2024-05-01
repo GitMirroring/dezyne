@@ -39,7 +39,7 @@ interface iworld {
   }
 }
 
-component hello_block {
+component hello_cruel_block {
   provides blocking ihello h;
   requires iworld w;
   behavior {
