@@ -23,6 +23,7 @@
 // Code:
 
 import ihello_reply_bool.dzn;
+import hello_block_reply_bool_requires.dzn; // fixes blocking_system4 Scheme imports
 
 component hello_block_reply_bool_requires2
 {

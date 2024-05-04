@@ -22,82 +22,26 @@
 //
 // Code:
 
-interface IBlocked
-{
-  enum Status{OK};
-  in Status e();
-
-  behavior
-  {
-    on e: reply(Status.OK);
-  }
-}
-
-interface IAsync
-{
-  in void trigger();
-  out void notify();
-
-  behavior
-  {
-    bool pending = false;
-    on trigger:
-    {
-      [!pending] pending = true;
-      [pending] illegal;
-    }
-    on inevitable:
-    {
-      [pending]{pending = false; notify;}
-    }
-  }
-}
-
-component DoubleBlocked
-{
-  provides blocking IBlocked provided;
-
-  requires blocking IBlocked blockedL;
-  requires blocking IBlocked blockedR;
-
-  behavior
-  {
-    on provided.e(): {IBlocked.Status r = blockedL.e(); r = blockedR.e(); reply(r);}
-  }
-}
-
-component Blocked
-{
-  provides blocking IBlocked provided;
-
-  requires blocking IAsync required;
-
-  behavior
-  {
-    blocking on provided.e(): required.trigger();
-
-    on required.notify(): provided.reply(IBlocked.Status.OK);
-  }
-}
+import hello_block_reply_bool_requires2.dzn;
+import hello_block_reply_bool_requires.dzn;
 
 component blocking_system4
 {
-  provides blocking IBlocked port;
+  provides blocking ihello_reply_bool h;
 
-  requires blocking IAsync asyncL;
-  requires blocking IAsync asyncR;
+  requires blocking ihello_world w0;
+  requires blocking ihello_world w1;
 
   system
   {
-    DoubleBlocked blocked;
-    Blocked blockedL;
-    Blocked blockedR;
+    hello_block_reply_bool_requires2 top;
+    hello_block_reply_bool_requires left;
+    hello_block_reply_bool_requires right;
 
-    port <=> blocked.provided;
-    blocked.blockedL <=> blockedL.provided;
-    blocked.blockedR <=> blockedR.provided;
-
-    blockedL.required <=> asyncL;
-    blockedR.required <=> asyncR;
+    h <=> top.h;
+    top.w0 <=> left.h;
+    top.w1 <=> right.h;
+    left.w <=> w0;
+    right.w <=> w1;
   }
 }
