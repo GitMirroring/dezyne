@@ -1,2 +1,2 @@
 ;;; -*- scheme -*-
-((component "Blocked"))
+((component #f))

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,72 +22,30 @@
 //
 // Code:
 
-interface IBlocked
-{
-  in void e();
-
-  behavior
-  {
-    on e:{}
-  }
-}
-
-interface IAsync
-{
-  in void trigger();
-  out void notify();
-
-  behavior
-  {
-    bool pending = false;
-    on trigger:
-    {
-      [!pending] pending = true;
-      [pending] illegal;
-    }
-    on inevitable:
-    {
-      [pending]{pending = false; notify;}
-    }
-  }
-}
-
-component Blocked
-{
-  provides blocking IBlocked provided;
-
-  requires IAsync required;
-
-  behavior
-  {
-    blocking on provided.e(): required.trigger();
-
-    on required.notify(): provided.reply();
-  }
-}
+import hello_block_requires.dzn;
 
 component blocking_system3
 {
-  provides blocking IBlocked port1;
-  provides blocking IBlocked port2;
-  provides blocking IBlocked port3;
+  provides blocking ihello h0;
+  provides blocking ihello h1;
+  provides blocking ihello h2;
 
-  requires IAsync async1;
-  requires IAsync async2;
-  requires IAsync async3;
+  requires blocking ihello_world w0;
+  requires blocking ihello_world w1;
+  requires blocking ihello_world w2;
 
   system
   {
-    Blocked blocked1;
-    Blocked blocked2;
-    Blocked blocked3;
+    hello_block_requires left;
+    hello_block_requires middle;
+    hello_block_requires right;
 
-    blocked1.provided <=> port1;
-    blocked2.provided <=> port2;
-    blocked3.provided <=> port3;
+    left.h <=> h0;
+    middle.h <=> h1;
+    right.h <=> h2;
 
-    blocked1.required <=> async1;
-    blocked2.required <=> async2;
-    blocked3.required <=> async3;
+    left.w <=> w0;
+    middle.w <=> w1;
+    right.w <=> w2;
   }
 }
