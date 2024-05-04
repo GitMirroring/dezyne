@@ -49,6 +49,7 @@ SEMANTIC_TESTS =				\
  %D%/ihelloworld_reply_true			\
 						\
  %D%/hello_block				\
+ %D%/hello_block_reply_bool_requires		\
  %D%/hello_block_requires			\
  %D%/hello_choice				\
  %D%/hello_choice_requires			\
