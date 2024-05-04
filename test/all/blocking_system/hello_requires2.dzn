@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,23 +22,18 @@
 //
 // Code:
 
-import hello_requires2.dzn;
-import hello_block_requires.dzn;
+import ihello.dzn;
+import i_world.dzn;
 
-component blocking_system
+component hello_requires2
 {
   provides blocking ihello h;
-  requires blocking ihello_world w0;
+  requires blocking ihello w0;
   requires blocking i_world w1;
 
-  system
+  behavior
   {
-    hello_requires2 top;
-    hello_block_requires bottom;
-
-    h <=> top.h;
-    top.w0 <=> bottom.h;
-    top.w1 <=> w1;
-    bottom.w <=> w0;
+    on h.hello (): w0.hello ();
+    on w1.world (): w0.hello ();
   }
 }

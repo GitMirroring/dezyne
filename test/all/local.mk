@@ -63,6 +63,7 @@ SEMANTIC_TESTS =				\
  %D%/helloworld_reply_true_requires		\
  %D%/helloworld_requires			\
 						\
+ %D%/blocking_system				\
  %D%/system_hello_cruelworld_requires		\
  %D%/system_hello_requires			\
  %D%/system_hello_world_requires		\
@@ -208,7 +209,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_skip				\
  %D%/blocking_skip_race				\
  %D%/blocking_sync_asynchronous_out		\
- %D%/blocking_system				\
  %D%/blocking_system2				\
  %D%/blocking_system3				\
  %D%/blocking_system4				\
