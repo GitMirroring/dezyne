@@ -64,9 +64,7 @@
       children))
   (let ((children (child* o)))
     (or (any predicate children)
-        (any (cute tree-find predicate <>)
-             (filter (disjoin (is? <string>) (is? <number>) (is? <boolean>))
-                     children)))))
+        (any (cute tree-find predicate <>) children))))
 
 (define-method (tree-find (predicate <applicable>) (o <pair>))
   (or (any predicate o)
