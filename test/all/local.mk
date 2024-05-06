@@ -490,6 +490,7 @@ REGRESSION_TESTS =				\
  %D%/helloparams				\
  %D%/huge_interface				\
  %D%/huge_constraint				\
+ %D%/ihello_int_1_1_reply_0			\
  %D%/ihello_optional_choice2			\
  %D%/ihello_optional_choice3			\
  %D%/ihello_optional_choice4			\
