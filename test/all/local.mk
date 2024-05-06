@@ -486,7 +486,6 @@ REGRESSION_TESTS =				\
  %D%/illegal_external_inevitable		\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\
- %D%/illegal_garbage				\
  %D%/illegal_interface.space			\
  %D%/illegal_optional				\
  %D%/illegal_pessimism_external			\
@@ -494,6 +493,7 @@ REGRESSION_TESTS =				\
  %D%/illegal_requires				\
  %D%/illegal_requires_out			\
  %D%/illegal_system_requires			\
+ %D%/implicit_illegal_garbage			\
  %D%/import_cycle				\
  %D%/import_path				\
  %D%/imported.space				\

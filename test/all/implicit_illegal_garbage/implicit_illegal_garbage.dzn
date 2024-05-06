@@ -37,7 +37,7 @@ interface ihello
   }
 }
 
-component illegal_garbage
+component implicit_illegal_garbage
 {
   provides ihello h;
   requires ihello w;

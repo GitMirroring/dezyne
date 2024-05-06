@@ -1,4 +1,4 @@
-model: illegal_garbage
+model: implicit_illegal_garbage
 h.hello
 w.hello
 w.return
