@@ -3,7 +3,7 @@
 // Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,36 +24,17 @@
 //
 // Code:
 
-interface I
-{
-  in void e();
-
-  behavior
-  {
-    on e: {}
-  }
-}
-
-interface II
-{
-  subint int {12..12};
-  in int e();
-
-  behavior
-  {
-    on e: reply(12);
-  }
-}
+import ihello.dzn;
+import ihello_reply_0.dzn;
 
 component range_action
 {
-  provides I p;
-  requires II r;
+  provides ihello h;
+  requires ihello_reply_0 w;
 
-  behavior {
-     subint Sub {42..42};
-     on p.e(): {
-       Sub n = r.e();
-     }
+  behavior
+  {
+     subint int {1..1};
+     on h.hello (): int n = w.hello ();
   }
 }
