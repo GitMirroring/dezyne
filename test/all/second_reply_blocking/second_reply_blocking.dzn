@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2018, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -12,7 +12,7 @@
 //
 // Dezyne is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// MERCHANTABILITY or FITNESS FOR top PARTICULAR PURPOSE.  See the GNU
 // Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public
@@ -22,38 +22,16 @@
 //
 // Code:
 
-interface I {
-  in void e();
-  behavior {
-    on e: {}
-  }
-}
+import ihello.dzn;
+import ihello_world.dzn;
 
-interface II {
-  in void e();
-  out void cb();
-  behavior {
-    bool busy = false;
-    [!busy]
-       on e: busy = true;
-    [busy] {
-       on inevitable: { cb; busy = false; }
-    }
-  }
-}
-
-component second_reply_blocking {
-  provides blocking I p;
-  requires II r;
-  behavior {
-    bool busy = false;
-    [!busy] {
-       on p.e(): blocking { r.e(); busy = true; }
-       on r.cb(): illegal;
-    }
-    [busy] {
-       on p.e(): illegal;
-       on r.cb(): { p.reply(); p.reply(); busy = false; }
-    }
+component second_reply_blocking
+{
+  provides blocking ihello h;
+  requires ihello_world w;
+  behavior
+  {
+    blocking on h.hello (): w.hello ();
+    on w.world (): {h.reply (); h.reply ();}
   }
 }

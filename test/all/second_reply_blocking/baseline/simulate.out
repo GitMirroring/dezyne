@@ -1,19 +1,19 @@
-(header ((p) I provides) ((sut) second_reply_blocking component) ((r) II requires))
-(state ((p)) ((sut) (busy . false)) ((r) (busy . false)))
-test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
-<external>.p.e -> ...
-... -> sut.p.e
-sut.r.e -> ...
-... -> <external>.r.e
-... <- <external>.r.return
-sut.r.return <- ...
-... <- <external>.r.cb
+(header ((h) ihello provides) ((sut) second_reply_blocking component) ((w) ihello_world requires))
+(state ((h)) ((sut)) ((w) (idle . true)))
+test/all/second_reply_blocking/second_reply_blocking.dzn:35:33: error: second-reply
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- <external>.w.world
 sut.<q> <- ...
 ... <- sut.<q>
-sut.r.cb <- ...
+sut.w.world <- ...
 <second-reply>
-(state ((p)) ((sut) (busy . true)) ((r) (busy . false)))
-test/all/second_reply_blocking/second_reply_blocking.dzn:56:32: error: second-reply
-(trail "p.e" "r.e" "r.return" "r.cb" "<second-reply>")
-(labels "p.e" "r.cb" "p.return")
+(state ((h)) ((sut)) ((w) (idle . true)))
+test/all/second_reply_blocking/second_reply_blocking.dzn:35:33: error: second-reply
+(trail "h.hello" "w.hello" "w.return" "w.world" "<second-reply>")
+(labels "h.hello" "w.world" "h.return")
 (eligible)
