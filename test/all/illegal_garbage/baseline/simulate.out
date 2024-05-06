@@ -1,0 +1,23 @@
+(header ((h) ihello provides) ((sut) illegal_garbage component) ((w) ihello requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/illegal_garbage/illegal_garbage.dzn:48:20: error: illegal
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
+<illegal>
+(state ((h) (idle . false)) ((sut)) ((w) (idle . true)))
+test/all/illegal_garbage/illegal_garbage.dzn:48:20: error: illegal
+(trail "w.world" "<illegal>")
+(labels "h.hello" "w.world")
+(eligible)
