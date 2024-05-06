@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,23 +22,13 @@
 //
 // Code:
 
-interface ihello
-{
-  in void hello();
-  out void world();
-  behavior
-  {
-    bool idle = true;
-    [idle] on hello: idle = false;
-    [!idle] on inevitable: {idle = true; world;}
-  }
-}
+import ihello_world.dzn;
 
 component defer_empty_selection
 {
-  provides ihello l;
-  provides ihello r;
-  requires ihello w;
+  provides ihello_world l;
+  provides ihello_world r;
+  requires ihello_world w;
   behavior
   {
     bool left = false;
@@ -45,27 +36,31 @@ component defer_empty_selection
     bool pending = false;
     bool toggle = false;
 
-    [!left] on l.hello(): {
+    [!left] on l.hello ():
+    {
       left = true;
-      defer_hello();
+      defer_hello ();
     }
-    [!right] on r.hello(): {
+    [!right] on r.hello ():
+    {
       right = true;
-      defer_hello();
+      defer_hello ();
     }
-    void defer_hello() {
-      if(!pending) {pending = true; w.hello();}
-      else defer() defer_hello();
+    void defer_hello ()
+    {
+      if (!pending) {pending = true; w.hello ();}
+      else defer () defer_hello ();
     }
-    on w.world(): {
+    on w.world ():
+    {
       pending = false;
       toggle = !toggle;
-      if(toggle)
-        if(left) {left = false; l.world();}
-        else {right = false; r.world();}
+      if (toggle)
+        if (left) {left = false; l.world ();}
+        else {right = false; r.world ();}
       else
-        if(right) {right = false; r.world();}
-        else {left = false; l.world();}
+        if (right) {right = false; r.world ();}
+        else {left = false; l.world ();}
     }
   }
 }
