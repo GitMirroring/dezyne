@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -692,6 +692,9 @@
 (define-method (wfc (o <reply>))
   (append
    (imperative-context o)
+   (let ((void? (compose (is? <void>) ast:type)))
+     (if (and=> (.expression o) (-> void? (is? <literal>))) '()
+         `(,(wfc-error o "cannot reply a non literal void expression"))))
    (if (.expression o) (wfc (.expression o)) '())
    (if (.port.name o) (reply-with-port o) (reply-without-port o))))
 
