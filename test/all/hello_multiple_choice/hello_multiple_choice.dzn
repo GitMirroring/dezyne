@@ -42,7 +42,7 @@ interface ihello
   }
 }
 
-component hello_multiple_nondet
+component hello_multiple_choice
 {
   provides ihello h;
   requires ihello w;
