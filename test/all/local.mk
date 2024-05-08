@@ -337,6 +337,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_port_blocked			\
  %D%/deadlock_reply				\
  %D%/deadlock_reply_modeling			\
+ %D%/deadlock_state				\
  %D%/defer_after_call				\
  %D%/defer_async				\
  %D%/defer_blocking				\
@@ -580,7 +581,6 @@ REGRESSION_TESTS =				\
  %D%/space.interface_shadow			\
  %D%/space.space				\
  %D%/space.wostream				\
- %D%/state_deadlock				\
  %D%/stateful_injected				\
  %D%/step_state					\
  %D%/stress_comment				\

@@ -61,7 +61,7 @@ component helloworld2
   }
 }
 
-component state_deadlock
+component deadlock_state
 {
   provides ihello p;
   requires ihello r;
