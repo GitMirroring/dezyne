@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,19 +22,17 @@
 //
 // Code:
 
-interface hello_modeling_nondet
+interface ihello_optional_choice
 {
-  in void hello();
-  out void cruel();
-  out void world();
-  out void bye();
+  in void hello ();
+  out void cruel ();
+  out void world ();
 
   behavior
   {
     bool idle = true;
     [idle] on hello: idle = false;
     [!idle] on inevitable: cruel;
-    [!idle] on inevitable: world;
-    [!idle] on optional: bye;
+    [!idle] on optional: world;
   }
 }
