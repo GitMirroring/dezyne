@@ -1,4 +1,4 @@
-(header ((client) hello_optional_nondet provides) ((sut) hello_optional_nondet interface))
+(header ((client) ihello_optional_choice2 provides) ((sut) ihello_optional_choice2 interface))
 (state ((client)) ((sut) (idle . true) (hidden . true)))
 <external>.hello -> ...
 ... -> sut.hello

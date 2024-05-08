@@ -455,7 +455,6 @@ REGRESSION_TESTS =				\
  %D%/hello_namespace_shadow2			\
  %D%/hello_no_compliance			\
  %D%/hello_optional_flush			\
- %D%/hello_optional_nondet			\
  %D%/hello_out_data				\
  %D%/hello_out_provides				\
  %D%/hello_provides				\
@@ -474,6 +473,7 @@ REGRESSION_TESTS =				\
  %D%/helloparams				\
  %D%/huge_interface				\
  %D%/huge_constraint				\
+ %D%/ihello_optional_choice2			\
  %D%/ihello_optional_choice3			\
  %D%/ihello_optional_choice4			\
  %D%/illegal_blocking_race			\

@@ -22,7 +22,7 @@
 //
 // Code:
 
-interface hello_optional_nondet
+interface ihello_optional_choice2
 {
   in bool hello ();
   out void cruel ();
