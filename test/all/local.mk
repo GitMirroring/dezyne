@@ -462,6 +462,7 @@ REGRESSION_TESTS =				\
  %D%/ihello_optional_choice3			\
  %D%/ihello_optional_choice4			\
  %D%/illegal_blocking_race			\
+ %D%/illegal_external				\
  %D%/illegal_external_inevitable		\
  %D%/illegal_external_requires_twice		\
  %D%/illegal_external_requires_twice2		\

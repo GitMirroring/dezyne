@@ -1,0 +1,65 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// A minimal, valid example for external, i.e., no illegals or
+// queue-fulls, with observable other behavior.  When port 'w' is
+// external, we see reply values h.true and h.false.  When port 'w' is
+// non-external, we never see h.false.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in void cruel ();
+
+  behavior
+  {
+    on hello: {}
+    on cruel: illegal;
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    bool idle=true;
+    [idle] on hello: idle=false;
+    [!idle] on inevitable: {world;idle=true;}
+  }
+}
+
+component illegal_external
+{
+  provides ihello h;
+  requires external iworld w;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on h.hello (): {idle=false; w.hello ();}
+    [!idle] on h.hello (): {}
+    on w.world (): idle=true;
+  }
+}
