@@ -37,6 +37,7 @@ SMOKE_TESTS =					\
 SEMANTIC_TESTS =				\
  %D%/i_world					\
  %D%/ihello					\
+ %D%/ihello_choice				\
  %D%/ihello_cruel__world			\
  %D%/ihello_cruelworld				\
  %D%/ihello_reply_bool				\
@@ -147,7 +148,6 @@ FEATURE_TESTS =					\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
  %D%/inline-functions				\
- %D%/interface_nondet				\
  %D%/queuefull_component0			\
  %D%/semantics					\
  %D%/state-diagram				\

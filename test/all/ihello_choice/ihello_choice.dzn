@@ -23,11 +23,11 @@
 //
 // Code:
 
-interface interface_nondet
+interface ihello_choice
 {
-  in void hello();
-  out void cruel();
-  out void world();
+  in void hello ();
+  out void cruel ();
+  out void world ();
 
   behavior
   {
