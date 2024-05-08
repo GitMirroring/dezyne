@@ -56,6 +56,7 @@ SEMANTIC_TESTS =				\
  %D%/helloworld_requires			\
 						\
  %D%/system_hello_requires			\
+ %D%/system_hello_world_requires		\
  %D%/system_helloworld_requires
 
 SEMANTIC_ERROR_TESTS =				\
