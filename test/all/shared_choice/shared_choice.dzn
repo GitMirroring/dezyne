@@ -35,10 +35,10 @@ interface ihello
   }
 }
 
-component shared_nondet
+component shared_choice
 {
   provides ihello h;
-  behaviour
+  behavior
   {
     on h.hello (): h.world ();
   }

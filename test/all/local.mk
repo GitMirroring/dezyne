@@ -549,6 +549,7 @@ REGRESSION_TESTS =				\
  %D%/shared_async_requires			\
  %D%/shared_block				\
  %D%/shared_blocking_race			\
+ %D%/shared_choice				\
  %D%/shared_defer				\
  %D%/shared_defer2				\
  %D%/shared_defer_trailing_assign		\
@@ -556,7 +557,6 @@ REGRESSION_TESTS =				\
  %D%/shared_enum				\
  %D%/shared_field_test				\
  %D%/shared_glue				\
- %D%/shared_nondet				\
  %D%/shared_out_sync_provides			\
  %D%/shared_out_sync_requires			\
  %D%/shared_reply				\
