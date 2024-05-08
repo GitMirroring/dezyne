@@ -1,0 +1,13 @@
+(header ((h) ihellocruel__world provides) ((sut) compliance_helloworld component))
+(state ((h)) ((sut)))
+test/all/compliance_helloworld/compliance_helloworld.dzn:33:20: error: non-compliance
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.world
+<external>.h.world <- ...
+<non-compliance>
+(state ((h)) ((sut)))
+test/all/compliance_helloworld/compliance_helloworld.dzn:33:20: error: non-compliance
+(trail "h.hello" "h.world" "<non-compliance>")
+(labels "h.hello")
+(eligible)

@@ -50,6 +50,9 @@ SEMANTIC_TESTS =				\
  %D%/helloworld					\
  %D%/helloworld_requires
 
+SEMANTIC_ERROR_TESTS =				\
+ %D%/compliance_helloworld
+
 FEATURE_TESTS =					\
  %D%/compliance0				\
  %D%/compliance_external			\
@@ -766,6 +769,7 @@ HELLO_TESTS =					\
 FULL_TESTS =					\
  $(SMOKE_TESTS)					\
  $(SEMANTIC_TESTS)				\
+ $(SEMANTIC_ERROR_TESTS)			\
  $(HELLO_TESTS)					\
  $(DOC_SEMANTICS_TESTS)				\
  $(PARSER_TESTS)				\

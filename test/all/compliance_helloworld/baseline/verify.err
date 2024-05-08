@@ -1,0 +1,11 @@
+verify: ihellocruel__world: check: deadlock: ok
+verify: ihellocruel__world: check: unreachable: ok
+verify: ihellocruel__world: check: livelock: ok
+verify: ihellocruel__world: check: deterministic: ok
+verify: compliance_helloworld: check: deterministic: ok
+verify: compliance_helloworld: check: illegal: ok
+verify: compliance_helloworld: check: deadlock: ok
+verify: compliance_helloworld: check: unreachable: ok
+verify: compliance_helloworld: check: livelock: ok
+verify: compliance_helloworld: check: compliance: fail
+error: component compliance_helloworld is non-compliant with interface(s) of provides port(s)
