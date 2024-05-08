@@ -23,7 +23,7 @@
 // Code:
 
 // This interface immediately enters a live-lock
-interface livelock_nondet
+interface livelock_choice
 {
   enum State {A, B, C};
 

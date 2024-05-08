@@ -1,0 +1,6 @@
+verify: livelock_choice: check: deadlock: ok
+verify: livelock_choice: check: unreachable: ok
+verify: livelock_choice: check: livelock: fail
+error: livelock in model livelock_choice
+verify: livelock_choice: check: deterministic: fail
+error: interface livelock_choice is unobservably non-deterministic

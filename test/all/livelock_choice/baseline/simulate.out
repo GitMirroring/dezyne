@@ -1,0 +1,13 @@
+(header ((client) livelock_choice provides) ((sut) livelock_choice interface))
+(state ((client)) ((sut) (s . State:A)))
+test/all/livelock_choice/livelock_choice.dzn:32:3: error: interface "livelock_choice" is unobservably non-deterministic
+test/all/livelock_choice/livelock_choice.dzn:38:14: error: interface "livelock_choice" is unobservably non-deterministic
+test/all/livelock_choice/livelock_choice.dzn:38:14: error: interface "livelock_choice" is unobservably non-deterministic
+<non-deterministic>
+(state ((client)) ((sut) (s . State:A)))
+test/all/livelock_choice/livelock_choice.dzn:32:3: error: interface "livelock_choice" is unobservably non-deterministic
+test/all/livelock_choice/livelock_choice.dzn:38:14: error: interface "livelock_choice" is unobservably non-deterministic
+test/all/livelock_choice/livelock_choice.dzn:38:14: error: interface "livelock_choice" is unobservably non-deterministic
+(trail "<non-deterministic>")
+(labels "e" "optional")
+(eligible)

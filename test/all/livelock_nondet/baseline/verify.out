@@ -1,5 +1,0 @@
-model: livelock_nondet
-<loop>
-<livelock>
-model: livelock_nondet
-<non-deterministic>

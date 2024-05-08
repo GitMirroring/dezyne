@@ -505,7 +505,7 @@ REGRESSION_TESTS =				\
  %D%/interface_nondet2				\
  %D%/iteration					\
  %D%/label_instance_mismatch			\
- %D%/livelock_nondet				\
+ %D%/livelock_choice				\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\
  %D%/livelock_synchronous			\

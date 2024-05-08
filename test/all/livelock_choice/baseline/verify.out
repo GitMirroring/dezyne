@@ -1,0 +1,5 @@
+model: livelock_choice
+<loop>
+<livelock>
+model: livelock_choice
+<non-deterministic>
