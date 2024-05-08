@@ -311,7 +311,7 @@ REGRESSION_TESTS =				\
  %D%/component_missing_reply			\
  %D%/component_modeling_loop			\
  %D%/compound.space				\
- %D%/constraint_modeling_nondet			\
+ %D%/constraint_modeling_choice			\
  %D%/constraint_nondet				\
  %D%/constraint_nondet2				\
  %D%/cruise-control				\

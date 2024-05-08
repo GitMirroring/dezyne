@@ -53,7 +53,7 @@ interface iworld
   }
 }
 
-component constraint_modeling_nondet
+component constraint_modeling_choice
 {
   provides ihello h;
   requires iworld w;
