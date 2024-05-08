@@ -412,6 +412,7 @@ REGRESSION_TESTS =				\
  %D%/hello_blocking_asynchronous_sync_out	\
  %D%/hello_blocking_multiple_out		\
  %D%/hello_check_bindings			\
+ %D%/hello_choice2				\
  %D%/hello_choice_action			\
  %D%/hello_choice_reply				\
  %D%/hello_complete_action			\
@@ -452,7 +453,6 @@ REGRESSION_TESTS =				\
  %D%/hello_namespace_shadow			\
  %D%/hello_namespace_shadow2			\
  %D%/hello_no_compliance			\
- %D%/hello_nondet				\
  %D%/hello_optional_flush			\
  %D%/hello_optional_nondet			\
  %D%/hello_out_data				\
