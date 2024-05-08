@@ -52,6 +52,7 @@ SEMANTIC_TESTS =				\
  %D%/helloworld_requires
 
 SEMANTIC_ERROR_TESTS =				\
+ %D%/compliance_hello_world			\
  %D%/compliance_helloworld
 
 FEATURE_TESTS =					\

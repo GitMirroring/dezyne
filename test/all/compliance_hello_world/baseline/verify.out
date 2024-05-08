@@ -1,0 +1,5 @@
+model: compliance_hello_world
+h.hello
+h.return
+<defer>
+<non-compliance>

@@ -1,0 +1,3 @@
+test/all/compliance_hello_world/compliance_hello_world.dzn:33:26: error: non-compliance
+test/all/compliance_hello_world/compliance_hello_world.dzn:33:26: component performs: h.world
+test/all/compliance_hello_world/ihello_cruel__world.dzn:34:42: port expects: cruel

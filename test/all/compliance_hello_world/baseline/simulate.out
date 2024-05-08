@@ -1,0 +1,18 @@
+(header ((h) ihello_cruel__world provides) ((sut) compliance_hello_world component))
+(state ((h) (idle . true)) ((sut)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)))
+(trail "h.hello" "h.return")
+test/all/compliance_hello_world/compliance_hello_world.dzn:33:26: error: non-compliance
+<defer>
+... <- sut.h.world
+<external>.h.world <- ...
+<non-compliance>
+(state ((h) (idle . false)) ((sut)))
+test/all/compliance_hello_world/compliance_hello_world.dzn:33:26: error: non-compliance
+(trail "<defer>" "h.world" "<non-compliance>")
+(labels "h.hello" "<defer>")
+(eligible)
