@@ -32,7 +32,7 @@ SMOKE_TESTS =					\
  %D%/parse_syntax				\
  %D%/parse_type_mismatch			\
  %D%/hello					\
- %D%/compliance_provides_bool
+ %D%/compliance_reply_false
 
 SEMANTIC_TESTS =				\
  %D%/ihello					\
@@ -268,6 +268,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_nonsynchronous_sync		\
  %D%/compliance_optional			\
  %D%/compliance_out_sync			\
+ %D%/compliance_provides_bool			\
  %D%/compliance_provides_enum			\
  %D%/compliance_provides_illegal		\
  %D%/compliance_provides_illegal4		\

@@ -1,0 +1,13 @@
+(header ((h) ihello_reply_true provides) ((sut) compliance_reply_false component))
+(state ((h)) ((sut)))
+test/all/compliance_reply_false/compliance_reply_false.dzn:32:5: error: non-compliance
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.false
+<external>.h.true <- ...
+<non-compliance>
+(state ((h)) ((sut)))
+test/all/compliance_reply_false/compliance_reply_false.dzn:32:5: error: non-compliance
+(trail "h.hello" "h.false" "<non-compliance>")
+(labels "h.hello")
+(eligible)

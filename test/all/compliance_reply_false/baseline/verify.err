@@ -1,0 +1,11 @@
+verify: ihello_reply_true: check: deadlock: ok
+verify: ihello_reply_true: check: unreachable: ok
+verify: ihello_reply_true: check: livelock: ok
+verify: ihello_reply_true: check: deterministic: ok
+verify: compliance_reply_false: check: deterministic: ok
+verify: compliance_reply_false: check: illegal: ok
+verify: compliance_reply_false: check: deadlock: ok
+verify: compliance_reply_false: check: unreachable: ok
+verify: compliance_reply_false: check: livelock: ok
+verify: compliance_reply_false: check: compliance: fail
+error: component compliance_reply_false is non-compliant with interface(s) of provides port(s)
