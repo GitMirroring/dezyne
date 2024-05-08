@@ -44,7 +44,7 @@ interface ihello
   }
 }
 
-component constraint_nondet
+component constraint_choice
 {
   provides ihello h;
   requires ihello w;
