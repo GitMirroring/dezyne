@@ -22,7 +22,7 @@
 //
 // Code:
 
-interface shared_determinism
+interface determinism_shared
 {
   in void hello ();
   out void bye ();

@@ -1,0 +1,3 @@
+model: determinism_shared
+bye
+<non-deterministic>

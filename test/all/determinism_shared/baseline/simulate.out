@@ -1,0 +1,13 @@
+(header ((client) determinism_shared provides) ((sut) determinism_shared interface))
+(state ((client)) ((sut) (idle . true)))
+test/all/determinism_shared/determinism_shared.dzn:36:26: error: interface "determinism_shared" is unobservably non-deterministic
+test/all/determinism_shared/determinism_shared.dzn:37:40: error: interface "determinism_shared" is unobservably non-deterministic
+... <- sut.bye
+<external>.bye <- ...
+<non-deterministic>
+(state ((client)) ((sut) (idle . true)))
+test/all/determinism_shared/determinism_shared.dzn:36:26: error: interface "determinism_shared" is unobservably non-deterministic
+test/all/determinism_shared/determinism_shared.dzn:37:40: error: interface "determinism_shared" is unobservably non-deterministic
+(trail "bye" "<non-deterministic>")
+(labels "hello" "inevitable")
+(eligible)

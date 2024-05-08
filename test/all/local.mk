@@ -312,6 +312,7 @@ REGRESSION_TESTS =				\
  %D%/defer_twice_noisy				\
  %D%/defer_typed_call				\
  %D%/determinism_deadlock			\
+ %D%/determinism_shared				\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
  %D%/dollars					\
@@ -495,7 +496,6 @@ REGRESSION_TESTS =				\
  %D%/shared_blocking_race			\
  %D%/shared_defer				\
  %D%/shared_defer_trailing_assign		\
- %D%/shared_determinism				\
  %D%/shared_double_inevitable			\
  %D%/shared_enum				\
  %D%/shared_field_test				\
