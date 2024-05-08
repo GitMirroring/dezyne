@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((trace-format "trace"))
