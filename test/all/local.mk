@@ -576,7 +576,6 @@ REGRESSION_TESTS =				\
  %D%/system_foreign_only			\
  %D%/system_foreign_only_flush			\
  %D%/system_import_foreign			\
- %D%/system_hello_world				\
  %D%/system_helloworld				\
  %D%/system_inevitable				\
  %D%/system_mix_bindings			\
