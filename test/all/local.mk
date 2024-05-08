@@ -331,6 +331,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
  %D%/deadlock_blocking_replies			\
+ %D%/deadlock_inner_guard_shared_state		\
  %D%/deadlock_interface_determinism		\
  %D%/deadlock_optional_out_only			\
  %D%/deadlock_port_blocked			\
@@ -503,7 +504,6 @@ REGRESSION_TESTS =				\
  %D%/inevitable_performance			\
  %D%/injected_dangling				\
  %D%/injected_foreign				\
- %D%/inner_guard_shared_state_deadlock		\
  %D%/inner.space				\
  %D%/integer_expressions			\
  %D%/interface_enum				\

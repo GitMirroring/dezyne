@@ -56,7 +56,7 @@ interface icruel
 }
 
 
-component inner_guard_shared_state_deadlock
+component deadlock_inner_guard_shared_state
 {
   provides ihello h;
   requires icruel c;
