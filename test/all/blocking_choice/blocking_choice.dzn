@@ -56,7 +56,7 @@ interface iworld
   }
 }
 
-component blocking_nondet
+component blocking_choice
 {
   provides blocking ihello h;
   requires iworld w;

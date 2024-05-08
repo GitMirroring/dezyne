@@ -182,6 +182,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_bottom_system			\
  %D%/blocking_cancel_race			\
  %D%/blocking_cancel_race_bool			\
+ %D%/blocking_choice				\
  %D%/blocking_defer				\
  %D%/blocking_double_release			\
  %D%/blocking_external				\
@@ -194,7 +195,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_multiple_provides2		\
  %D%/blocking_multiple_provides3		\
  %D%/blocking_mux				\
- %D%/blocking_nondet				\
  %D%/blocking_normalize				\
  %D%/blocking_optional				\
  %D%/blocking_provides_state			\
