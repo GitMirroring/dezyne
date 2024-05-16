@@ -3,6 +3,7 @@
 #
 # Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
+# Copyright © 2024 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -42,7 +43,7 @@ if [ $1 = parse ]; then
     parse=true
     shift
 fi
-dir=$1
+dir=${1%/}
 echo $dir;
 base=$(basename $dir)
 
