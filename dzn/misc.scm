@@ -28,7 +28,9 @@
 
   #:use-module (json)
 
-  #:export (alist->hash-table
+  #:export (->
+            <->
+            alist->hash-table
             conjoin
             delete-adjacent-duplicates
             disjoin
@@ -57,6 +59,15 @@
 "
   (lambda arguments
     (every (cut apply <> arguments) predicates)))
+
+(define (-> P Q)
+  "Logical implication or conditional statement"
+  (disjoin (negate P) Q))
+
+(define (<-> P Q)
+  "Bi-implication or biderectional statement"
+  (disjoin (conjoin P Q)
+           (negate (disjoin P Q))))
 
 (define (seq . procedures)
   "Like COMPOSE but for PROCEDURES running in sequence on the same
