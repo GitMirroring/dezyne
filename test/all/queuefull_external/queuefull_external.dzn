@@ -21,33 +21,15 @@
 //
 // Code:
 
-interface i
-{
-  out void cb();
-
-  behavior
-  {
-    on inevitable: cb;
-  }
-}
-
-interface ii
-{
-  out void cb();
-
-  behavior
-  {
-    on inevitable: cb;
-  }
-}
+import i_world.dzn;
 
 component queuefull_external
 {
-  provides i p;
-  requires external ii r;
+  provides i_world h;
+  requires external i_world w;
 
   behavior
   {
-    on r.cb(): {}
+    on w.world (): {}
   }
 }

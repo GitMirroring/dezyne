@@ -1,9 +1,9 @@
-(header ((p) i provides) ((sut) queuefull_external component) ((r) ii requires))
-(state ((p)) ((sut)) ((r)))
-test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
+(header ((h) i_world provides) ((sut) queuefull_external component) ((w) i_world requires))
+(state ((h)) ((sut)) ((w)))
+test/all/queuefull_external/i_world.dzn:31:20: error: queue-full in component "i_world"
 <queue-full>
-(state ((p)) ((sut)) ((r)))
-test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
+(state ((h)) ((sut)) ((w)))
+test/all/queuefull_external/i_world.dzn:31:20: error: queue-full in component "i_world"
 (trail "<queue-full>")
-(labels "r.cb")
+(labels "w.world")
 (eligible)

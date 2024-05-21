@@ -1,1 +1,1 @@
-test/all/queuefull_external/queuefull_external.dzn:40:20: error: queue-full in component "ii"
+test/all/queuefull_external/i_world.dzn:31:20: error: queue-full in component "i_world"
