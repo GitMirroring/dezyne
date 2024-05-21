@@ -22,12 +22,14 @@
 //
 // Code:
 
-interface parse_call_before_var {
+interface call_before_variable
+{
   in void hello ();
-  behavior {
-    bool b () {return false;}
-    void cruel (bool b) {}    // triggers parse error
-    on hello: bool x = b ();  // on b ();
+  behavior
+  {
+    bool world () {return false;}
+    void cruel (bool b) {}
+    on hello: bool b = world ();
     on hello: cruel (true);
   }
 }

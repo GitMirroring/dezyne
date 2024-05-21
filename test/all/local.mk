@@ -219,6 +219,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system3				\
  %D%/blocking_system4				\
  %D%/blocking_system_diamond			\
+ %D%/call_before_variable			\
  %D%/calling_context				\
  %D%/clash_event_name				\
  %D%/clash_port_variable			\
@@ -629,7 +630,6 @@ PARSER_TESTS =					\
  %D%/parse-flags				\
  %D%/parse_assign_void				\
  %D%/parse_block_comment_import			\
- %D%/parse_call_before_var			\
  %D%/parse_component_shadow_missing_event	\
  %D%/parse_component_without_trigger		\
  %D%/parse_defer				\
