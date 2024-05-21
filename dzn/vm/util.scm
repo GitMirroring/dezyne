@@ -509,6 +509,8 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
      #f)
     ((? string?)
      o)
+    (integer?
+     (number->string o))
     (#f
      "false")
     (#t
