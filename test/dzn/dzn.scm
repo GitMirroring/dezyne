@@ -301,6 +301,18 @@ output, and standard error as three values."
          (events (filter (negate (cute string-prefix? "(state " <>)) lines)))
     (string-join events "\n")))
 
+(define (trace->base+number name)
+  (let ((m (string-match "^(([^0-9]|[0-9][^0-9])*)([0-9]+)$" name)))
+    (if (not m) (values name #f)
+        (values (match:substring m 1)
+                (string->number (match:substring m 3))))))
+
+(define (trace< a b)
+  (let ((a-base a-number (trace->base+number a))
+        (b-base b-number (trace->base+number b)))
+    (if (and a-number b-number (equal? a-base b-base)) (< a-number b-number)
+        (string< a b))))
+
 
 ;;;
 ;;; Stage runners.
@@ -401,7 +413,8 @@ output, and standard error as three values."
        (or (code-error? file-name)
            (run-build file-name language))
        (or (code-error? file-name)
-           (let ((traces (find-files file-name ".*trace.*$")))
+           (let* ((traces (find-files file-name ".*trace.*$"))
+                  (traces (sort traces trace<)))
              (and-map (cute run-execute file-name language <>) traces)))))
 
 (define (run-traces file-name)
@@ -751,7 +764,8 @@ are weak-bisim equivalent"
   (format #t "** stage: simulate\n")
   (or (skip? file-name
              "simulate")
-      (let ((traces (find-files file-name ".*trace.*$")))
+      (let* ((traces (find-files file-name ".*trace.*$"))
+             (traces (sort traces trace<)))
         (and-map (cute run-simulate-trace file-name <>) traces))))
 
 (define (run-lts file-name)
