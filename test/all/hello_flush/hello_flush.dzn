@@ -22,33 +22,31 @@
 //
 // Code:
 
-interface ihello {
-  out void world();
+import i_world.dzn;
 
-  behavior {
-    on inevitable: world;
-  }
-}
+interface ihellocruelworld_sunrise
+{
+  in void hello ();
+  out void cruel ();
+  out void world ();
+  out void sunrise ();
 
-interface iworld {
-  in void hello();
-  out void sunrise();
-  out void cruel();
-  out void world();
-
-  behavior {
-    on hello: { cruel; world;}
+  behavior
+  {
+    on hello: {cruel; world;}
     on inevitable: sunrise;
   }
 }
 
-component hello_flush {
-  provides ihello h;
-  requires iworld w;
+component hello_flush
+{
+  provides i_world h;
+  requires ihellocruelworld_sunrise w;
 
-  behavior {
-    on w.sunrise(): w.hello();
-    on w.cruel(): h.world();
-    on w.world(): {}
+  behavior
+  {
+    on w.sunrise (): w.hello ();
+    on w.cruel (): h.world ();
+    on w.world (): {}
   }
 }
