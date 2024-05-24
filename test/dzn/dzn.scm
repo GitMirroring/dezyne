@@ -94,10 +94,11 @@ output, and standard error as three values."
               ((ex-input . ex-output) (pipe)))
     (format #t "~a\n" (string-join
                        (map (lambda (s)
-                              (if (or (string-index s #\space)
-                                      (string-index s #\newline))
-                                  (format #f "~s" s)
-                                  s))
+                              (let ((quote? (or (string-index s #\space)
+                                                (string-index s #\newline)
+                                                (string-index s #\<))))
+                                (if (not quote?) s
+                                    (format #f "~s" s))))
                             command)))
     (match (primitive-fork)
       (0 (catch #t
