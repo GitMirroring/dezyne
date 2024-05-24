@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,52 +22,24 @@
 //
 // Code:
 
-interface ihello
+import ihello.dzn;
+import ihello_world.dzn;
+import ihello_i_world.dzn;
+
+component compliance_fork_blocking_bypass
 {
-  in void hello ();
+  provides blocking ihello h;
+  provides blocking ihello_i_world h_bypass;
 
-  behavior {
-    on hello: {}
-  }
-}
+  requires ihello_world w;
+  requires ihello_i_world w_bypass;
 
-interface iworld
-{
-  in void hello ();
-  out void world ();
+  behavior
+  {
+    blocking on h.hello (): w.hello ();
+    on w.world (): h.reply ();
 
-  behavior {
-    bool idle = true;
-    on hello: idle = !idle;
-    [!idle] on inevitable: {world; idle = true;}
-  }
-}
-
-interface ibypass {
-  in void hello ();
-  out void world ();
-
-  behavior {
-    on hello: {}
-    on inevitable: world;
-  }
-
-}
-
-component compliance_fork_blocking_bypass {
-  provides blocking ihello block;
-  provides blocking ibypass bypassp;
-
-  requires iworld world;
-  requires ibypass bypassr;
-
-  behavior {
-    on block.hello (): blocking {
-      world.hello ();
-    }
-    on world.world (): block.reply();
-
-    on bypassr.world (): bypassp.world ();
-    on bypassp.hello (): bypassr.hello ();
+    on h_bypass.hello (): w_bypass.hello ();
+    on w_bypass.world (): h_bypass.world ();
   }
 }

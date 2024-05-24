@@ -1,6 +1,6 @@
 model: compliance_fork_blocking_bypass
-block.hello
-world.hello
-world.return
-bypassr.world
+h.hello
+w.hello
+w.return
+w_bypass.world
 <non-compliance>
