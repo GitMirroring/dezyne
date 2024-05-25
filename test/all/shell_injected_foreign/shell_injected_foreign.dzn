@@ -129,7 +129,7 @@ component C
   }
 }
 
-component shell_injected
+component shell_injected_foreign
 {
   provides blocking IRelaxed p;
   requires external IRelaxed r;

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,18 +28,20 @@ class main {
   {
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
-    using(shell_injected sut = new shell_injected (locator.set(runtime), "shell_injected"))
+    using(shell_injected_foreign sut
+          = new shell_injected_foreign (locator.set (runtime),
+                                        "shell_injected_foreign"))
     {
       sut.p.out_port.f = () =>
       {
-          System.Console.Error.WriteLine("<external>.p.f <- shell_injected.top.p.f");
+          System.Console.Error.WriteLine ("<external>.p.f <- shell_injected_foreign.top.p.f");
       };
       sut.r.in_port.e = () => {
-          System.Console.Error.WriteLine("<external>.r.e <- shell_injected.top.r.e");
-          System.Console.Error.WriteLine("<external>.r.return <- shell_injected.top.r.return");
+          System.Console.Error.WriteLine ("<external>.r.e <- shell_injected_foreign.top.r.e");
+          System.Console.Error.WriteLine ("<external>.r.return <- shell_injected_foreign.top.r.return");
       };
 
-      Thread t = new Thread (() => {
+      Thread t = new Thread ( () => {
         Thread.Sleep (50);
         sut.r.out_port.f ();
         });

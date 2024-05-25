@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +21,7 @@
 //
 // Code:
 
-#include <shell_injected.h>
+#include <shell_injected_foreign.h>
 
 void
 Logger_init (Logger *self, dzn_locator *dzn_locator

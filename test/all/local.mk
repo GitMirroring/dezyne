@@ -576,7 +576,7 @@ REGRESSION_TESTS =				\
  %D%/shared_trailing_assign			\
  %D%/shared_type_lookup				\
  %D%/shared_variable				\
- %D%/shell_injected				\
+ %D%/shell_injected_foreign			\
  %D%/simplify_guards				\
  %D%/space.foreign				\
  %D%/space.import_interface_shadow		\

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,7 +22,7 @@
 //
 // Code:
 
-#include "shell_injected.hh"
+#include "shell_injected_foreign.hh"
 
 #include <dzn/locator.hh>
 #include <dzn/runtime.hh>
@@ -31,7 +32,7 @@ main ()
 {
   dzn::locator locator;
   dzn::runtime runtime;
-  shell_injected sut (locator.set (runtime));
+  shell_injected_foreign sut (locator.set (runtime));
 
   sut.p.out.f = []{};
   sut.r.in.e = []{};
