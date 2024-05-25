@@ -1,0 +1,21 @@
+(header ((h) ihello_i_world provides) ((sut) collateral_queuefull component) ((w_idle) ihello requires) ((w) ihello_i_world requires))
+(state ((h)) ((sut)) ((w_idle)) ((w)))
+test/all/collateral_queuefull/ihello_i_world.dzn:33:20: error: queue-full in component "collateral_queuefull"
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w_idle.hello -> ...
+... -> <external>.w_idle.hello
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.world
+sut.<q> <- ...
+... <- <external>.w.world
+sut.<q> <- ...
+<queue-full>
+(state ((h)) ((sut) (*q* w.world w.world w.world)) ((w_idle)) ((w)))
+test/all/collateral_queuefull/ihello_i_world.dzn:33:20: error: queue-full in component "collateral_queuefull"
+(trail "h.hello" "w_idle.hello" "w.world" "w.world" "w.world" "w.world" "<queue-full>")
+(labels "h.hello" "w.world" "w_idle.return")
+(eligible)

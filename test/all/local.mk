@@ -205,7 +205,6 @@ REGRESSION_TESTS =				\
  %D%/blocking_normalize				\
  %D%/blocking_optional				\
  %D%/blocking_provides_state			\
- %D%/blocking_queuefull				\
  %D%/blocking_queuefull_reply			\
  %D%/blocking_race				\
  %D%/blocking_release				\
@@ -246,6 +245,7 @@ REGRESSION_TESTS =				\
  %D%/collateral_double_blocked			\
  %D%/collateral_double_blocked_out		\
  %D%/collateral_illegal				\
+ %D%/collateral_queuefull			\
  %D%/comment_traceability			\
  %D%/complex_and				\
  %D%/complex_arguments0				\
