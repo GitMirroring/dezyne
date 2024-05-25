@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,21 +22,14 @@
 //
 // Code:
 
-interface ihello
-{
-  out void world();
-  behavior
-  {
-    on inevitable: world;
-  }
-}
+import i_world.dzn;
 
 component compliance_single_to_multiple
 {
-  provides ihello h;
-  requires ihello w;
+  provides i_world h;
+  requires i_world w;
   behavior
   {
-    on w.world(): { h.world(); h.world(); }
+    on w.world (): {h.world (); h.world ();}
   }
 }
