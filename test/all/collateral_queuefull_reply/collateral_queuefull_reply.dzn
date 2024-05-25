@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,37 +22,18 @@
 //
 // Code:
 
-interface ihello
+import ihello_i_world.dzn;
+import ihello_reply_true.dzn;
+
+component collateral_queuefull_reply
 {
-  in void hello ();
-  out void world ();
+  provides blocking ihello_i_world h;
+  requires blocking ihello_reply_true w_idle;
+  requires ihello_i_world w;
 
   behavior
   {
-    on hello: {}
-    on inevitable: world;
-  }
-}
-
-interface iblock
-{
-  in bool hello ();
-
-  behavior
-  {
-    on hello: reply (true);
-  }
-}
-
-component blocking_queuefull_reply
-{
-  provides blocking ihello h;
-  requires blocking iblock b;
-  requires ihello r;
-
-  behavior
-  {
-    on h.hello (): {r.hello (); bool x = b.hello ();}
-    on r.world (): {}
+    on h.hello (): {w.hello (); bool x = w_idle.hello ();}
+    on w.world (): {}
   }
 }

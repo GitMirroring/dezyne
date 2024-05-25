@@ -1,0 +1,1 @@
+test/all/collateral_queuefull_reply/ihello_i_world.dzn:33:20: error: queue-full in component "collateral_queuefull_reply"

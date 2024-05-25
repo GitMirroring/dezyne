@@ -1,0 +1,10 @@
+model: collateral_queuefull_reply
+h.hello
+w.hello
+w.return
+w_idle.hello
+w.world
+w.world
+w.world
+w.world
+<queue-full>
