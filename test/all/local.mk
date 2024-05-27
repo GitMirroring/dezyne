@@ -160,6 +160,7 @@ FEATURE_TESTS =					\
  %D%/hello_usuk					\
  %D%/hello_void					\
  %D%/ihello_mock				\
+ %D%/ihello_nonstrict				\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
  %D%/inline-functions				\

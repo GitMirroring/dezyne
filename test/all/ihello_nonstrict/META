@@ -1,0 +1,5 @@
+;;; -*- scheme -*-
+((skip ("build"))
+ (model "ihello")
+ (non-strict? #t)
+ (trace-format "trace"))

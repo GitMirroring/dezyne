@@ -1,0 +1,17 @@
+(header ((client) ihello provides) ((sut) ihello interface))
+(state ((client)) ((sut)))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut)))
+(trail "hello" "return")
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut)))
+(trail "hello" "return")
+(state ((client)) ((sut)))
+(labels "hello")
+(eligible "hello")
