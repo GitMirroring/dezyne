@@ -67,7 +67,7 @@ interface ibool
   }
 }
 
-component constraint_nondet2
+component constraint_choice2
 {
   provides ihello h;
   requires iworld w;

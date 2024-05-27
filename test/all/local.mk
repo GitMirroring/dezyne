@@ -314,8 +314,8 @@ REGRESSION_TESTS =				\
  %D%/component_modeling_loop			\
  %D%/compound.space				\
  %D%/constraint_choice				\
+ %D%/constraint_choice2				\
  %D%/constraint_modeling_choice			\
- %D%/constraint_nondet2				\
  %D%/cruise-control				\
  %D%/cxx_enum_to_string				\
  %D%/data_full					\
