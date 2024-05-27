@@ -132,7 +132,6 @@ FEATURE_TESTS =					\
  %D%/hello_mock					\
  %D%/hello_multiple_choice			\
  %D%/hello_multiple_provides			\
- %D%/hello_nondet_reply				\
  %D%/hello_optional				\
  %D%/hello_otherwise				\
  %D%/hello_out					\
