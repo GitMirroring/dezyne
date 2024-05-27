@@ -414,6 +414,7 @@ REGRESSION_TESTS =				\
  %D%/hello_blocking_multiple_out		\
  %D%/hello_check_bindings			\
  %D%/hello_choice2				\
+ %D%/hello_choice3				\
  %D%/hello_choice_action			\
  %D%/hello_choice_reply				\
  %D%/hello_complete_action			\
@@ -501,7 +502,6 @@ REGRESSION_TESTS =				\
  %D%/interface_enum				\
  %D%/interface_int				\
  %D%/interface_missing_reply			\
- %D%/interface_nondet2				\
  %D%/iteration					\
  %D%/label_instance_mismatch			\
  %D%/livelock_choice				\

@@ -60,7 +60,7 @@ interface iworld
   }
 }
 
-component interface_nondet2
+component hello_choice3
 {
   provides ihello h;
   requires iworld w;
