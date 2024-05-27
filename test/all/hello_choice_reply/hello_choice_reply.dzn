@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -22,21 +22,12 @@
 //
 // Code:
 
-interface ihello
-{
-  in bool hello();
-
-  behavior
-  {
-    on hello: reply (false);
-    on hello: reply (true);
-  }
-}
+import ihello_reply_bool.dzn;
 
 component hello_choice_reply
 {
-  provides ihello h;
-  requires ihello w;
+  provides ihello_reply_bool h;
+  requires ihello_reply_bool w;
 
   behavior
   {

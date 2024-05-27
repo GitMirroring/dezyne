@@ -1,4 +1,4 @@
-(header ((h) ihello provides) ((sut) hello_choice_reply component) ((w) ihello requires))
+(header ((h) ihello_reply_bool provides) ((sut) hello_choice_reply component) ((w) ihello_reply_bool requires))
 (state ((h)) ((sut)) ((w)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
