@@ -68,6 +68,7 @@ SEMANTIC_TESTS =				\
  %D%/helloworld_requires			\
 						\
  %D%/blocking_system				\
+ %D%/system_hello_choice_requires		\
  %D%/system_hello_cruelworld_requires		\
  %D%/system_hello_requires			\
  %D%/system_hello_world_requires		\
@@ -593,7 +594,6 @@ REGRESSION_TESTS =				\
  %D%/system_helloworld				\
  %D%/system_inevitable				\
  %D%/system_mix_bindings			\
- %D%/system_nondet_out				\
  %D%/system_nondet_reply			\
  %D%/system_optional				\
  %D%/system_out					\

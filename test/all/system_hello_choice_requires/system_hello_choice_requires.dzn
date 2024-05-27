@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -21,39 +21,15 @@
 //
 // Code:
 
-interface ihello
+import hello_choice_requires.dzn;
+
+component system_hello_choice_requires
 {
-  in void hello();
-  out void cruel();
-  out void world();
-
-  behavior
-  {
-    on hello: cruel;
-    on hello: world;
-  }
-}
-
-component helloworld
-{
-  provides ihello h;
-  requires ihello w;
-
-  behavior
-  {
-    on h.hello(): w.hello();
-    on w.cruel(): h.cruel();
-    on w.world(): h.world();
-  }
-}
-
-component system_nondet_out
-{
-  provides ihello h;
-  requires ihello w;
+  provides ihello_choice h;
+  requires ihello_choice w;
   system
     {
-      helloworld c;
+      hello_choice_requires c;
       h <=> c.h;
       w <=> c.w;
     }
