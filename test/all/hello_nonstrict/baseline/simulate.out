@@ -1,0 +1,17 @@
+(header ((h) ihello provides) ((sut) hello component))
+(state ((h)) ((sut)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut)))
+(trail "h.hello" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut)))
+(trail "h.hello" "h.return")
+(state ((h)) ((sut)))
+(labels "h.hello")
+(eligible "h.hello")

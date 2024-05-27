@@ -1,0 +1,4 @@
+;;; -*- scheme -*-
+((model "hello")
+ (non-strict? #t)
+ (trace-format "trace"))
