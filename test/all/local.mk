@@ -591,10 +591,10 @@ REGRESSION_TESTS =				\
  %D%/system_foreign_only			\
  %D%/system_foreign_only_flush			\
  %D%/system_import_foreign			\
+ %D%/system_hello_choice_reply			\
  %D%/system_helloworld				\
  %D%/system_inevitable				\
  %D%/system_mix_bindings			\
- %D%/system_nondet_reply			\
  %D%/system_optional				\
  %D%/system_out					\
  %D%/system_out_internal			\
