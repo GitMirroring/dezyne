@@ -97,6 +97,11 @@ if $simulate; then
     if [ -z "$format" ]; then
         format="trace"
     fi
+    strict='--strict'
+    non_strict=$(grep -Eo 'non-strict[?] #t[^")}]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
+    if [ "$non_strict" = "#t" ]; then
+        strict=""
+    fi
     flags=$(grep -Eo 'simulate-flags \([^)]*)' $dir/META | cut -d'(' -f 2 | tr -d '()"')
     queue_size_external=$(grep -Eo '[(]queue-size-external [^)]*' $dir/META | cut -d' ' -f 2 | tr -d '"')
     if [ -n "$queue_size_external" ]; then
@@ -104,9 +109,9 @@ if $simulate; then
     fi
 
     mkdir -p $dir/baseline
-    ./pre-inst-env dzn simulate --strict --format=$format $model        \
-        $flags $queue_size_external $dir/$base.dzn < $dir/trace         \
-        > $dir/baseline/simulate.out                                    \
+    ./pre-inst-env dzn simulate $strict --format=$format $model \
+        $flags $queue_size_external $dir/$base.dzn < $dir/trace \
+        > $dir/baseline/simulate.out                            \
         2> $dir/baseline/simulate.err
 fi
 
