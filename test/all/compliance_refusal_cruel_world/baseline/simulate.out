@@ -1,0 +1,25 @@
+(header ((h) ihello_cruel_world provides) ((sut) compliance_refusal_cruel_world component) ((w) ihello_world requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . true)))
+(trail "w.world")
+test/all/compliance_refusal_cruel_world/compliance_refusal_cruel_world.dzn:47:3: error: non-compliance
+<non-compliance>
+(state ((h) (idle . false)) ((sut)) ((w) (idle . true)))
+test/all/compliance_refusal_cruel_world/compliance_refusal_cruel_world.dzn:47:3: error: non-compliance
+(trail "<non-compliance>")
+(labels "h.hello" "w.world")
+(eligible)
