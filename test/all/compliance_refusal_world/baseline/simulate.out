@@ -1,0 +1,19 @@
+(header ((h) ihello_world provides) ((sut) compliance_refusal_world component) ((w) ihello__world requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/compliance_refusal_world/compliance_refusal_world.dzn:43:3: error: non-compliance
+<non-compliance>
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+test/all/compliance_refusal_world/compliance_refusal_world.dzn:43:3: error: non-compliance
+(trail "<non-compliance>")
+(labels "h.hello" "w.world")
+(eligible)

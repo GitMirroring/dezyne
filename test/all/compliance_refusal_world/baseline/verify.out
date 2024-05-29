@@ -1,0 +1,6 @@
+model: compliance_refusal_world
+h.hello
+w.hello
+w.return
+h.return
+<non-compliance>
