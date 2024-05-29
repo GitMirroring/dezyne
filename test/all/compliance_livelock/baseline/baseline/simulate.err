@@ -1,0 +1,3 @@
+test/all/compliance_refusal_livelock/compliance_refusal_livelock.dzn:45:3: error: non-compliance
+test/all/compliance_refusal_livelock/compliance_refusal_livelock.dzn:45:3: component can omit all of: h.cruel
+test/all/compliance_refusal_livelock/compliance_refusal_livelock.dzn:45:3: the interface promises inevitably: h.cruel

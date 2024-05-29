@@ -1,0 +1,25 @@
+(header ((h) ihello_cruel__world provides) ((sut) livelock component) ((w) ihello_world requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . true)))
+(trail "w.world")
+test/all/compliance_refusal_livelock/compliance_refusal_livelock.dzn:45:3: error: non-compliance
+<non-compliance>
+(state ((h) (idle . false)) ((sut)) ((w) (idle . true)))
+test/all/compliance_refusal_livelock/compliance_refusal_livelock.dzn:45:3: error: non-compliance
+(trail "<non-compliance>")
+(labels "h.hello" "w.world")
+(eligible)

@@ -88,6 +88,7 @@ SEMANTIC_ERROR_TESTS =				\
 						\
  %D%/compliance_hello_world			\
  %D%/compliance_helloworld			\
+ %D%/compliance_livelock_refusal		\
  %D%/compliance_refusal_cruel__world		\
  %D%/compliance_refusal_cruel_world		\
  %D%/compliance_refusal_world			\
@@ -782,6 +783,7 @@ XFAIL_VERIFY =					\
  %D%/blocking_defer				\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\
+ %D%/compliance_livelock_refusal		\
  %D%/external_blocking_livelock
 
 XFAIL_SIMULATE =				\

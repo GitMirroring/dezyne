@@ -1,0 +1,10 @@
+verify: ihellobye_world: check: deadlock: ok
+verify: ihellobye_world: check: unreachable: ok
+verify: ihellobye_world: check: livelock: ok
+verify: ihellobye_world: check: deterministic: ok
+verify: compliance_livelock_refusal: check: deterministic: ok
+verify: compliance_livelock_refusal: check: illegal: ok
+verify: compliance_livelock_refusal: check: deadlock: ok
+verify: compliance_livelock_refusal: check: unreachable: ok
+verify: compliance_livelock_refusal: check: livelock: ok
+verify: compliance_livelock_refusal: check: compliance: fail
