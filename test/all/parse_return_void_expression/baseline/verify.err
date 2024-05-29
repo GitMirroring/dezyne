@@ -1,0 +1,1 @@
+test/all/parse_return_void_expression/parse_return_void_expression.dzn:45:19: error: cannot return a non literal void expression
