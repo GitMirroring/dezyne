@@ -88,6 +88,7 @@ SEMANTIC_ERROR_TESTS =				\
 						\
  %D%/compliance_hello_world			\
  %D%/compliance_helloworld			\
+ %D%/compliance_refusal_cruel__world		\
  %D%/compliance_refusal_cruel_world		\
  %D%/compliance_refusal_world			\
  %D%/deadlock_hello				\

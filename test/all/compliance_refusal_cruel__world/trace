@@ -1,0 +1,7 @@
+model: compliance_refusal_cruel__world
+h.hello
+w.hello
+w.return
+h.return
+w.world
+<non-compliance>

@@ -1,0 +1,4 @@
+test/all/compliance_refusal_cruel__world/compliance_refusal_cruel__world.dzn:48:3: error: non-compliance
+test/all/compliance_refusal_cruel__world/compliance_refusal_cruel__world.dzn:48:3: component can omit all of: h.world, h.cruel
+test/all/compliance_refusal_cruel__world/compliance_refusal_cruel__world.dzn:48:3: the interface promises inevitably: h.cruel 
+test/all/compliance_refusal_cruel__world/compliance_refusal_cruel__world.dzn:48:3: or optionally: h.world
