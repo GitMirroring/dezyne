@@ -1,0 +1,15 @@
+(header ((h) ihello provides) ((sut) if_return_arrow component) ((w) ihello requires))
+(state ((h)) ((sut) (idle . true)) ((w)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (idle . false)) ((w)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+(state ((h)) ((sut) (idle . false)) ((w)))
+(labels "h.hello")
+(eligible "h.hello")
