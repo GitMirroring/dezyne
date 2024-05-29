@@ -37,6 +37,7 @@ SMOKE_TESTS =					\
 SEMANTIC_TESTS =				\
  %D%/i_world					\
  %D%/ihello					\
+ %D%/ihello__world				\
  %D%/ihello_choice				\
  %D%/ihello_cruel__world			\
  %D%/ihello_cruelworld				\
