@@ -767,6 +767,9 @@
          (return-type (and (null? wfce) (ast:type o)))
          (last-statement-block (last-statement (outer-compound o))))
     (append wfce
+            (let ((void? (compose (is? <void>) ast:type)))
+              (if (and=> (.expression o) (-> void? (is? <literal>))) '()
+                  `(,(wfc-error o "cannot return a non literal void expression"))))
             (cond ((not function)
                    `(,(wfc-error o "cannot use return outside of function")))
                   ((pair? wfce) '())
