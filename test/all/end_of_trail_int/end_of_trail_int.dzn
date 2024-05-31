@@ -22,17 +22,7 @@
 //
 // Code:
 
-interface ihello_reply_int
-{
-  subint int {0..1};
-  in int hello ();
-
-  behavior
-  {
-    on hello: reply (0);
-    on hello: reply (1);
-  }
-}
+import ihello_reply_int.dzn;
 
 component end_of_trail_int
 {
