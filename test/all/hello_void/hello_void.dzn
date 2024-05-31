@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,24 +29,24 @@ interface ihello
   in void hello1 ();
   in void hello2 ();
   in void hello3 ();
-  in void hello4 ();
-  in void hello5 ();
+  // in void hello4 ();
+  // in void hello5 ();
   behaviour
   {
-    on hello1,hello2,hello3,hello4,hello5: {}
+    on hello1,hello2,hello3/*,hello4,hello5*/: {}
   }
 }
 
 component hello_void
 {
-  provides blocking ihello h;
+  provides /*blocking*/ ihello h;
   requires ihello w;
   behavior
   {
     on h.hello1 (): {}
-    on h.hello2 (): reply();
-    on h.hello3 (): {w.hello3 (); reply();}
-    on h.hello4 (): reply(w.hello4 ());
-    blocking on h.hello5 (): reply(w.hello5 ());
+    on h.hello2 (): reply ();
+    on h.hello3 (): {w.hello3 (); reply ();}
+    // on h.hello4 (): reply (w.hello4 ());
+    // blocking on h.hello5 (): reply(w.hello5 ());
   }
 }
