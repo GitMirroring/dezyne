@@ -5,6 +5,33 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.18.3 since 2.18.2
+** Code
+  - The thread pool destructor in the C++ runtime now documents the
+    pre-condition explicitly using an assert.
+** Noteworthy bug fixes
+  - Shared state in the requires ports can now also be used in guards in
+    the component behavior.
+  - A semantic inconsistency between simulation and code and
+    verification has been resolved by communicating trailing assignments
+    after flushing the component queue.
+  - To and from string enum functions for enums nested in components are
+    now also generated.  This was a regression introduced in 2.18.0.
+  - Well-formedness checks have been added for replying or returning a
+    non-literal void expression.
+  - A well-formedness check was added to assert function parameters and
+    variables are not declared of type void.
+  - A problem where the well-formedness check would erroneously report a
+    recursion error for a deferred call has been fixed.
+  - A bug has been fixed in the simulator where simulating strictly up
+    to a choice with a subint value would cause a crash.  This was a
+    regression introduced in 2.18.2.
+  - The unobservable non-determinism check in the simulator now also
+    reports non-determinism when there are two or more deterministic
+    traces in addition to non-deterministic traces.
+  - The unobservable non-determinism check in the simulator no longer
+    reports non-determinism when the traces are observably different.
+
 * Changes in 2.18.2 since 2.18.1
 ** Code
   - The C++ runtime headers can now be compiled with `-Werror -Wshadow';
