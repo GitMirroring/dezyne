@@ -1,0 +1,10 @@
+(header ((h) ihello_reply_int provides) ((sut) end_of_trail_int component) ((w) ihello_reply_int requires))
+(state ((h)) ((sut)) ((w)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+(state ((h)) ((sut)) ((w)))
+(trail "h.hello" "w.hello")
+(labels "w.0" "w.1")
+(eligible "w.0" "w.1")

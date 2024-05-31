@@ -322,6 +322,7 @@ REGRESSION_TESTS =				\
  %D%/end_of_trail_action2			\
  %D%/end_of_trail_interface			\
  %D%/end_of_trail_interface_action		\
+ %D%/end_of_trail_int				\
  %D%/enum_expressions				\
  %D%/enum_only					\
  %D%/equal_binary				\
