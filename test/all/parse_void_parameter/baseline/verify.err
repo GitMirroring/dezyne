@@ -1,0 +1,2 @@
+test/all/parse_void_parameter/parse_void_parameter.dzn:30:13: error: parameter `x' cannot have type `void'
+test/all/parse_void_parameter/parse_void_parameter.dzn:42:13: error: parameter `x' cannot have type `void'
