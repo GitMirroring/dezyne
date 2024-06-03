@@ -1,0 +1,4 @@
+test/all/parse_void_variable/parse_void_variable.dzn:31:15: error: variable `v' cannot have type `void'
+test/all/parse_void_variable/parse_void_variable.dzn:31:24: error: void value not ignored as it ought to be
+test/all/parse_void_variable/parse_void_variable.dzn:42:20: error: variable `v' cannot have type `void'
+test/all/parse_void_variable/parse_void_variable.dzn:42:29: error: void value not ignored as it ought to be
