@@ -383,6 +383,7 @@
             "formal parameter ~a must not have the same name as its type"
             (.name o))))
        '())
+   (check-non-void o)
    (re-definition o)
    (let ((type (ast:type o))
          (event (ast:parent o <event>)))
@@ -423,11 +424,6 @@
              (append-map (cute wfc model <>) variables)
              (append-map wfc (ast:function* o))
              (wfc (.statement o))))))))
-
-(define-method (wfc (o <variable>))
-  (append
-   (re-definition o)
-   (assign o)))
 
 (define-method (wfc-constraint (o <variable>) (port <port>))
   (append
@@ -634,6 +630,7 @@
 
 (define-method (wfc (o <variable>))
   (append
+   (check-non-void o)
    (imperative-context o)
    (re-definition o)
    (assign o)))
@@ -1506,6 +1503,14 @@
   (let ((component (ast:parent o <component-model>)))
     (and component
          (ast:lookup (.parent component) (.type.name o)))))
+
+(define (check-non-void o)
+  (if (not (as (ast:type o) <void>)) '()
+      (let ((type (if (is-a? o <formal>) "parameter"
+                      "variable"))
+            (name (.name o)))
+        (list (wfc-error o (format #f "~a `~a' cannot have type `void'"
+                                   type name))))))
 
 
 ;;;
