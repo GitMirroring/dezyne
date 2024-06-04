@@ -711,7 +711,7 @@
    ((as o <int>)
     (list (make <literal> #:value 0)))))
 
-(define-method (ast:values (o <variable>))
+(define-method (ast:values (o <variable>) void)
   "Enum values include their type.name, the scope.name part of the
 type.name is determined by the context referring to the type, hence the
 overload for variable."
@@ -719,10 +719,13 @@ overload for variable."
    ((as (ast:type o) <enum>)
     (map (cute make <enum-literal> #:type.name (.type.name o) #:field <>)
          (ast:field* (ast:type o))))
-   (else (ast:values (ast:type o)))))
+   (else (ast:values (ast:type o) void))))
+
+(define-method (ast:values (o <variable>))
+  (ast:values o #f))
 
 (define-method (ast:default-value (o <ast>))
-  (match (ast:values o)
+  (match (ast:values o (make <void>))
     ((default rest ...) default)))
 
 (define-method (ast:return-values (o <event>) void)

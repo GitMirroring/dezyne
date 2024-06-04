@@ -130,7 +130,8 @@
     (($ <bool>) "Bool")
     (($ <int>) "Int")
     (($ <subint>) "Int")
-    (($ <enum>) (makreel:enum-type o))))
+    (($ <enum>) (makreel:enum-type o))
+    (($ <void>) "Void")))
 
 (define-method (makreel:reply-type (o <type>))
   (match o
