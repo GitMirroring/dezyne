@@ -379,11 +379,11 @@
 (define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
 
 (define-method (ast:function* (o <function>))
-  (let* ((calls (tree-collect (is? <call>) o))
+  (let* ((calls (tree-collect (conjoin
+                               (is? <call>)
+                               (negate (cute ast:parent <> <defer>))) o))
          (functions (filter-map .function calls)))
-    (delete-duplicates
-     functions
-     (lambda (a b) (equal? (.name a) (.name b))))))
+    (delete-duplicates functions ast:name-equal?)))
 
 
 ;;;
