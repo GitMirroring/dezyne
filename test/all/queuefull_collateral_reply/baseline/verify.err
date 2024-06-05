@@ -1,0 +1,15 @@
+verify: ihello_i_world: check: deadlock: ok
+verify: ihello_i_world: check: unreachable: ok
+verify: ihello_i_world: check: livelock: ok
+verify: ihello_i_world: check: deterministic: ok
+verify: ihello_reply_true: check: deadlock: ok
+verify: ihello_reply_true: check: unreachable: ok
+verify: ihello_reply_true: check: livelock: ok
+verify: ihello_reply_true: check: deterministic: ok
+verify: queuefull_collateral_reply: check: deterministic: ok
+verify: queuefull_collateral_reply: check: illegal: fail
+error: queue full in model queuefull_collateral_reply
+verify: queuefull_collateral_reply: check: deadlock: ok
+verify: queuefull_collateral_reply: check: unreachable: skip
+verify: queuefull_collateral_reply: check: livelock: ok
+verify: queuefull_collateral_reply: check: compliance: skip

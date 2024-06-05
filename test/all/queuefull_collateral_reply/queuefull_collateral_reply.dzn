@@ -25,7 +25,7 @@
 import ihello_i_world.dzn;
 import ihello_reply_true.dzn;
 
-component collateral_queuefull_reply
+component queuefull_collateral_reply
 {
   provides blocking ihello_i_world h;
   requires blocking ihello_reply_true w_idle;

@@ -253,7 +253,6 @@ REGRESSION_TESTS =				\
  %D%/collateral_double_blocked			\
  %D%/collateral_double_blocked_out		\
  %D%/collateral_illegal				\
- %D%/collateral_queuefull_reply			\
  %D%/comment_traceability			\
  %D%/complex_and				\
  %D%/complex_arguments0				\
@@ -539,6 +538,7 @@ REGRESSION_TESTS =				\
  %D%/pump_twice					\
  %D%/queue_size_four				\
  %D%/queuefull_collateral			\
+ %D%/queuefull_collateral_reply			\
  %D%/queuefull_component1			\
  %D%/queuefull_constraint_defer			\
  %D%/queuefull_external				\

@@ -1,4 +1,4 @@
-model: collateral_queuefull_reply
+model: queuefull_collateral_reply
 h.hello
 w.hello
 w.return
