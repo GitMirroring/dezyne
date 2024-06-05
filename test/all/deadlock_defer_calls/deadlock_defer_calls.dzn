@@ -30,11 +30,11 @@ interface ihello
   }
 }
 
-component defer_calls
+component deadlock_defer_calls
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     void f ()
     {

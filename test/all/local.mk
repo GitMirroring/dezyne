@@ -340,6 +340,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_inevitable		\
  %D%/deadlock_blocking_optional			\
  %D%/deadlock_blocking_replies			\
+ %D%/deadlock_defer_calls			\
  %D%/deadlock_inner_guard_shared_state		\
  %D%/deadlock_interface_determinism		\
  %D%/deadlock_optional_out_only			\
@@ -350,7 +351,6 @@ REGRESSION_TESTS =				\
  %D%/defer_after_call				\
  %D%/defer_async				\
  %D%/defer_blocking				\
- %D%/defer_calls				\
  %D%/defer_cancel				\
  %D%/defer_cancel_call				\
  %D%/defer_collateral_blocking			\

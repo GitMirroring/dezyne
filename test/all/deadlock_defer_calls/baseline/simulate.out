@@ -1,0 +1,9 @@
+(header ((h) ihello provides) ((sut) deadlock_defer_calls component))
+(state ((h)) ((sut)))
+test/all/deadlock_defer_calls/deadlock_defer_calls.dzn:37:3: error: deadlock
+<deadlock>
+(state ((h)) ((sut)))
+test/all/deadlock_defer_calls/deadlock_defer_calls.dzn:37:3: error: deadlock
+(trail "<deadlock>")
+(labels "h.hello")
+(eligible)
