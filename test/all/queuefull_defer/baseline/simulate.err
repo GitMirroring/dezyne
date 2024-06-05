@@ -1,0 +1,1 @@
+test/all/queuefull_defer/queuefull_defer.dzn:43:20: error: queue-full in component "queuefull_defer"

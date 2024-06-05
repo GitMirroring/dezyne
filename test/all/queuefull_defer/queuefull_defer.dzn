@@ -33,7 +33,7 @@ interface ihello
   }
 }
 
-component defer_queuefull
+component queuefull_defer
 {
   provides ihello h;
   behavior

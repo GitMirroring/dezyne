@@ -370,7 +370,6 @@ REGRESSION_TESTS =				\
  %D%/defer_parallel				\
  %D%/defer_poll					\
  %D%/defer_priority				\
- %D%/defer_queuefull				\
  %D%/defer_selection				\
  %D%/defer_shadow				\
  %D%/defer_twice				\
@@ -541,6 +540,7 @@ REGRESSION_TESTS =				\
  %D%/queuefull_collateral_reply			\
  %D%/queuefull_component1			\
  %D%/queuefull_constraint_defer			\
+ %D%/queuefull_defer				\
  %D%/queuefull_external				\
  %D%/queuefull_external2			\
  %D%/range_action				\

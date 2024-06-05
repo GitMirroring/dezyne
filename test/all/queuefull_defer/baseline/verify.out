@@ -1,4 +1,4 @@
-model: defer_queuefull
+model: queuefull_defer
 h.hello
 h.return
 h.hello

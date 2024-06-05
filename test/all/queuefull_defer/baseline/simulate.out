@@ -1,4 +1,4 @@
-(header ((h) ihello provides) ((sut) defer_queuefull component))
+(header ((h) ihello provides) ((sut) queuefull_defer component))
 (state ((h)) ((sut) (b . true)))
 <external>.h.hello -> ...
 ... -> sut.h.hello
@@ -12,12 +12,12 @@
 <external>.h.return <- ...
 (state ((h)) ((sut) (b . true)))
 (trail "h.hello" "h.return")
-test/all/defer_queuefull/defer_queuefull.dzn:43:20: error: queue-full in component "defer_queuefull"
+test/all/queuefull_defer/queuefull_defer.dzn:43:20: error: queue-full in component "queuefull_defer"
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <queue-full>
 (state ((h)) ((sut) (b . true)))
-test/all/defer_queuefull/defer_queuefull.dzn:43:20: error: queue-full in component "defer_queuefull"
+test/all/queuefull_defer/queuefull_defer.dzn:43:20: error: queue-full in component "queuefull_defer"
 (trail "h.hello" "<queue-full>")
 (labels "h.hello" "<defer>")
 (eligible)
