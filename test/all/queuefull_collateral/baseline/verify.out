@@ -1,4 +1,4 @@
-model: collateral_queuefull
+model: queuefull_collateral
 h.hello
 w_idle.hello
 w.world

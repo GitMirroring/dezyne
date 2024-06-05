@@ -25,7 +25,7 @@
 import ihello.dzn;
 import ihello_i_world.dzn;
 
-component collateral_queuefull
+component queuefull_collateral
 {
   provides blocking ihello_i_world h;
   requires blocking ihello w_idle;
