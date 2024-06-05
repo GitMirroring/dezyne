@@ -302,6 +302,7 @@ REGRESSION_TESTS =				\
  %D%/defer_nested				\
  %D%/defer_nested_parallel			\
  %D%/defer_parallel				\
+ %D%/defer_poll					\
  %D%/defer_priority				\
  %D%/defer_queuefull				\
  %D%/defer_selection				\
