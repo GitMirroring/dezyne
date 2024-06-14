@@ -3998,16 +3998,16 @@
             (statement
              (sm:allow
               (process component-compliant-comm)
-              (events (cons* %queue-empty-action
-                             %queue-not-empty-action
-                             %constrained-legal-action
+              (events (cons* %constrained-legal-action
                              %declarative-illegal-action
                              %defer-end-action
                              (%defer-qout-action o)
                              (%defer-skip-action o)
                              %illegal-action
                              %missing-reply-action
+                             %queue-empty-action
                              %queue-full-action
+                             %queue-not-empty-action
                              %range-error-action
                              %recurse-action
                              %return-action
@@ -4033,14 +4033,14 @@
                               (append-map
                                (lambda (p)
                                  (list
-                                  (%in-action p)
-                                  (%reply-action p)
-                                  (%qout-action p)
                                   (%end-action p)
-                                  (%state-action p)
-                                  (%qin-action p)
                                   (%flush-action p)
+                                  (%in-action p)
                                   (%port-queue-full-action p)
+                                  (%qin-action p)
+                                  (%qout-action p)
+                                  (%reply-action p)
+                                  (%state-action p)
                                   (%switch-context-action p)))
                                requires)
                               (filter-map (conjoin ast:external? %state-action)
