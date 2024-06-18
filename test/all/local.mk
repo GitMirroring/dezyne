@@ -94,13 +94,13 @@ SEMANTIC_ERROR_TESTS =				\
  %D%/compliance_refusal_cruel__world		\
  %D%/compliance_refusal_cruel_world		\
  %D%/compliance_refusal_world			\
+ %D%/compliance_return				\
  %D%/deadlock_hello				\
  %D%/deadlock_hellohello			\
  %D%/determinism_hello_world_external		\
  %D%/livelock_hello
 
 FEATURE_TESTS =					\
- %D%/compliance0				\
  %D%/compliance_external			\
  %D%/deadlock_implicit				\
  %D%/determinism0				\

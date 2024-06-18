@@ -1,0 +1,11 @@
+(header ((h) ihello provides) ((sut) compliance_return component))
+(state ((h)) ((sut)))
+test/all/compliance_return/compliance_return.dzn:43:20: error: illegal
+<external>.h.cruel -> ...
+... -> sut.h.cruel
+<illegal>
+(state ((h)) ((sut)))
+test/all/compliance_return/compliance_return.dzn:43:20: error: illegal
+(trail "h.cruel" "<illegal>")
+(labels "h.hello" "h.cruel")
+(eligible)

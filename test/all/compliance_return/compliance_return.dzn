@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,12 +33,13 @@ interface ihello
   }
 }
 
-component compliance0
+component compliance_return
 {
-  provides ihello p;
+  provides ihello h;
+
   behavior
   {
-    on p.hello (): {}
-    on p.cruel (): illegal;
+    on h.hello (): {}
+    on h.cruel (): illegal;
   }
 }
