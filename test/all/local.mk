@@ -95,6 +95,7 @@ SEMANTIC_ERROR_TESTS =				\
  %D%/compliance_refusal_cruel_world		\
  %D%/compliance_refusal_world			\
  %D%/compliance_return				\
+ %D%/compliance_return_implicit			\
  %D%/deadlock_hello				\
  %D%/deadlock_hellohello			\
  %D%/determinism_hello_world_external		\
@@ -306,7 +307,6 @@ REGRESSION_TESTS =				\
  %D%/compliance_fork_provides			\
  %D%/compliance_fork_requires			\
  %D%/compliance_fork_requires2			\
- %D%/compliance_implicit_illegal		\
  %D%/compliance_invalid_action			\
  %D%/compliance_livelock			\
  %D%/compliance_livelock_escape			\

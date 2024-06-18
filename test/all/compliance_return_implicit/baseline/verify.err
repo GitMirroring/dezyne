@@ -1,0 +1,11 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: compliance_return_implicit: check: deterministic: ok
+verify: compliance_return_implicit: check: illegal: ok
+verify: compliance_return_implicit: check: deadlock: ok
+verify: compliance_return_implicit: check: unreachable: ok
+verify: compliance_return_implicit: check: livelock: ok
+verify: compliance_return_implicit: check: compliance: fail
+error: component compliance_return_implicit is non-compliant with interface(s) of provides port(s)

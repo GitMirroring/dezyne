@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,21 +23,21 @@
 
 interface ihello
 {
-  in void hello();
-  in void avoid_deadlock ();
-
+  in void hello ();
+  in void cruel ();
   behavior
   {
     on hello: {}
-    on avoid_deadlock: {}
+    on cruel: {}
   }
 }
 
-component compliance_implicit_illegal
+component compliance_return_implicit
 {
   provides ihello h;
   behavior
   {
-    on h.avoid_deadlock (): {}
+    on h.hello (): {}
+    // on h.cruel (): illegal;
   }
 }
