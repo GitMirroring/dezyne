@@ -493,6 +493,7 @@ REGRESSION_TESTS =				\
  %D%/shared_block				\
  %D%/shared_blocking_race			\
  %D%/shared_defer				\
+ %D%/shared_defer_trailing_assign		\
  %D%/shared_determinism				\
  %D%/shared_double_inevitable			\
  %D%/shared_enum				\
