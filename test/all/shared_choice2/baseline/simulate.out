@@ -1,0 +1,10 @@
+(header ((h) ihello provides) ((sut) shared_choice2 component) ((w) ihello requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+(trail "h.hello" "w.hello")
+(labels "w.cruel" "w.return")
+(eligible "w.cruel" "w.return")

@@ -576,6 +576,7 @@ REGRESSION_TESTS =				\
  %D%/shared_block				\
  %D%/shared_blocking_race			\
  %D%/shared_choice				\
+ %D%/shared_choice2				\
  %D%/shared_defer				\
  %D%/shared_defer2				\
  %D%/shared_defer_trailing_assign		\
