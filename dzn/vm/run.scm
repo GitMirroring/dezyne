@@ -495,7 +495,7 @@ PC until RTC?."
            (let ((variables0 (get-variables pc0 (%sut)))
                  (variables1 (get-variables pc1(%sut))))
              (ast:equal? variables0 variables1)))
-         (find (negate (cute state-equal? pc <>)) pcs))
+         (find (negate (cute state-equal? pc0 <>)) pcs))
         (() #f))))
 
   (define (interface-mark-determinism-error trace)
