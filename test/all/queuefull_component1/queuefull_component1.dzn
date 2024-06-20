@@ -23,29 +23,18 @@
 //
 // Code:
 
-interface ihello {
-  in void hello();
-  behavior {
-    on hello: {}
-  }
-}
+import ihello.dzn;
+import ihellocruelworld.dzn;
 
-interface iworld {
-  in void hello();
-  out void cruel();
-  out void world();
-  behavior {
-    on hello: { cruel; world; }
-  }
-}
-
-component queuefull_component1 {
+component queuefull_component1
+{
   provides ihello h;
-  requires iworld w;
+  requires ihellocruelworld w;
 
-  behavior {
-    on h.hello(): w.hello();
-    on w.cruel(): w.hello();
-    on w.world(): w.hello();
+  behavior
+  {
+    on h.hello (): w.hello ();
+    on w.cruel (): w.hello ();
+    on w.world (): w.hello ();
   }
 }

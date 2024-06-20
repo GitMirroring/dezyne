@@ -1,6 +1,6 @@
-(header ((h) ihello provides) ((sut) queuefull_component1 component) ((w) iworld requires))
+(header ((h) ihello provides) ((sut) queuefull_component1 component) ((w) ihellocruelworld requires))
 (state ((h)) ((sut)) ((w)))
-test/all/queuefull_component1/queuefull_component1.dzn:38:24: error: queue-full in component "queuefull_component1"
+test/all/queuefull_component1/ihellocruelworld.dzn:32:23: error: queue-full in component "queuefull_component1"
 <external>.h.hello -> ...
 ... -> sut.h.hello
 sut.w.hello -> ...
@@ -31,7 +31,7 @@ sut.<q> <- ...
 sut.<q> <- ...
 <queue-full>
 (state ((h)) ((sut) (*q* w.cruel w.world w.cruel)) ((w)))
-test/all/queuefull_component1/queuefull_component1.dzn:38:24: error: queue-full in component "queuefull_component1"
+test/all/queuefull_component1/ihellocruelworld.dzn:32:23: error: queue-full in component "queuefull_component1"
 (trail "h.hello" "w.hello" "w.cruel" "w.world" "w.return" "w.hello" "w.cruel" "w.world" "w.return" "w.hello" "w.cruel" "w.world" "<queue-full>")
 (labels "h.hello" "w.cruel" "w.world")
 (eligible)
