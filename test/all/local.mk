@@ -504,6 +504,7 @@ REGRESSION_TESTS =				\
  %D%/shared_reply				\
  %D%/shared_requires				\
  %D%/shared_state_defer				\
+ %D%/shared_trailing_assign			\
  %D%/shared_type_lookup				\
  %D%/shared_variable				\
  %D%/shell_injected				\
