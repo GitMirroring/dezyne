@@ -1,0 +1,11 @@
+(header ((client) ihello_optional_choice3 provides) ((sut) ihello_optional_choice3 interface))
+(state ((client)) ((sut) (idle . true)))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut) (idle . false)))
+(trail "hello" "return")
+(state ((client)) ((sut) (idle . true)))
+(labels "cruel" "world")
+(eligible "cruel" "world")
