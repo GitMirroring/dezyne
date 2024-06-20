@@ -83,6 +83,7 @@ SEMANTIC_TESTS =				\
  %D%/system_hello_cruelworld_requires		\
  %D%/system_hello_requires			\
  %D%/system_hello_world_requires		\
+ %D%/system_hellocruelworld			\
  %D%/system_helloworld_reply_true		\
  %D%/system_helloworld_requires
 
