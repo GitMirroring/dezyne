@@ -45,7 +45,10 @@ public:
   pool () {}
   ~pool ()
   {
-    if (idle_tasks_.size () != tasks_.size ()) std::abort ();
+    if (idle_tasks_.size () != tasks_.size ()) {
+      assert("all (pump) threads are idle and are returned to the pool" == nullptr);
+      std::abort ();
+    }
   }
   std::future<void> async (std::function<void ()> const &work)
   {
