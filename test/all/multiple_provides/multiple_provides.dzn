@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2024 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -24,58 +24,44 @@
 
 interface ihello
 {
-  in void hello();
-  out void world();
+  in void hello ();
+  out void world ();
 
   behavior
   {
-    bool b = false;
+    bool idle = true;
 
-    [!b]
+    [idle]
     {
       on hello: world;
-      on hello: b = true;
+      on hello: idle = false;
     }
-    [b]
-    {
-      on inevitable: {b = false; world;}
-    }
+    [!idle] on inevitable: {idle = true; world;}
   }
 }
 
 component multiple_provides
 {
-  provides ihello p_left;
-  provides ihello p_right;
+  provides ihello left;
+  provides ihello right;
   requires ihello r;
 
   behavior
   {
-    enum Direction {Left, Right};
-    Direction dir = Direction.Left;
-
     bool b_left = false;
     bool b_right = false;
 
     [!b_left && !b_right]
     {
-      on p_left.hello(): {dir = Direction.Left; r.hello(); b_left = true;}
-      on p_right.hello():{dir = Direction.Right; r.hello(); b_right = true;}
-      on r.world(): illegal;
+      on left.hello (): {r.hello (); b_left = true;}
+      on right.hello ():{r.hello (); b_right = true;}
     }
     [b_left || b_right]
     {
-      on p_left.hello():
-      {
-        [b_left] illegal;
-        [!b_left] p_left.world();
-      }
-      on p_right.hello():
-      {
-        [b_right] illegal;
-        [!b_right] p_right.world();
-      }
-      on r.world(): if(dir.Left){b_left = false; p_left.world();} else {b_right = false; p_right.world();}
+      [!b_left] on left.hello (): left.world ();
+      [!b_right] on right.hello (): right.world ();
+      [b_left] on r.world (): {b_left = false; left.world ();}
+      [b_right] on r.world (): {b_right = false; right.world ();}
     }
   }
 }
