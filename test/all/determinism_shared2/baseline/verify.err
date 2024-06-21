@@ -1,0 +1,5 @@
+verify: determinism_shared2: check: deadlock: ok
+verify: determinism_shared2: check: unreachable: ok
+verify: determinism_shared2: check: livelock: ok
+verify: determinism_shared2: check: deterministic: fail
+error: interface determinism_shared2 is unobservably non-deterministic

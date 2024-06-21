@@ -313,6 +313,7 @@ REGRESSION_TESTS =				\
  %D%/defer_typed_call				\
  %D%/determinism_deadlock			\
  %D%/determinism_shared				\
+ %D%/determinism_shared2			\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
  %D%/dollars					\
