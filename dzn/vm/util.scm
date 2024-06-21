@@ -105,6 +105,7 @@
             reset-reply
             reset-replies
             rtc-labels
+            rtc-pc
             return-labels
             return-trigger?
             rewrite-trace-head
@@ -704,7 +705,7 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
   (map .statement (pc->stack pc)))
 
 (define-method (rtc-pc (pc <program-counter>))
-  (last (pc->stack)))
+  (last (pc->stack pc)))
 
 (define-method (rtc-block-pc (pc <program-counter>))
   (let loop ((pc pc))
