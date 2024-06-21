@@ -614,8 +614,11 @@ on TRACE."
 
   (let* ((event (and=> trigger trigger->string))
          (orig-pc pc)
-         (pc (reset-replies pc))
-         (pc (clone pc #:instance #f))
+         (pc (if trigger (rtc-pc pc)
+                 ;; defer
+                 (let* ((pc (last trace))
+                        (pc (reset-replies pc)))
+                   (clone pc #:instance #f))))
          (internal? (and (is-a? (%sut) <runtime:system>)
                          (not (eq? instance (%sut)))))
          (sut-trail (if (not internal?) (trace->trail trace)
