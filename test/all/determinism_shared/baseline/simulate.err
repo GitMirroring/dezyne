@@ -1,2 +1,2 @@
-test/all/determinism_shared/determinism_shared.dzn:36:26: error: interface "determinism_shared" is unobservably non-deterministic
-test/all/determinism_shared/determinism_shared.dzn:37:40: error: interface "determinism_shared" is unobservably non-deterministic
+test/all/determinism_shared/determinism_shared.dzn:37:8: error: interface "determinism_shared" is unobservably non-deterministic
+test/all/determinism_shared/determinism_shared.dzn:36:8: error: interface "determinism_shared" is unobservably non-deterministic

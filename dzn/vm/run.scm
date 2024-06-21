@@ -488,15 +488,20 @@ PC until RTC?."
       (loop (append-map extend-trace traces))))
 
   (define (interface-non-deterministic? traces)
-    (let ((traces (filter (compose (is? <action>) .ast .status car) traces)))
+    (let loop ((traces traces))
       (match traces
         (((pc0 tail0 ...) (pcs tails ...) ...)
          (define (state-equal? pc0 pc1)
            (let ((variables0 (get-variables pc0 (%sut)))
                  (variables1 (get-variables pc1(%sut))))
              (ast:equal? variables0 variables1)))
-         (find (negate (cute state-equal? pc0 <>)) pcs))
+         (or (find (negate (cute state-equal? pc0 <>)) pcs)
+             (loop (map cons pcs tails))))
         (() #f))))
+
+  (define (interface-postponed-non-deterministic? traces)
+    (let ((traces (filter (compose (is? <action>) .ast .status car) traces)))
+      (interface-non-deterministic? traces)))
 
   (define (interface-mark-determinism-error trace)
     (match trace
@@ -561,12 +566,17 @@ PC until RTC?."
             (reset-posponed-match traces))
            ((and (is-a? (%sut) <runtime:port>)
                  (%strict?)
-                 (interface-non-deterministic? traces))
+                 (interface-postponed-non-deterministic? traces))
             (map interface-mark-determinism-error traces))
            ((and (not (%exploring?)) (interactive?))
             (choose-postponed-match traces))
            (else
             (mark-end-of-trail traces)))))
+       ((and (is-a? (%sut) <runtime:port>)
+             (not (%exploring?))
+             (%strict?)
+             (interface-non-deterministic? traces))
+        (map interface-mark-determinism-error traces))
        (else
         (loop (append-map extend-trace traces))))))
 
@@ -747,7 +757,10 @@ until RTC?."
              (modeling-names (if modeling? (list event) (modeling-names)))
              (traces (append-map (cute run-to-completion pc <>) modeling-names))
              (traces (parameterize ((%modeling? modeling?))
-                       (filter event-executed? traces))))
+                       (filter (disjoin
+                                event-executed?
+                                (compose (is-status? <determinism-error>) car))
+                               traces))))
         traces)))))
 
 (define-method (run-requires-flush (pc <program-counter>) event)

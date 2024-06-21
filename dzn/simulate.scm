@@ -215,12 +215,15 @@ TRACES."
 (define-method (check-deadlock (pc <program-counter>) event-traces-alist event)
   (define (mark-deadlock pc)
     (let* ((error (.status pc))
-           (ast (or (and error (.ast error))
+           (ast (or (and error
+                         (not (is-a? error <determinism-error>))
+                         (.ast error))
                     (let ((model (runtime:%sut-model)))
                       (if (or (is-a? model <system>) (is-a? model <foreign>)) model
                           (.behavior model))))))
       (if (and error
                (pair? event-traces-alist)
+               (not (is-a? error <determinism-error>))
                (not (is-a? error <implicit-illegal-error>))
                (not (is-a? error <end-of-trail>)))
           pc
@@ -617,6 +620,7 @@ status."
          (pcs (map car traces))
          (status (any (compose
                        (conjoin .status
+                                (negate (is-status? <determinism-error>))
                                 (disjoin (negate (is-status? <end-of-trail>))
                                          (compose .labels .status)))
                        car)
