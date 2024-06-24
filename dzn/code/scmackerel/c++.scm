@@ -988,10 +988,12 @@ std::basic_ostream<Char, Traits> &")
     (c++:include-guard
      o
      `(,@(map c++:file-name->include interface-includes)
-       ,@(component-model->statements o)))))
+       ,@(component-model->statements o)
+       ,@(append-map c++:enum->statements (code:enum* o))))))
 
 (define-method (model->statements (o <component>))
-  (component-model->statements o))
+  `(,@(component-model->statements o)
+    ,@(append-map c++:enum->statements (code:enum* o))))
 
 
 ;;;
