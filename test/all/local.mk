@@ -506,6 +506,7 @@ REGRESSION_TESTS =				\
  %D%/shared_out_sync_requires			\
  %D%/shared_reply				\
  %D%/shared_requires				\
+ %D%/shared_requires_guard			\
  %D%/shared_state_defer				\
  %D%/shared_guarded_trailing_assign		\
  %D%/shared_trailing_assign			\
