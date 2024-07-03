@@ -423,6 +423,7 @@ REGRESSION_TESTS =				\
  %D%/huge_interface				\
  %D%/huge_constraint				\
  %D%/ihello_optional_choice3			\
+ %D%/ihello_optional_choice4			\
  %D%/illegal_blocking_race			\
  %D%/illegal_external_inevitable		\
  %D%/illegal_external_requires_twice		\
