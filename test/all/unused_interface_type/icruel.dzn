@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -22,15 +22,15 @@
 // Code:
 
 extern int $int$;
-enum Bool {False, True};
+enum Bool {FALSE, TRUE};
 
 interface icruel
 {
-  enum Bool {False, True};
+  enum Bool {FALSE, TRUE};
   in Bool cruel ();
 
   behavior
   {
-    on cruel: reply (Bool.True);
+    on cruel: reply (Bool.TRUE);
   }
 }

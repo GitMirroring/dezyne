@@ -1,7 +1,8 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2022, 2024 janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2019, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -41,13 +42,13 @@ component bool_expressions
   behavior
   {
     bool b = false;
-    enum Bool {False, True};
+    enum Bool {FALSE, TRUE};
     on h.hello():
       {
         bool a = false;
-        Bool e = Bool.False;
-        a = a == e.True;
-        a = a == (e == Bool.True);
+        Bool e = Bool.FALSE;
+        a = a == e.TRUE;
+        a = a == (e == Bool.TRUE);
         b = w.world();
         reply (b);
       }

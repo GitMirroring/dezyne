@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2022 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,13 +24,13 @@
 
 interface ihello
 {
-  enum Bool {False,True};
+  enum Bool {FALSE,TRUE};
   in Bool hello ();
 
   behavior
   {
-    on hello: reply (Bool.False);
-    on hello: reply (Bool.True);
+    on hello: reply (Bool.FALSE);
+    on hello: reply (Bool.TRUE);
   }
 }
 
@@ -55,7 +55,7 @@ component sync_out_reply_enum
   behavior
   {
     on h.hello (): w.hello ();
-    on w.cruel (): h.reply (ihello.Bool.False);
-    on w.world (): h.reply (ihello.Bool.True);
+    on w.cruel (): h.reply (ihello.Bool.FALSE);
+    on w.world (): h.reply (ihello.Bool.TRUE);
   }
 }
