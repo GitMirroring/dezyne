@@ -508,8 +508,8 @@ p       system_bool_enum.e             system_bool_enum.b       r
 .               :                              :                .
 .         return:                              :                .
 .<--------------:                              :                .
-(state ((p) (b . false)) ((sut e) (p1.b . false) (r1.b . false) (e . E:T)) ((sut b) (p2.b . false) (r2.b . false) (b . false)) ((r) (b . false)))
+(state ((p) (b . false)) ((sut e) (p1.b . false) (r1.b . false) (e . E:T)) ((sut b) (p2.b . false) (r2.b . false) (b . false) (p2_b . false)) ((r) (b . false)))
 (trail p.hello r.hello r.false p.return)
-(state ((p) (b . false)) ((sut e) (p1.b . false) (r1.b . false) (e . E:T)) ((sut b) (p2.b . false) (r2.b . false) (b . false)) ((r) (b . false)))
+(state ((p) (b . false)) ((sut e) (p1.b . false) (r1.b . false) (e . E:T)) ((sut b) (p2.b . false) (r2.b . false) (b . false) (p2_b . false)) ((r) (b . false)))
 (labels p.hello r.world)
 (eligible p.hello r.world)
