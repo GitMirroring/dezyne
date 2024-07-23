@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /usr/bin/env bash
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
