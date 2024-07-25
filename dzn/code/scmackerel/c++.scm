@@ -1401,17 +1401,16 @@ std::basic_ostream<Char, Traits> &")
              (formals formals)
              (statement
               (sm:compound*
+               (sm:call (name "c.perform"))
                (sm:call (name "c.match")
                         (arguments
                          (list (simple-format #f "~s" port-event))))
-               (sm:call (name "dzn::port_block")
-                        (arguments
-                         (list "c.dzn_locator" "nullptr"
-                               (simple-format #f "&c.system.~a" port))))
+               (sm:call (name "c.sync_trigger"))
                (sm:variable (type "std::string")
                             (name "tmp")
                             (expression
-                             (sm:call (name "c.trail_expect"))))
+                             (sm:call (name "c.trail.front"))))
+               (sm:call (name "c.trail.pop"))
                (sm:variable (type "size_t")
                             (name "pos")
                             (expression "tmp.rfind ('.')+1"))
@@ -1442,6 +1441,7 @@ std::basic_ostream<Char, Traits> &")
             (formals formals)
             (statement
              (sm:compound*
+              (sm:call (name "c.perform"))
               (sm:call (name "c.match")
                        (arguments
                         (list (simple-format #f "~s" port-event))))))))))))
@@ -1509,6 +1509,7 @@ std::basic_ostream<Char, Traits> &")
             ,@(map formal->variable out-formals)
             ,(sm:call (name (string-append "c.system." (code:event-name trigger)))
                       (arguments arguments))
+            ,(sm:call (name "c.perform"))
             ,(sm:call (name "c.match")
                       (arguments (list port-sm:return-string))))))))))
   (define (typed-provides-in->init trigger)
@@ -1536,40 +1537,9 @@ std::basic_ostream<Char, Traits> &")
                        (expression
                         (simple-format #f
                                        "~s + dzn::to_string (~a)" port-prefix invoke)))
+          (sm:call (name "c.perform"))
           (sm:call (name "c.match")
                    (arguments (list "tmp")))))))))
-  (define (void-requires-in->init trigger)
-    (let* ((port (.port.name trigger))
-           (port-return (simple-format #f "~a.return" port))
-           (port-sm:return-string (simple-format #f "~s" port-return))
-           (port-prefix (simple-format #f "~a." port))
-           (system-port (simple-format #f "c.system.~a" port)))
-      (sm:generalized-initializer-list*
-       port-sm:return-string
-       (sm:function
-        (captures '("&"))
-        (statement
-         (sm:compound*
-          (sm:call (name "dzn::port_release")
-                   (arguments
-                    (list "c.dzn_locator"
-                          "&c.system"
-                          (string-append "&" system-port))))))))))
-  (define (typed-in->init port-pair) ;; FIXME: get rid of port-pair?
-    (let* ((port (.port port-pair))
-           (other (.other port-pair))
-           (port-other (simple-format #f "~a.~a" port other)))
-      (sm:generalized-initializer-list*
-       (simple-format #f "~s" port-other)
-       (sm:function
-        (captures '("&"))
-        (statement
-         (sm:compound*
-          (sm:call (name "dzn::port_release")
-                   (arguments
-                    (list "c.dzn_locator"
-                          "&c.system"
-                          (simple-format #f "&c.system.~a" (.port port-pair)))))))))))
   (define (out->init trigger)
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
@@ -1623,8 +1593,6 @@ std::basic_ostream<Char, Traits> &")
            (append
             (map void-provides-in->init (ast:provides-in-void-triggers o))
             (map typed-provides-in->init (ast:provides-in-typed-triggers o))
-            (map void-requires-in->init (code:requires-in-void-returns o))
-            (map typed-in->init (code:return-values o))
             (map out->init (ast:requires-out-triggers o))
             (map flush->init (ast:requires-port* o))
             (map flush->init (ast:provides-port* o)))))))))))))
