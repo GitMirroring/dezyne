@@ -28,7 +28,9 @@ struct foreign: public skel::foreign
   foreign (dzn::locator const& locator)
     : skel::foreign (locator)
     , scenario (0)
-  {}
+  {
+    dzn_runtime.performs_flush (this) = true;
+  }
   void port_hello (int i, double d)
   {
     switch (scenario++)
@@ -39,7 +41,7 @@ struct foreign: public skel::foreign
     case 1:
       dzn_locator.get<dzn::pump> ().handle (reinterpret_cast<size_t> (this), 0, [this,i,d]
       {
-        this->port_cruel (); this->port_world (i, d);
+        this->port_cruel (); this->port_world (i, d); this->dzn_runtime.flush (this);
       });
       break;
     case 2:
@@ -49,7 +51,7 @@ struct foreign: public skel::foreign
     case 3:
       dzn_locator.get<dzn::pump> ().handle (reinterpret_cast<size_t> (this), 0, [this]
       {
-        this->port_cruel ();
+        this->port_cruel (); this->dzn_runtime.flush (this);
       });
       break;
     case 4:
@@ -58,7 +60,7 @@ struct foreign: public skel::foreign
     case 5:
       dzn_locator.get<dzn::pump> ().handle (reinterpret_cast<size_t> (this), 0, [this,i,d]
       {
-        this->port_world (i, d);
+        this->port_world (i, d); this->dzn_runtime.flush (this);
       });
       break;
     default:

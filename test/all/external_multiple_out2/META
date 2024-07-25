@@ -1,2 +1,3 @@
 ;;; -*- scheme -*-
-((queue-size-external 2))
+((queue-size-external 2)
+ (flush #t))

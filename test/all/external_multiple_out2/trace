@@ -4,5 +4,7 @@ r.return
 p.return
 r.a
 r.b
+r.<flush>
 p.a
 p.b
+p.<flush>

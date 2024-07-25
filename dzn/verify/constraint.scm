@@ -70,6 +70,11 @@ to current-output-port."
          (string-contains o "'out(")
          o))
 
+  (define (flush? o)
+    (and (string? o)
+         (string-contains o "'flush")
+         o))
+
   (define (reply? o)
     (and (string? o)
          (string-contains o "'reply(")))
@@ -166,7 +171,8 @@ to current-output-port."
             (format #t "("))
           (unless error?
             (format #t "~a . ~a" event (if (or (trigger? event)
-                                               (state? event)) ""
+                                               (state? event)
+                                               (flush? event)) ""
                                                "compliance . ")))
           (when (and first? (trigger? event))
             (format #t "constrained_legal . "))

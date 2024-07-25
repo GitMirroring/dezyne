@@ -1,2 +1,3 @@
 ;;; -*- scheme -*-
-((skip ("c" "cs" "scheme" "javascript" "simulate")))
+((flush #t)
+ (skip ("c" "cs" "scheme" "javascript" "simulate")))

@@ -66,6 +66,8 @@
             code:add-calling-context-formal
             code:annotate-shells
             code:argument*
+            code:blocking-requires-in-void-returns
+            code:blocking-return-values
             code:blocking?
             code:capture-local
             code:capture-name
@@ -493,6 +495,7 @@
 ;;;
 ;;; Shared state.
 ;;;
+(define flush-regexp (make-regexp "'flush"))
 (define trigger-regexp (make-regexp "'in\\(([^)]*\\))\\)"))
 (define action-regexp (make-regexp "'out\\(([^)]*\\))\\)"))
 (define reply-regexp (make-regexp "'reply\\(([^)]*\\))\\)"))
@@ -523,6 +526,9 @@
 
 (define-method (code:shared (o <event>))
   "Return a list of transitions for event O from the interface LTS"
+  (define (flush? o)
+    (and=> (regexp-exec flush-regexp o)
+           (cute match:substring <> 0)))
   (define (trigger? o)
     (and=> (regexp-exec trigger-regexp o)
            (cute match:substring <> 1)))
@@ -548,7 +554,9 @@
       (_
        o)))
   (define (event->prefix event) ;; XXX vouw in trigger?, action?, reply?
-    (or (and=> (regexp-exec in-regexp event)
+    (or (and (regexp-exec flush-regexp event)
+               "<flush>")
+        (and=> (regexp-exec in-regexp event)
                (cute match:substring <> 1))
         (and=> (regexp-exec out-regexp event)
                (cute match:substring <> 1))
@@ -562,7 +570,7 @@
         ;; HACK for debugging
         (pke "EVENT NOT FOUND" event)))
   (define (edge->transition edge)
-    (let* ((label ((disjoin trigger? action? reply?) (edge-label edge)))
+    (let* ((label ((disjoin trigger? action? reply? flush?) (edge-label edge)))
            (label (event->prefix label)))
       (set-field edge (edge-label) label)))
   (define (to=from edge)
@@ -577,7 +585,7 @@
                                          (compose (cute equal? <>
                                                         "declarative_illegal")
                                                   edge-label)
-                                                 to=from) edges)))
+                                         to=from) edges)))
          (edges (filter (compose not
                                  (cute member <> illegal-node-ids)
                                  edge-to) edges))
@@ -711,25 +719,34 @@
 ;;;
 ;;; Main.
 ;;;
+(define (trigger->port-pairs trigger)
+  (map (cute make
+             <port-pair>
+             #:port (.port.name trigger)
+             #:other <>)
+       (map ->sexp (ast:return-values trigger))))
+
 (define-method (code:return-values (o <component-model>))
-  (define (trigger->port-pairs trigger)
-    (map (cute make
-               <port-pair>
-               #:port (.port.name trigger)
-               #:other <>)
-         (map ->sexp (ast:return-values trigger))))
   (let* ((triggers (filter (compose not (is? <void>) ast:type)
                            (ast:requires-in-triggers o)))
          (pairs (append-map trigger->port-pairs triggers)))
-    (delete-duplicates pairs (lambda (a b)
-                               (and (ast:eq? (.port a) (.port b))
-                                    (equal? (.other a) (.other b)))))))
+    (delete-duplicates pairs ast:equal?)))
+
+(define-method (code:blocking-return-values (o <component-model>))
+  (let* ((triggers (filter (conjoin (compose .blocking? .port)
+                                    (compose not (is? <void>) ast:type))
+                           (ast:requires-in-triggers o)))
+         (pairs (append-map trigger->port-pairs triggers)))
+    (delete-duplicates pairs ast:equal?)))
 
 (define-method (code:requires-in-void-returns (o <component-model>))
   (let ((triggers (ast:requires-in-void-triggers o)))
-    (delete-duplicates triggers
-                       (lambda (a b)
-                         (ast:eq? (.port a) (.port b))))))
+    (delete-duplicates triggers ast:port-eq?)))
+
+(define-method (code:blocking-requires-in-void-returns (o <component-model>))
+  (let ((triggers (filter (compose .blocking? .port)
+                          (ast:requires-in-void-triggers o))))
+    (delete-duplicates triggers ast:port-eq?)))
 
 
 ;;;

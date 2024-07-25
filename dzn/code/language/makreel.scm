@@ -578,13 +578,10 @@
           (? (cute ast:parent <> <on>)))
      (clone o #:elements (makreel:add-state-placeholder (ast:statement* o))))
     (((and (? (is? <action>)) statement) rest ...)
-     (let* ((trigger (car (ast:trigger* (ast:parent statement <on>))))
-            (no-state? (and (ast:modeling? trigger)
-                            (not (tree-find (is? <action>) rest)))))
-       (if no-state? o
-           (cons* statement
-                  (make <state>)
-                  (makreel:add-state-placeholder rest)))))
+     (let* ((trigger (car (ast:trigger* (ast:parent statement <on>)))))
+       (cons* statement
+              (make <state>)
+              (makreel:add-state-placeholder rest))))
     (((and (? (is? <statement>)) statement) rest ...)
      (cons statement (makreel:add-state-placeholder rest)))
     ((? (is? <ast>))

@@ -570,11 +570,15 @@ std::basic_ostream<Char, Traits> &")
                                         (name "require"))))
               (statement
                (sm:compound*
-                `(,@(map (lambda (o)
-                           (sm:assign*
-                            (string-append "provide.out." (.name o))
-                            (string-append "require.out." (.name o))))
-                         (ast:out-event* o))
+                `(,@(append-map
+                     (lambda (o)
+                       (let ((require (string-append "require.out." (.name o)))
+                             (provide (string-append "provide.out." (.name o))))
+                        `(,(sm:assign*
+                            (string-append require ".other_port_update")
+                            (string-append provide ".port_update"))
+                          ,(sm:assign* provide require))))
+                     (ast:out-event* o))
                   ,@(map (lambda (o)
                            (sm:assign*
                             (string-append "require.in." (.name o))
@@ -956,13 +960,14 @@ std::basic_ostream<Char, Traits> &")
                                            (name "locator"))))
                  (statement
                   (sm:compound*
-                   `(,@(map requires->external (filter ast:external? (ast:requires-port* o)))
-                     ,@(if (is-a? o <foreign>) '()
+                   `(,@(map requires->external (filter ast:external?
+                                                       (ast:requires-port* o)))
+                     ,@(if (is-a? o <foreign>) `(,(sm:assign*
+                                                   "dzn_runtime.foreign (this)"
+                                                   "true"))
                            `(,(requires->assignment (ast:requires-port* o))
                              ,@(append-map injected->assignments
-                                           (ast:injected-port* o))
-                             ,(sm:assign* (sm:member* "dzn_runtime.performs_flush (this)")
-                                          "true")))
+                                           (ast:injected-port* o))))
                      ,@(map trigger->event-slot (ast:in-triggers o))))))
                ,@(if (not (is-a? o <foreign>)) '()
                      `(,(sm:destructor (struct component)
@@ -1177,14 +1182,16 @@ std::basic_ostream<Char, Traits> &")
          (type (string-join (cons "" (ast:full-name (.type port))) "::"))
          (name (.name port))
          (expression
-          "{}"))))
+          (simple-format
+           #f "{{~s,&~a,this,&dzn_meta},{~s,0,0,0}}" name name name)))))
     (define (requires->member port)
       (let ((other-end (ast:other-end-point port)))
         (sm:variable
          (type (string-join (cons "" (ast:full-name (.type port))) "::"))
          (name (.name port))
          (expression
-          "{}"))))
+          (simple-format
+           #f "{{~s,0,0,0},{~s,&~a,this,&dzn_meta}}" name name name)))))
     (define (injected-instance? instance)
       (member instance injected-instances ast:eq?))
     (define (instance->member instance)
@@ -1395,6 +1402,7 @@ std::basic_ostream<Char, Traits> &")
            (system-port (string-append "c.system." port))
            (meta (string-append system-port ".dzn_meta"))
            (port-event (string-append port "." event))
+           (blocking? (.blocking? (.port trigger)))
            (function
             (sm:function
              (captures '("&"))
@@ -1405,7 +1413,11 @@ std::basic_ostream<Char, Traits> &")
                (sm:call (name "c.match")
                         (arguments
                          (list (simple-format #f "~s" port-event))))
-               (sm:call (name "c.sync_trigger"))
+               (if (not blocking?) (sm:call (name "c.sync_trigger"))
+                   (sm:call (name "dzn::port_block")
+                            (arguments
+                             (list "c.dzn_locator" "nullptr"
+                                   (simple-format #f "&c.system.~a" port)))))
                (sm:variable (type "std::string")
                             (name "tmp")
                             (expression
@@ -1475,14 +1487,20 @@ std::basic_ostream<Char, Traits> &")
   (define (requires->init port)
     (let* ((port-name (.name port))
            (system-port (simple-format #f "c.system.~a" port-name))
-           (meta (simple-format #f "~a.dzn_meta.provide" system-port)))
+           (meta (simple-format #f "~a.dzn_meta.provide" system-port))
+           (requires (simple-format #f "~a.dzn_meta.require.component"
+                                    system-port)))
       (list
        (sm:assign (variable (simple-format #f "~a.component" meta))
-                  (expression "&c"))
+                  (expression "nullptr"))
        (sm:assign (variable (simple-format #f "~a.meta" meta))
                   (expression "&c.dzn_meta"))
        (sm:assign (variable (simple-format #f "~a.name" meta))
-                  (expression (simple-format #f "~s" port-name))))))
+                  (expression (simple-format #f "~s" port-name)))
+       (sm:assign (variable
+                   (sm:call (name "c.dzn_runtime.performs_flush")
+                            (arguments (list requires))))
+                  (expression "flush")))))
   (define (void-provides-in->init trigger)
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
@@ -1540,6 +1558,38 @@ std::basic_ostream<Char, Traits> &")
           (sm:call (name "c.perform"))
           (sm:call (name "c.match")
                    (arguments (list "tmp")))))))))
+  (define (void-requires-in->init trigger)
+    (let* ((port (.port.name trigger))
+           (port-return (simple-format #f "~a.return" port))
+           (port-sm:return-string (simple-format #f "~s" port-return))
+           (port-prefix (simple-format #f "~a." port))
+           (system-port (simple-format #f "c.system.~a" port)))
+      (sm:generalized-initializer-list*
+       port-sm:return-string
+       (sm:function
+        (captures '("&"))
+        (statement
+         (sm:compound*
+          (sm:call (name "dzn::port_release")
+                   (arguments
+                    (list "c.dzn_locator"
+                          "nullptr"
+                          (string-append "&" system-port))))))))))
+  (define (typed-in->init port-pair) ;; FIXME: get rid of port-pair?
+    (let* ((port (.port port-pair))
+           (other (.other port-pair))
+           (port-other (simple-format #f "~a.~a" port other)))
+      (sm:generalized-initializer-list*
+       (simple-format #f "~s" port-other)
+       (sm:function
+        (captures '("&"))
+        (statement
+         (sm:compound*
+          (sm:call (name "dzn::port_release")
+                   (arguments
+                    (list "c.dzn_locator"
+                          "nullptr"
+                          (simple-format #f "&c.system.~a" port))))))))))
   (define (out->init trigger)
     (let* ((port (.port.name trigger))
            (event (.event.name trigger))
@@ -1570,19 +1620,30 @@ std::basic_ostream<Char, Traits> &")
                    (arguments (list flush-string)))
           (sm:statement*
            (simple-format #f "std::clog << ~s << std::endl" flush))
-          (sm:call (name "c.dzn_runtime.flush")
-                   (arguments (list "&c")))))))))
+          (sm:call
+           (name "c.dzn_runtime.flush")
+           (arguments
+            (list
+             (simple-format #f "c.system.~a.dzn_meta.require.component" port)
+             (sm:call (name "dzn::coroutine_id")
+                      (arguments (list "c.system.dzn_locator")))
+             "false")))))))))
   (sm:function
    (type "static std::map<std::string, std::function<void ()> >")
    (name "event_map")
    (formals (list (sm:formal (type (string-append container "&"))
-                             (name "c"))))
+                             (name "c"))
+                  (sm:formal (type "bool")
+                             (name "flush"))))
    (statement
     (sm:compound*
      (append
       (append-map provides->init (ast:provides-port* o))
       (append-map requires->init (ast:requires-port* o))
       (list
+       (sm:assign (variable (sm:call (name "c.dzn_runtime.performs_flush")
+                                     (arguments (list "nullptr"))))
+                  (expression "flush"))
        (sm:return*
         (sm:generalized-initializer-list
          (newline? #t)
@@ -1593,6 +1654,8 @@ std::basic_ostream<Char, Traits> &")
            (append
             (map void-provides-in->init (ast:provides-in-void-triggers o))
             (map typed-provides-in->init (ast:provides-in-typed-triggers o))
+            (map void-requires-in->init (code:blocking-requires-in-void-returns o))
+            (map typed-in->init (code:blocking-return-values o))
             (map out->init (ast:requires-out-triggers o))
             (map flush->init (ast:requires-port* o))
             (map flush->init (ast:provides-port* o)))))))))))))
@@ -1638,11 +1701,10 @@ std::basic_ostream<Char, Traits> &")
                         (arguments (list call-rdbuf))
                         ;; (arguments (list (sm:call (name "std::clog.rdbuf"))))
                         )))
-     (sm:call (name (simple-format #f "~a c" container))
-              (arguments '("flush")))
+     (sm:statement* (simple-format #f "~a c" container))
      (sm:call (name "connect_ports") (arguments '("c")))
      (sm:call (name "dzn::check_bindings") (arguments '("c.system")))
-     (sm:call (name "c") (arguments '("event_map (c)")))))))
+     (sm:call (name "c") (arguments '("event_map (c, flush)")))))))
 
 
 ;;;

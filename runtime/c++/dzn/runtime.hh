@@ -156,45 +156,71 @@ struct runtime
   runtime (runtime &&) = delete;
   struct state
   {
+    int activity;
     size_t handling;
     size_t blocked;
     void *skip;
+    bool foreign;
     bool performs_flush;
+    std::function<void()> port_update;
     dzn::component *deferred;
     std::queue<std::function<void ()>> queue;
   };
+  bool defer;
   std::map<dzn::component *, state> states;
+  std::map<size_t, int> coroutine_id2activity;
   bool skip_block (dzn::component *, void *);
   void set_skip_block (dzn::component *, void *);
   void reset_skip_block (dzn::component *);
 
   bool external (dzn::component *);
+  int &activity (dzn::locator const&);
   size_t &handling (dzn::component *);
   size_t &blocked (dzn::component *);
+  std::function<void()> &deferred_flush (dzn::component *);
   dzn::component *&deferred (dzn::component *);
   std::queue<std::function<void ()> > &queue (dzn::component *);
   bool &performs_flush (dzn::component *);
+  bool &foreign (dzn::component *);
+  void flush (dzn::component *, size_t, bool sync_p);
   template <typename T>
   void flush (T *t)
   {
-    flush (t, coroutine_id (t->dzn_locator));
+    flush (t, coroutine_id (t->dzn_locator), false);
   }
-  void flush (dzn::component *, size_t);
-  bool queue_p (dzn::component *, dzn::component *);
-  void enqueue (dzn::component *, dzn::component *, const std::function<void ()> &, size_t);
   runtime ();
 };
 
+struct scoped_activity
+{
+  int &value;
+  int initial_activity;
+  scoped_activity (dzn::runtime& runtime, dzn::locator const& locator, int v)
+    : value (runtime.activity (locator))
+    , initial_activity (value)
+  {
+    if (initial_activity == 0)
+      value = v;
+  }
+  ~scoped_activity ()
+  {
+    if (initial_activity == 0)
+      value = 0;
+  }
+};
+
 template <typename C, typename P, typename E>
-void defer (C *component, P &&predicate, E const &event)
+void defer (C *component, P &&predicate, E const &statement)
 {
   defer (component->dzn_locator, std::function<bool ()> (predicate),
          std::function<void (size_t)> ([ = ] (size_t coroutine_id)
          {
-           component->dzn_runtime.handling (component) = coroutine_id;
-           event ();
-           component->dzn_runtime.flush (component);
-           component->dzn_runtime.handling (component) = 0;
+           scoped_activity activity (component->dzn_runtime,
+                                     component->dzn_locator, -1);
+           component->dzn_runtime.defer = true;
+           statement ();
+           component->dzn_runtime.flush (component, coroutine_id, false);
+           component->dzn_runtime.defer = false;
          }));
 }
 
@@ -352,8 +378,9 @@ struct event<R (Args...)>
       assert (this->dzn_locator);
       assert (this->dzn_runtime);
 
-      if (this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
-          || port_blocked_p (*this->dzn_locator, this->port))
+      if ((this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
+           || port_blocked_p (*this->dzn_locator, this->port))
+          && !this->dzn_runtime->foreign (this->dzn_port_meta->provide.component))
         collateral_block (*this->dzn_locator,
                           this->dzn_port_meta->provide.component);
       this->dzn_runtime->reset_skip_block (this->component);
@@ -362,12 +389,10 @@ struct event<R (Args...)>
       this->write_state ();
       this->dzn_runtime->handling (this->component)
         = coroutine_id (*this->dzn_locator);
+      scoped_activity activity (*this->dzn_runtime, *this->dzn_locator, 1);
       this->reply = f (args...);
-
-      // possibly overwrites reply
       this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
-                                coroutine_id (*this->dzn_locator));
-
+                                coroutine_id (*this->dzn_locator), true);
       std::string reply_string = ::dzn::to_string (this->reply);
       trace_out (*this->os, *this->dzn_port_meta, reply_string.c_str ());
       this->port_update (reply_string.c_str ());
@@ -499,8 +524,9 @@ struct event<void (Args...)>
       assert (this->dzn_locator);
       assert (this->dzn_runtime);
 
-      if (this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
-          || port_blocked_p (*this->dzn_locator, this->port))
+      if ((this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
+           || port_blocked_p (*this->dzn_locator, this->port))
+          && !this->dzn_runtime->foreign (this->dzn_port_meta->provide.component))
         collateral_block (*this->dzn_locator,
                           this->dzn_port_meta->provide.component);
       this->dzn_runtime->reset_skip_block (this->component);
@@ -509,10 +535,10 @@ struct event<void (Args...)>
       this->write_state ();
       this->dzn_runtime->handling (this->component)
         = coroutine_id (*this->dzn_locator);
+      scoped_activity activity (*this->dzn_runtime, *this->dzn_locator, 1);
       f (args...);
-
       this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
-                                coroutine_id (*this->dzn_locator));
+                                coroutine_id (*this->dzn_locator), true);
       trace_out (*this->os, *this->dzn_port_meta, "return");
       this->port_update ("return");
       this->write_state ();
@@ -541,6 +567,7 @@ struct event<void (Args...)>
   bool dzn_strict_p;
   void* port;
   std::function <void (char const*)> port_update;
+  std::function <void (char const*)> other_port_update;
   dzn::port::meta* dzn_port_meta;
   dzn::component* component;
   std::function <void ()> write_state;
@@ -633,24 +660,66 @@ struct event<void (Args...)>
       assert (this->dzn_runtime);
 
       trace_qin (*this->os, *this->dzn_port_meta, this->name);
-      this->port_update (this->name);
       this->write_state ();
+      this->port_update (this->name);
 
-      if (!this->dzn_port_meta->require.component) f (args...);
+      dzn::locator const &locator = *this->dzn_locator;
+      dzn::runtime &runtime = *this->dzn_runtime;
+      dzn::component *component = this->component;
+      dzn::component *provide = this->dzn_port_meta->provide.component;
+      dzn::component *require = this->dzn_port_meta->require.component;
+      bool no_flush_label_p = port_blocked_p (locator, this->port)
+        || runtime.performs_flush (nullptr)
+        || runtime.defer;
+
+      auto event = [f,require,this,args...]
+      {
+        if (require)
+          {
+            trace_qout (*this->os, *this->dzn_port_meta, this->name);
+            this->write_state ();
+          }
+        f (args...);
+      };
+
+      auto port_update = [this]
+      {
+        this->port_update ("<flush>");
+        if (this->other_port_update)
+          this->other_port_update ("<flush>");
+      };
+
+      scoped_activity activity (runtime, locator, -1);
+
+      runtime.deferred_flush (require) = [this,port_update,&locator]
+        {
+          if (!port_blocked_p (locator, this->port))
+            port_update ();
+        };
+      runtime.deferred (provide) = require;
+
+      if (!require && no_flush_label_p)
+        f (args...);
       else
         {
-          bool receive = this->component == this->dzn_port_meta->provide.component;
-          this->dzn_runtime->enqueue
-            (receive ? this->component : this->dzn_port_meta->provide.component,
-             receive ? this->dzn_port_meta->require.component : this->component,
-             [f,this,args...]
-             {
-               trace_qout (*this->os, *this->dzn_port_meta, this->name);
-               this->write_state ();
-               f (args...);
-             }, coroutine_id (*this->dzn_locator));
+          runtime.queue (require).push (event);
+          if (!require
+              || (!provide
+                  && !runtime.handling (component)
+                  && !runtime.performs_flush (component))
+              || (provide
+                  && runtime.foreign (provide)
+                  && !runtime.performs_flush (provide)))
+            runtime.flush (require, coroutine_id (locator),
+                           activity.value == 1);
+          if (!provide
+              && !no_flush_label_p
+              && runtime.blocked (provide)
+              && runtime.handling (component))
+            port_update ();
         }
-      prune_deferred (*this->dzn_locator);
+
+      prune_deferred (locator);
     };
     return *this;
   }

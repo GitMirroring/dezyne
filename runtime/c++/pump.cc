@@ -427,7 +427,8 @@ pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
   auto self = find_self (coroutines);
   runtime.blocked (component) = self->id;
   runtime.handling (component) = 0;
-  runtime.flush (component, self->id);
+  runtime.flush (component, self->id, true);
+
   if (runtime.skip_block (component, port))
     {
       runtime.reset_skip_block (component);

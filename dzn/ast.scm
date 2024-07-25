@@ -143,6 +143,7 @@
                ast:perfect-funcq
                ast:pure-funcq
                ast:node-eq?
+               ast:port-eq?
 
                ast:argument*
                ast:binding*

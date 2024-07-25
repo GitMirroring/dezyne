@@ -38,11 +38,13 @@ connect_ports (dzn::container< ::foreign, std::function<void ()>>& c)
     };
 }
 static std::map<std::string, std::function<void ()> >
-event_map (dzn::container< ::foreign, std::function<void ()>>& c)
+event_map (dzn::container< ::foreign, std::function<void ()>>& c, bool flush)
 {
   c.system.port.dzn_meta.require.component = &c;
   c.system.port.dzn_meta.require.meta = &c.dzn_meta;
   c.system.port.dzn_meta.require.name = "port";
+  c.dzn_runtime.performs_flush (&c) = flush;
+  c.dzn_runtime.performs_flush (nullptr) = flush;
   return   {  {"illegal", []  {std::clog << "illegal" << std::endl;}}
       ,   {"error", []  {std::clog << "sut.error -> sut.error" << std::endl; std::exit (0);}}
       ,   {"port.hello",[&] ()
@@ -63,7 +65,7 @@ event_map (dzn::container< ::foreign, std::function<void ()>>& c)
             {
               c.match ("port.<flush>");
               std::clog << "port.<flush>" << std::endl;
-              c.dzn_runtime.flush (&c);
+              c.dzn_runtime.flush (&c.system);
             }}};
 }
 static bool
@@ -79,11 +81,11 @@ main (int argc, char const* argv[])
 {
   bool flush = dzn_getopt (argc, argv, "--flush");
   if (dzn_getopt (argc, argv, "--debug")) dzn::debug.rdbuf (std::clog.rdbuf ());
-  dzn::container< ::foreign, std::function<void ()>> c (flush);
+  dzn::container< ::foreign, std::function<void ()>> c;
   connect_ports (c);
 
   dzn::check_bindings (c);
 
-  c (event_map (c));
+  c (event_map (c, flush));
 }
 // version 2.18.0.rc5.70-dfe40

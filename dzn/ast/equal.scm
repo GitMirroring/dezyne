@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -37,7 +37,8 @@
             ast:equal?
             ast:empty-namespace?
             ast:name-equal?
-            ast:node-eq?))
+            ast:node-eq?
+            ast:port-eq?))
 
 ;;;
 ;;; ast:node-eq?
@@ -180,3 +181,6 @@
 
 (define-method (ast:equal? (a <the-end>) (b <the-end>))
   #t)
+
+(define-method (ast:port-eq? (a <trigger>) (b <trigger>))
+  (ast:eq? (.port a) (.port b)))

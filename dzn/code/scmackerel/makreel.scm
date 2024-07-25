@@ -1177,32 +1177,51 @@
 (define-method (ast->process (model <component>) (o <behavior>) (next <ast>))
   (let* ((shared (ast:shared* o))
          (ports (filter (negate ast:external?) (ast:port* model)))
+         (requires (ast:requires-port* model))
          (defers (makreel:defer* o))
          (defers
            (if (null? defers) defers
                (list
-                (sm:sum (type (%locals model))
-                        (statement
-                         (sm:sequence*
-                          (sm:invoke (%defer-qout-action model))
-                          (sm:union*
-                           (map
-                            (lambda (d)
-                              (let* ((statement (.statement d))
-                                     (locals (makreel:locals statement)))
-                                (sm:if* (sm:invoke (%locals-predicate statement))
-                                        (sm:goto (name (statement->process-name
-                                                        (.statement d)))
-                                                 (arguments
-                                                  (map
-                                                   (lambda (v)
-                                                     (simple-format
-                                                      #f
-                                                      "~a=~a (i)"
-                                                      (.name v)
-                                                      (variable-prefix "locals" v)))
-                                                   locals))))))
-                            defers)))))))))
+                (sm:sum
+                 (type (%locals model))
+                 (statement
+                  (sm:sequence*
+                   (sm:invoke (%defer-qout-action model))
+                   (sm:union*
+                    (map
+                     (lambda (d)
+                       (let* ((statement (.statement d))
+                              (locals (makreel:locals statement)))
+                         (sm:if*
+                          (sm:invoke (%locals-predicate statement))
+                          (sm:goto
+                           (name (statement->process-name
+                                  (.statement d)))
+                           (arguments
+                            (append
+                             (map
+                              (lambda (v)
+                                (simple-format
+                                 #f
+                                 "~a=~a (i)"
+                                 (.name v)
+                                 (variable-prefix "locals" v)))
+                              locals)
+                             (append-map
+                              (lambda (port)
+                                (map
+                                 (lambda (v)
+                                   (let* ((p (.port v))
+                                          (interface (.type p)))
+                                     (simple-format
+                                      #f "~a=~a (~a)"
+                                      (makreel:full-name v)
+                                      (model-prefix (ast:name v) interface)
+                                      (port-prefix "s" p))))
+                                 (filter (compose (cute ast:eq? port <>) .port)
+                                         shared)))
+                              (map .port shared))))))))
+                     defers)))))))))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -1225,10 +1244,38 @@
                                     (model-prefix (ast:name v) interface)
                                     (port-prefix "s" p))))
                                (filter (compose (cute ast:eq? port <>) .port)
-                                       (ast:shared* model)))))
+                                       shared))))
                    ,@defers))))
-             (map .port (ast:shared* model)))
-          ,@defers
+             (map .port shared))
+          ,@(map (lambda (port)
+                   (sm:sequence*
+                    (%flush-action port)
+                    (sm:goto (name (statement->process-name o))
+                             (arguments (makreel:process-parens o)))))
+                 (lset-difference ast:eq? requires (map .port shared)))
+          ,@(map
+             (lambda (port)
+               (sm:sequence*
+                (%flush-action port)
+                (sum-state-action
+                 port
+                 (sm:union*
+                  `(,(sm:goto (name (statement->process-name o))
+                              (arguments
+                               (map
+                                (lambda (v)
+                                  (let* ((p (.port v))
+                                         (interface (.type p)))
+                                    (simple-format
+                                     #f "~a=~a (~a)"
+                                     (makreel:full-name v)
+                                     (model-prefix (ast:name v) interface)
+                                     (port-prefix "s" p))))
+                                (filter (compose (cute ast:eq? port <>) .port)
+                                        shared))))
+                    ,@defers)))))
+             (lset-intersection ast:eq? (map .port shared) requires))
+          ,@(if (pair? shared) '()  defers)
           ,(sm:goto (name (statement->process-name next))
                     (arguments (makreel:process-parens next)))))))))
 
@@ -1322,20 +1369,19 @@
                             (arguments (makreel:process-parens next)))
                    (sum-state-action
                     port
-                    (sm:union*
-                     `(,(sm:goto (name (statement->process-name next))
-                                 (arguments
-                                  (map
-                                   (lambda (v)
-                                     (let* ((p (.port v))
-                                            (interface (.type p)))
-                                       (simple-format
-                                        #f "~a=~a (~a)"
-                                        (makreel:full-name v)
-                                        (model-prefix (ast:name v) interface)
-                                        (port-prefix "s" p))))
-                                   (filter (compose (cute ast:eq? port <>) .port)
-                                           (ast:shared* model))))))))))))))))
+                    (sm:goto (name (statement->process-name next))
+                             (arguments
+                              (map
+                               (lambda (v)
+                                 (let* ((p (.port v))
+                                        (interface (.type p)))
+                                   (simple-format
+                                    #f "~a=~a (~a)"
+                                    (makreel:full-name v)
+                                    (model-prefix (ast:name v) interface)
+                                    (port-prefix "s" p))))
+                               (filter (compose (cute ast:eq? port <>) .port)
+                                       (ast:shared* model))))))))))))))
 
 (define-method (ast->process (model <model>) (o <declarative-illegal>) (next <ast>))
   (sm:process
@@ -1462,6 +1508,8 @@
 
 (define-method (ast->process (model <component>) (o <action-reply>) (next <ast>))
   (let* ((port (.port o))
+         (requires (filter (negate (cute ast:eq? port <>))
+                           (ast:requires-port* model)))
          (interface (and=> port .type))
          (void-reply? (and (ast:in? o)
                            (is-a? (ast:type o) <void>))))
@@ -1526,7 +1574,13 @@
                                          (null? (ast:shared* model)))
                                      (makreel:process-parens next))
                                     (else
-                                     (makreel:shared-process-arguments o))))))))))))))
+                                     (makreel:shared-process-arguments o))))))))
+          ,@(map (lambda (port)
+                   (sm:sequence*
+                    (%flush-action port)
+                    (sm:goto (name name)
+                             (arguments (makreel:process-parens o)))))
+                 requires)))))))
 
 (define-method (ast->process (model <model>) (o <call>) (next <ast>))
   (let* ((function (.function o))
@@ -2184,7 +2238,6 @@
               (process interface-internal)
               (events (list %tau-void-action
                             (%end-action o)
-                            (%flush-action o)
                             (%tau-reply-action o))))))))
     (list interface-reorder
           interface-reorder-reply
@@ -2555,6 +2608,7 @@
                               (append-map
                                (lambda (p)
                                  (list
+                                  (%flush-action p)
                                   (%in-action p)
                                   (%out-action p)
                                   (%reply-action p)
@@ -3559,16 +3613,19 @@
              requires)))))))
 
 (define-method (semantics-async (o <component>))
-  (let ((provides (ast:provides-port* o))
-        (requires (ast:requires-port* o)))
+  (let* ((provides (ast:provides-port* o))
+         (requires (ast:requires-port* o))
+         (shared (map .port (ast:shared* o)))
+         (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (requires-flush p name)
       (let ((interface (.type p)))
         (sm:if* (sm:invoke (%port-predicate p) "port")
                 (sm:sequence*
-                 (%flush-action p)
-                 (sm:union*
-                  (sm:goto (name "semantics_main"))
-                  (defer-qout-actions-async o name))))))
+                 `(,(%flush-action p)
+                   ,@(map sum-state-action shared-provides)
+                   ,(sm:union*
+                     (sm:goto (name "semantics_main"))
+                     (defer-qout-actions-async o name)))))))
     ;; XXX out-actions, but with port=h'port
     (define (out-actions+port=p p name)
       (let ((interface (.type p)))
@@ -3577,7 +3634,7 @@
                  (sm:sequence*
                   (sm:invoke (%out-action p) #:keep-constructor? #t)
                   (if (not (find (compose (cute ast:eq? p <>) .port)
-                                      (ast:shared* o)))
+                                 (ast:shared* o)))
                       (sm:goto (name name)
                                (arguments
                                 (list
@@ -3731,6 +3788,7 @@
                               (append-map
                                (lambda (p)
                                  (list
+                                  (%flush-action p)
                                   (%in-action p)
                                   (%internal-action p)
                                   (%end-action p)
@@ -3824,6 +3882,9 @@
                     (list
                      (sm:comm-event (from (sm:multi-event
                                            (events
+                                            (list (%flush-action p))))))
+                     (sm:comm-event (from (sm:multi-event
+                                           (events
                                             (list (%in-action p))))))
                      (sm:comm-event (from (sm:multi-event
                                            (events
@@ -3890,7 +3951,6 @@
                                (lambda (p)
                                  (list
                                   (%qin-action p)
-                                  (%flush-action p)
                                   (%port-queue-full-action p)
                                   (%switch-context-action p)))
                                requires)
@@ -4113,6 +4173,8 @@
                (list
                 (sm:rename-event (from (%compliant-action #f))
                                  (to (%compliant-action o)))
+                (sm:rename-event (from (%flush-action interface))
+                                 (to (%flush-action o)))
                 (sm:rename-event (from (%in-action interface))
                                  (to (%in-action o)))
                 (sm:rename-event (from (%out-action interface))
@@ -4155,6 +4217,7 @@
                                   (lambda (p)
                                     (list
                                      (%compliant-action p)
+                                     (%flush-action p)
                                      (%in-action p)
                                      (%out-action p)
                                      (%reply-action p)
@@ -4182,6 +4245,9 @@
                 (append-map
                  (lambda (p)
                    (list
+                    (sm:comm-event (from (sm:multi-event
+                                          (events
+                                           (list (%flush-action p))))))
                     (sm:comm-event (from (sm:multi-event
                                           (events
                                            (list (%in-action p))))))
@@ -4233,12 +4299,12 @@
                                (lambda (p)
                                  (list
                                   (%blocking-action p)
-                                  (%compliant-action p)
-                                  (%flush-action p)))
+                                  (%compliant-action p)))
                                provides)
                               (append-map
                                (lambda (p)
                                  (list
+                                  (%flush-action p)
                                   (%in-action p)
                                   (%reply-action p)
                                   (%internal-action p)

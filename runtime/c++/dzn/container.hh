@@ -58,11 +58,11 @@ struct container: public component
     return os;
   }
 
-  container (bool flush, dzn::locator &&l = dzn::locator{})
+  container ()
     : dzn_meta{"<external>", "container", 0, {},
                {&system.dzn_meta},
                {[this]{dzn::check_bindings (system);}}}
-    , dzn_locator (std::forward<dzn::locator> (l))
+    , dzn_locator ()
     , dzn_runtime ()
     , system (dzn_locator.set (dzn_runtime).set (pump))
     , pump ()
@@ -73,7 +73,6 @@ struct container: public component
                 << "<illegal>" << std::endl;
       std::exit (0);
     };
-    dzn_runtime.performs_flush (this) = flush;
     system.dzn_meta.name = "sut";
   }
   ~container ()
