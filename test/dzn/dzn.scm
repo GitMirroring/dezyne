@@ -41,6 +41,7 @@
   #:use-module (dzn shell-util)
   #:use-module (dzn trace)
   #:export (%default-stages
+            get-meta-option
             run-baseline
             run-test))
 
@@ -169,11 +170,19 @@ output, and standard error as three values."
                  stages)
          (format #t "skip\n"))))
 
-(define (get-meta-flag file-name flag)
+(define (get-meta-entry file-name option)
   (let ((alist (get-meta file-name)))
     (and alist
-         (and=> (assq-ref alist flag)
-                (cute equal? <> '(#t))))))
+         (assq option alist))))
+
+(define (get-meta-option file-name option)
+  (let ((alist (get-meta file-name)))
+    (and alist
+         (and=> (assq-ref alist option) car))))
+
+(define (get-meta-flag file-name flag)
+  (and=> (get-meta-option file-name flag)
+         (cute equal? <> #t)))
 
 (define (fall-back? file-name)
   (get-meta-flag file-name 'fall-back))
@@ -185,19 +194,13 @@ output, and standard error as three values."
   (get-meta-flag file-name 'no-unreachable))
 
 (define (queue-size file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'queue-size) car))))
+  (get-meta-option file-name 'queue-size))
 
 (define (queue-size-defer file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'queue-size-defer) car))))
+  (get-meta-option file-name 'queue-size-defer))
 
 (define (queue-size-external file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'queue-size-external) car))))
+  (get-meta-option file-name 'queue-size-external))
 
 (define (thread-pool? file-name)
   (get-meta-flag file-name 'thead-pool))
@@ -206,42 +209,29 @@ output, and standard error as three values."
   (get-meta-flag file-name 'tss))
 
 (define (code-options file-name)
-  (let ((alist (get-meta file-name)))
-    (or (and alist
-             (and=> (assq-ref alist 'code-options) car))
-        '())))
+  (or (get-meta-option file-name 'code-options)
+      '()))
 
 (define (component? file-name)
-  (or (let ((alist (get-meta file-name)))
-        (and alist
-             (and=> (assq-ref alist 'component) car)))
+  (or (get-meta-option file-name 'component)
       (model? file-name)))
 
 (define (component-unset? file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq 'component alist)
-                (cute equal? <> '(component #f))))))
+  (and=> (get-meta-entry file-name 'component)
+         (cute equal? <> '(component #f))))
 
 (define (model? file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'model) car))))
+  (get-meta-option file-name 'model))
 
 (define (trace-format file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'trace-format) car))))
+  (get-meta-option file-name 'trace-format))
 
 (define (non-strict? file-name)
-  (let ((alist (get-meta file-name)))
-    (and alist
-         (and=> (assq-ref alist 'non-strict?) car))))
+  (get-meta-option file-name 'non-strict?))
 
 (define (simulate-flags file-name)
   (let ((alist (get-meta file-name)))
-    (or (and alist
-             (and=> (assq-ref alist 'simulate-flags) car))
+    (or (get-meta-option file-name 'simulate-flags)
         '())))
 
 
