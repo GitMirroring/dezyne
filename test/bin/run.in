@@ -65,6 +65,11 @@ Examples:
                 "@languages@")
           (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
+
+(define (meta-timeout file-name)
+  (and=> (get-meta-option file-name 'timeout)
+         number->string))
+
 
 ;;; Main
 
@@ -98,7 +103,8 @@ Examples:
          (need-traces? (or (member "lts" stages)
                            (member "simulate" stages)
                            (member "code" stages)))
-         (timeout (option-ref options 'timeout #f))
+         (timeout (or (meta-timeout file-name)
+                      (option-ref options 'timeout #f)))
          (stages (if need-traces? (cons "traces" stages)
                      stages))
          (stages (filter (negate (cute member <> skip)) stages))
