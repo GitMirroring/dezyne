@@ -1,5 +1,5 @@
 ;;; SCMackerel --- A GNU Guile front-end for mCRL2
-;;; Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of SCMackerel.
 ;;;
@@ -17,53 +17,5 @@
 ;;; along with SCMackerel.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (pack scmackerel)
-  #:use-module (guix build-system gnu)
-  #:use-module (guix download)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix gexp)
-  #:use-module (guix packages)
-  #:use-module (gnu packages base)
-  #:use-module (gnu packages bash)
-  #:use-module (gnu packages guile)
-  #:use-module (gnu packages maths)
-  #:use-module (gnu packages pkg-config))
-
-(define-public scmackerel
-  (package
-    (name "scmackerel")
-    (version #!scmackerel!# "0.5.3")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (string-append "https://dezyne.org/download/scmackerel/"
-                           name "-" version ".tar.gz"))
-       (sha256
-        (base32 #!scmackerel!# "1sgrkw3idsni1ylf0slwgzzwq31b1yx6s0j17yq99c88agk9cvd6"))))
-    (inputs (list bash-minimal
-                  guile-3.0
-                  guile-readline
-                  mcrl2-minimal))
-    (native-inputs (list guile-3.0 pkg-config))
-    (build-system gnu-build-system)
-    (arguments
-     (list
-      #:modules `((ice-9 popen)
-                  ,@%gnu-build-system-modules)
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-before 'configure 'setenv
-            (lambda _
-              (setenv "GUILE_AUTO_COMPILE" "0")))
-          (add-after 'install 'install-readmes
-            (lambda _
-              (let* ((base (string-append #$name "-" #$version))
-                     (doc (string-append #$output "/share/doc/" base)))
-                (mkdir-p doc)
-                (copy-file "NEWS" (string-append doc "/NEWS"))))))))
-    (synopsis "AST library in GNU Guile")
-    (description "SCMackerel is a library in GNU Guile to create abstract
-syntax trees (ASTs).  Initially written for @url{https://mcrl2.org,mCRL2} and
-now also supporting other languages, such as C, C++, and C#.  Based on GNU
-Guix records.")
-    (home-page "https://gitlab.com/janneke/scmackerel")
-    (license (list license:gpl3+))))
+  #:use-module (gnu packages dezyne)
+  #:re-export (scmackerel))
