@@ -52,17 +52,17 @@
                            name "-" version ".tar.gz"))
        (sha256
         (base32 #!dezyne!# "0cya5p7y546ldiycz5clv0r8xhxf8zp8iim50y20vhsfgxvh96is"))))
-    (propagated-inputs (list guile-json-4
-                             guile-readline
-                             scmackerel))
+    (build-system gnu-build-system)
+    (native-inputs (list guile-3.0 pkg-config))
     (inputs (list bash-minimal
                   boost
                   guile-3.0
+                  guile-json-4
+                  guile-readline
                   mcrl2-minimal
                   pth
+                  scmackerel
                   sed))
-    (native-inputs (list guile-3.0 pkg-config))
-    (build-system gnu-build-system)
     (arguments
      (list
       #:modules `((ice-9 popen)
