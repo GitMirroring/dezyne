@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2016, 2017, 2019 - 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2016, 2017, 2019 - 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016 - 2024 Rutger van Beusekom <rutger@dezyne.org>
@@ -209,6 +209,21 @@ struct scoped_activity
   }
 };
 
+struct scoped_handling
+{
+  size_t &value;
+  scoped_handling (dzn::runtime& runtime, dzn::locator const& locator,
+                   dzn::component *component)
+    : value (runtime.handling (component))
+  {
+    value = coroutine_id (locator);
+  }
+  ~scoped_handling ()
+  {
+    value = 0;
+  }
+};
+
 template <typename C, typename P, typename E>
 void defer (C *component, P &&predicate, E const &statement)
 {
@@ -378,27 +393,27 @@ struct event<R (Args...)>
       assert (this->dzn_locator);
       assert (this->dzn_runtime);
 
-      if ((this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
-           || port_blocked_p (*this->dzn_locator, this->port))
-          && !this->dzn_runtime->foreign (this->dzn_port_meta->provide.component))
-        collateral_block (*this->dzn_locator,
-                          this->dzn_port_meta->provide.component);
-      this->dzn_runtime->reset_skip_block (this->component);
+      dzn::locator const& locator = *this->dzn_locator;
+      dzn::runtime &runtime = *this->dzn_runtime;
+      dzn::component &component = *this->component;
+      dzn::component *provide = this->dzn_port_meta->provide.component;
+
+      if ((runtime.handling (provide) || port_blocked_p (locator, this->port))
+          && !runtime.foreign (provide))
+        collateral_block (locator, provide);
+      runtime.reset_skip_block (&component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
       this->port_update (this->name);
       this->write_state ();
-      this->dzn_runtime->handling (this->component)
-        = coroutine_id (*this->dzn_locator);
-      scoped_activity activity (*this->dzn_runtime, *this->dzn_locator, 1);
+      scoped_handling handling (runtime, locator, &component);
+      scoped_activity activity (runtime, locator, 1);
       this->reply = f (args...);
-      this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
-                                coroutine_id (*this->dzn_locator), true);
+      runtime.flush (provide, coroutine_id (locator), true);
       std::string reply_string = ::dzn::to_string (this->reply);
       trace_out (*this->os, *this->dzn_port_meta, reply_string.c_str ());
       this->port_update (reply_string.c_str ());
       this->write_state ();
-      prune_deferred (*this->dzn_locator);
-      this->dzn_runtime->handling (this->component) = 0;
+      prune_deferred (locator);
       if (this->dzn_out_binding)
         this->dzn_out_binding ();
 
@@ -524,26 +539,27 @@ struct event<void (Args...)>
       assert (this->dzn_locator);
       assert (this->dzn_runtime);
 
-      if ((this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
-           || port_blocked_p (*this->dzn_locator, this->port))
-          && !this->dzn_runtime->foreign (this->dzn_port_meta->provide.component))
-        collateral_block (*this->dzn_locator,
-                          this->dzn_port_meta->provide.component);
-      this->dzn_runtime->reset_skip_block (this->component);
+      dzn::locator const& locator = *this->dzn_locator;
+      dzn::runtime &runtime = *this->dzn_runtime;
+      dzn::component &component = *this->component;
+      dzn::component *provide = this->dzn_port_meta->provide.component;
+
+      if ((runtime.handling (provide)
+           || port_blocked_p (locator, this->port))
+          && !runtime.foreign (provide))
+        collateral_block (locator, provide);
+      runtime.reset_skip_block (&component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
       this->port_update (this->name);
       this->write_state ();
-      this->dzn_runtime->handling (this->component)
-        = coroutine_id (*this->dzn_locator);
-      scoped_activity activity (*this->dzn_runtime, *this->dzn_locator, 1);
+      scoped_handling handling (runtime, locator, &component);
+      scoped_activity activity (runtime, locator, 1);
       f (args...);
-      this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
-                                coroutine_id (*this->dzn_locator), true);
+      runtime.flush (provide, coroutine_id (locator), true);
       trace_out (*this->os, *this->dzn_port_meta, "return");
       this->port_update ("return");
       this->write_state ();
-      prune_deferred (*this->dzn_locator);
-      this->dzn_runtime->handling (this->component) = 0;
+      prune_deferred (locator);
       if (this->dzn_out_binding)
         this->dzn_out_binding ();
     };
