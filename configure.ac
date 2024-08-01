@@ -1,7 +1,8 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
+# Copyright © 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
 #
@@ -96,9 +97,17 @@ dnl Check whether lps2lts can produce a valid lts on stdout
 dnl This patch also has lps2lts read from stdin
 dnl For cross-compiling (with patched mCRL2), use ./configure ac_cv_lps2lts_stdout=yes
 AC_CACHE_CHECK([whether lps2lts writes valid lts to stdout], [ac_cv_lps2lts_stdout],
-  [AS_IF([echo 'init delta;' | $MCRL22LPS | $LPS2LTS --save-at-end --out=aut - - 2>&5], [ac_cv_lps2lts_stdout=yes], [ac_cv_lps2lts_stdout=no])])
+  [AS_IF([echo 'init delta;' | $MCRL22LPS | $LPS2LTS --save-at-end --out=aut - /dev/null 2>&5], [ac_cv_lps2lts_stdout=yes], [ac_cv_lps2lts_stdout=no])])
 if test "x$ac_cv_lps2lts_stdout" = xno; then
    AC_MSG_ERROR([Please install an lps2lts that writes valid LTSs to stdout])
+fi
+
+dnl Check whether lps2lts supports --threads=N
+dnl For cross-compiling, use ./configure ac_cv_lps2lts_threads=yes
+AC_CACHE_CHECK([whether lps2lts supports --threads], [ac_cv_lps2lts_threads],
+  [AS_IF([echo 'init delta;' | $MCRL22LPS | $LPS2LTS --threads=1 --save-at-end --out=aut - /dev/null 2>&5], [ac_cv_lps2lts_threads=yes], [ac_cv_lps2lts_threads=no])])
+if test "x$ac_cv_lps2lts_threads" = xno; then
+   AC_MSG_ERROR([Please update mCRL2 to 202307.1])
 fi
 
 dnl Check whether ltscompare can read two LTSes from stdin

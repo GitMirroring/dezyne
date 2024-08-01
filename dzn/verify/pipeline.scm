@@ -270,8 +270,11 @@ actions."
     `("lpsparelm" ,(if timings? "--timings" "--quiet"))))
 
 (define (in-out:lps->aut options)
-  (let ((timings? (dzn:command-line:get 'timings)))
-    `("lps2lts" ,(if timings? "--timings" "--quiet")
+  (let ((timings? (dzn:command-line:get 'timings))
+        (threads (dzn:command-line:get 'threads)))
+    `("lps2lts"
+      ,@(if threads `(,(simple-format #f "--threads=~a" threads)) '())
+      ,(if timings? "--timings" "--quiet")
       "--cached" "--out=aut""--save-at-end" "-" "-")))
 
 (define (in-out:aut->aut-weak-trace options)

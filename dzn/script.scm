@@ -83,6 +83,7 @@
             (repl (single-char #\R))
             (skip-wfc (single-char #\p))
             (timings (single-char #\T))
+            (threads (value #t))
             (transform (single-char #\t) (value #t))
             (verbose (single-char #\v))
             (version (single-char #\V))))
@@ -143,6 +144,8 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -V, --version          display version
   -t, --transform=TRANS  use transformation TRANS
   -T, --timings          show timings
+      --threads=N        invoke LTS2LPS with --threads=N
+
 
 Commands:~a
 
