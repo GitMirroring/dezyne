@@ -84,7 +84,8 @@ extern std::ostream debug;
 inline std::string
 component_to_string (dzn::component *c)
 {
-  return c ? reinterpret_cast<component_meta *> (c)->dzn_meta.name : "<external>";
+  return c ? reinterpret_cast<component_meta *> (c)->dzn_meta.name
+    : "<external>";
 }
 
 void trace_qin (std::ostream &, port::meta const &, char const *);
@@ -199,26 +200,32 @@ void defer (C *component, P &&predicate, E const &event)
 
 //https://cp-algorithms.com/string/string-hashing.html
 inline std::uint32_t
-hash (char const* l, std::uint32_t h)
+hash (char const* label, std::uint32_t state)
 {
   // numeric base for beginning of [0-9a-zA-Z] - 1, i.e. '0' = 48 - 1
-  constexpr std::uint32_t b = 47;
+  constexpr std::uint32_t base = 47;
   // smallest prime encompassing [0-9a-zA-Z] numerically
-  constexpr std::uint32_t p = 79;
-  std::string n = std::to_string (h);
+  constexpr std::uint32_t prime = 79;
+  std::string n = std::to_string (state);
   char const* s = n.c_str ();
-  std::uint32_t pow = 1;
-  h = 0;
+  std::uint32_t power = 1;
+  std::uint32_t h = 0;
   while (*s)
     {
-      pow *= p;
-      h = h + (*s++ - b) * pow;
+      power *= prime;
+      h = h + (*s++ - base) * power;
     }
-  while (*l)
+  char const* p = label;
+  while (*p)
     {
-      pow *= p;
-      h = h + (*l++ - b) * pow;
+      power *= prime;
+      h = h + (*p++ - base) * power;
     }
+#if 0
+    std::cout << '"' << label << '"'
+              << " -> state " << state
+              << " hash " << h << std::endl;
+#endif
   return h;
 }
 
@@ -298,6 +305,8 @@ struct event<R (Args...)>
     std::function<R (Args...)> g (that.e);
     this->e = [g,this] (Args...args)
     {
+      if (!this->dzn_strict_p)
+        return g (args...);
       struct RAII
       {
         event* that;
@@ -331,7 +340,8 @@ struct event<R (Args...)>
   {
     this->e = [f,this] (Args ... args) -> decltype (f (args...))
     {
-      if (!this->dzn_strict_p) return f (args...);
+      if (!this->dzn_strict_p)
+        return f (args...);
 
       assert (this->port);
       assert (this->port_update);
@@ -344,13 +354,14 @@ struct event<R (Args...)>
 
       if (this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
           || port_blocked_p (*this->dzn_locator, this->port))
-        collateral_block (*this->dzn_locator, this->dzn_port_meta->provide.component);
+        collateral_block (*this->dzn_locator,
+                          this->dzn_port_meta->provide.component);
       this->dzn_runtime->reset_skip_block (this->component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
       this->port_update (this->name);
       this->write_state ();
-      this->dzn_runtime->handling (this->component) = coroutine_id (*this->dzn_locator);
-
+      this->dzn_runtime->handling (this->component)
+        = coroutine_id (*this->dzn_locator);
       this->reply = f (args...);
 
       // possibly overwrites reply
@@ -363,8 +374,8 @@ struct event<R (Args...)>
       this->write_state ();
       prune_deferred (*this->dzn_locator);
       this->dzn_runtime->handling (this->component) = 0;
-
-      if (this->dzn_out_binding) this->dzn_out_binding ();
+      if (this->dzn_out_binding)
+        this->dzn_out_binding ();
 
       return this->reply;
     };
@@ -445,6 +456,9 @@ struct event<void (Args...)>
     std::function<void (Args...)> g (that.e);
     this->e = [g,this] (Args...args)
     {
+      if (!this->dzn_strict_p)
+        return g (args...);
+
       struct RAII
       {
         event* that;
@@ -473,7 +487,8 @@ struct event<void (Args...)>
   {
     this->e = [f,this] (Args... args) -> decltype (f (args...))
     {
-      if (!dzn_strict_p) return f (args...);
+      if (!dzn_strict_p)
+        return f (args...);
 
       assert (this->port);
       assert (this->port_update);
@@ -486,13 +501,14 @@ struct event<void (Args...)>
 
       if (this->dzn_runtime->handling (this->dzn_port_meta->provide.component)
           || port_blocked_p (*this->dzn_locator, this->port))
-        collateral_block (*this->dzn_locator, this->dzn_port_meta->provide.component);
+        collateral_block (*this->dzn_locator,
+                          this->dzn_port_meta->provide.component);
       this->dzn_runtime->reset_skip_block (this->component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
       this->port_update (this->name);
       this->write_state ();
-      this->dzn_runtime->handling (this->component) = coroutine_id (*this->dzn_locator);
-
+      this->dzn_runtime->handling (this->component)
+        = coroutine_id (*this->dzn_locator);
       f (args...);
 
       this->dzn_runtime->flush (this->dzn_port_meta->provide.component,
@@ -502,7 +518,8 @@ struct event<void (Args...)>
       this->write_state ();
       prune_deferred (*this->dzn_locator);
       this->dzn_runtime->handling (this->component) = 0;
-      if (this->dzn_out_binding) this->dzn_out_binding ();
+      if (this->dzn_out_binding)
+        this->dzn_out_binding ();
     };
     return *this;
   }
@@ -586,8 +603,11 @@ struct event<void (Args...)>
     std::function<void (Args...)> g (that.e);
     this->e = [g,this] (Args...args)
     {
+      if (!this->dzn_strict_p)
+        return g (args...);
+
       this->port_update (this->name);
-      return g (args...);
+      g (args...);
     };
     return *this;
   }
@@ -600,7 +620,8 @@ struct event<void (Args...)>
   {
     this->e = [f,this] (Args...args)
     {
-      if (!this->dzn_strict_p) return f (args...);
+      if (!this->dzn_strict_p)
+        return f (args...);
 
       assert (this->port);
       assert (this->port_update);

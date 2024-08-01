@@ -361,7 +361,7 @@ pump::collateral_block (dzn::runtime &runtime, dzn::component *component)
   collateral_blocked.splice (collateral_blocked.end (), coroutines, self);
 
   self->component = component;
-  size_t coroutine_id = runtime.handling (component) | runtime.blocked (component);
+  size_t coroutine_id = runtime.handling (component) ? runtime.handling (component) : runtime.blocked (component);
   auto it = find_if (coroutines.begin (), coroutines.end (),
                      [coroutine_id] (dzn::coroutine & coroutine)
                      {return coroutine.id == coroutine_id;});
