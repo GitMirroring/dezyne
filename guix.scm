@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
@@ -40,7 +40,7 @@
 ;;
 ;; To use the canonical commit that has everything prebuilt:
 ;;
-;;   guix time-machine --commit=10f3dd0e9e06d71d1bc1615c6a60cc3aa1ad1ff4 -- shell
+;;   guix time-machine --commit=918b7d102c2051c3d6c6ba54c8d265affec5282c -- shell
 ;;
 ;;; Code:
 
