@@ -17,7 +17,7 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
-#include "foreign_only.hh"
+#include "foreign_only_flush.hh"
 
 #include <dzn/pump.hh>
 #include <dzn/runtime.hh>

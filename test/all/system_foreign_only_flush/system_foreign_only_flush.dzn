@@ -25,12 +25,12 @@
 // Code:
 
 
-import foreign_only.dzn;
+import foreign_only_flush.dzn;
 
 component proxy
 {
-  provides foreign_only p;
-  requires foreign_only r;
+  provides foreign_only_flush p;
+  requires foreign_only_flush r;
   behavior
   {
     on p.hello (i,d): r.hello (i,d);
@@ -40,9 +40,9 @@ component proxy
   }
 }
 
-component system_foreign_only
+component system_foreign_only_flush
 {
-  provides foreign_only port;
+  provides foreign_only_flush port;
   system
   {
     port <=> p.p;

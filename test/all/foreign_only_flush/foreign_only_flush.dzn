@@ -28,7 +28,7 @@
 extern int $int$;
 extern double $double$;
 
-interface foreign_only
+interface foreign_only_flush
 {
   in void hello (int i, double d);
   out void cruel ();
@@ -54,5 +54,5 @@ interface foreign_only
 
 component foreign
 {
-  provides foreign_only port;
+  provides foreign_only_flush port;
 }
