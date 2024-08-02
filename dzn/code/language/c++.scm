@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
@@ -35,11 +35,15 @@
   #:use-module (dzn code scmackerel c++)
   #:use-module (dzn code util)
   #:use-module (dzn misc)
-  #:export (c++:ref))
+  #:export (c++:ref
+            c++:capture-name))
 
 ;;;
 ;;; Accessors.
 ;;;
+(define-method (c++:capture-name (o <variable>) (d <defer>))
+  (simple-format #f "~a_~a" (code:capture-name o) (.offset (.location d))))
+
 (define-method (c++:generate-source? (o <root>))
   (find (conjoin (negate ast:imported?)
                  (disjoin (is? <enum>)

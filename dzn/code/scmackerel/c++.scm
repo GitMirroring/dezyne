@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -278,11 +278,11 @@ std::basic_ostream<Char, Traits> &")
   (define (variable->defer-variable v)
     (sm:variable
      (type (code:type-name (ast:type v)))
-     (name (code:capture-name v o))
+     (name (c++:capture-name v o))
      (expression (code:member-name v))))
   (define (variable->equality v)
     (sm:equal* (c++:ast->expression v)
-               (code:capture-name v o)))
+               (c++:capture-name v o)))
   (let* ((variables (ast:defer-variable* o))
          (locals (code:capture-local o))
          (equality (code:defer-equality* o))
@@ -301,8 +301,9 @@ std::basic_ostream<Char, Traits> &")
                         (list "this"
                               (sm:function
                                (captures
-                                (cons* "this"
-                                       (map (cute code:capture-name <> o) variables)))
+                                `("this"
+                                  ,@(map (cute c++:capture-name <> o)
+                                         variables)))
                                (statement
                                 (sm:compound*
                                  (sm:return* condition))))
