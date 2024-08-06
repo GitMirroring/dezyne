@@ -1,0 +1,9 @@
+(header ((client) deadlock_interface_determinism provides) ((sut) deadlock_interface_determinism interface))
+(state ((client)) ((sut) (state . State:idle)))
+test/all/deadlock_interface_determinism/deadlock_interface_determinism.dzn:33:3: error: deadlock
+<deadlock>
+(state ((client)) ((sut) (state . State:one)))
+test/all/deadlock_interface_determinism/deadlock_interface_determinism.dzn:33:3: error: deadlock
+(trail "<deadlock>")
+(labels "hello" "inevitable")
+(eligible)

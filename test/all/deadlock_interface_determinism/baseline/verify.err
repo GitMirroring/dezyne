@@ -1,0 +1,6 @@
+verify: deadlock_interface_determinism: check: deadlock: fail
+error: deadlock in model deadlock_interface_determinism
+verify: deadlock_interface_determinism: check: unreachable: skip
+verify: deadlock_interface_determinism: check: livelock: ok
+verify: deadlock_interface_determinism: check: deterministic: fail
+error: interface deadlock_interface_determinism is unobservably non-deterministic

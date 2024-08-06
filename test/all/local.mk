@@ -280,6 +280,7 @@ REGRESSION_TESTS =				\
  %D%/deadlock_blocking_replies			\
  %D%/deadlock_component1			\
  %D%/deadlock_interface1			\
+ %D%/deadlock_interface_determinism		\
  %D%/deadlock_optional_out_only			\
  %D%/deadlock_port_blocked			\
  %D%/deadlock_reply				\
@@ -311,7 +312,6 @@ REGRESSION_TESTS =				\
  %D%/defer_twice				\
  %D%/defer_twice_noisy				\
  %D%/defer_typed_call				\
- %D%/determinism_deadlock			\
  %D%/determinism_shared				\
  %D%/determinism_shared2			\
  %D%/determinism_modeling			\

@@ -1,0 +1,6 @@
+model: deadlock_interface_determinism
+world
+<deadlock>
+model: deadlock_interface_determinism
+world
+<non-deterministic>
