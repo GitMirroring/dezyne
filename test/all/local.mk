@@ -312,6 +312,7 @@ REGRESSION_TESTS =				\
  %D%/defer_twice				\
  %D%/defer_twice_noisy				\
  %D%/defer_typed_call				\
+ %D%/determinism_deadlock			\
  %D%/determinism_shared				\
  %D%/determinism_shared2			\
  %D%/determinism_modeling			\

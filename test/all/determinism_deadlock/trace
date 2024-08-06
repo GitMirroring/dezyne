@@ -1,0 +1,7 @@
+model: determinism_deadlock
+h.hello
+w.hello
+w.return
+h.return
+w.world
+<non-deterministic>

@@ -1,0 +1,12 @@
+verify: ihello_world: check: deadlock: ok
+verify: ihello_world: check: unreachable: ok
+verify: ihello_world: check: livelock: ok
+verify: ihello_world: check: deterministic: ok
+verify: determinism_deadlock: check: deterministic: fail
+error: component determinism_deadlock is non-deterministic
+verify: determinism_deadlock: check: illegal: ok
+verify: determinism_deadlock: check: deadlock: fail
+error: deadlock in model determinism_deadlock
+verify: determinism_deadlock: check: unreachable: skip
+verify: determinism_deadlock: check: livelock: ok
+verify: determinism_deadlock: check: compliance: skip
