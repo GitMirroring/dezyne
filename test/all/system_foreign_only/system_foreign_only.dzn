@@ -1,0 +1,54 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Assert that there is no conflict between a foreign updating its own
+// provides state and another Dezyne component port endpoint.
+//
+// Code:
+
+
+import foreign_only.dzn;
+
+component proxy
+{
+  provides foreign_only p;
+  requires foreign_only r;
+  behavior
+  {
+    on p.hello (i,d): r.hello (i,d);
+    on r.cruel (): p.cruel ();
+    on r.world (i,d): p.world (i,d);
+    on p.bye (): r.bye ();
+  }
+}
+
+component system_foreign_only
+{
+  provides foreign_only port;
+  system
+  {
+    port <=> p.p;
+    proxy p;
+    p.r <=> f.port;
+    foreign f;
+  }
+}
