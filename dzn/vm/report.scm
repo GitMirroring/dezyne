@@ -833,7 +833,8 @@ intermediate steps such as assignments, function calls, replies,
   (let* ((trace (complete-split-arrows-pcs trace))
          (trace (reverse (set-trigger-locations (reverse trace))))
          (steps (if verbose? (trace->steps trace)
-                    (trace->arrows trace))))
+                    (trace->arrows trace)))
+         (max (length steps)))
     (define write-step
       (match-lambda*
         (((pc ast . string) i)
@@ -844,10 +845,19 @@ intermediate steps such as assignments, function calls, replies,
          (write-line string)
          (when (and state?
                     (odd? i)
-                    (< i (1- (length steps))))
+                    (< i (- max 2)))
            (serialize (.state pc) (current-output-port))
            (newline)))))
-    (for-each write-step steps (iota (length steps)))))
+    (define (arrow? string)
+      (or (string-contains string "<-")
+          (string-contains string "->")))
+    (let loop ((steps steps) (i 0))
+      (match steps
+        (() #t)
+        (((and step (pc ast . string)) steps ...)
+         (write-step step i)
+         (let ((i (if (arrow? string) (1+ i) i)))
+           (loop steps i)))))))
 
 (define (initial-error-message traces)
   (let* ((pcs (map car traces))
