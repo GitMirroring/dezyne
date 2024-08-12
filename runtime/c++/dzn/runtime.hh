@@ -725,6 +725,7 @@ struct event<void (Args...)>
                   && !runtime.performs_flush (component))
               || (provide
                   && runtime.foreign (provide)
+                  && !runtime.handling (provide)
                   && !runtime.performs_flush (provide)))
             runtime.flush (require, coroutine_id (locator),
                            activity.value == 1);
