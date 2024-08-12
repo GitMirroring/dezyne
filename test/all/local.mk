@@ -296,6 +296,7 @@ REGRESSION_TESTS =				\
  %D%/defer_data					\
  %D%/defer_double				\
  %D%/defer_empty_selection			\
+ %D%/defer_foreign				\
  %D%/defer_local				\
  %D%/defer_local_field_test			\
  %D%/defer_locals				\

@@ -1,0 +1,85 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Assert that a stateful provides interface on a foreign component has
+// its state updated correctly to avoid triggering an illegal while
+// meeting its interface contract.
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void cruel ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle]
+    {
+      on inevitable: {idle = true; cruel; world;}
+      on inevitable: {idle = true; world;}
+    }
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void cruel ();
+  out void world ();
+  behavior
+  {
+    on hello: world;
+    on hello: {cruel; world;}
+  }
+}
+
+component dispatch_defer
+{
+  provides ihello h;
+  requires iworld w;
+  behavior
+  {
+    on h.hello (): defer w.hello ();
+    on w.cruel (): h.cruel ();
+    on w.world (): h.world ();
+  }
+}
+
+component foreign
+{
+  provides iworld h;
+}
+
+component defer_foreign
+{
+  provides ihello h;
+  system
+  {
+    dispatch_defer d;
+    foreign f;
+
+    h <=> d.h;
+    d.w <=> f.h;
+  }
+}
