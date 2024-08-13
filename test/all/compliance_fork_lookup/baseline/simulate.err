@@ -1,0 +1,3 @@
+test/all/compliance_fork_lookup/compliance_fork_lookup.dzn:52:7: error: non-compliance
+test/all/compliance_fork_lookup/compliance_fork_lookup.dzn:52:7: forking not allowed, action on port: right
+test/all/compliance_fork_lookup/compliance_fork_lookup.dzn:50:5: for trigger on port left

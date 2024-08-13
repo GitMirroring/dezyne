@@ -240,6 +240,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_failures_optional		\
  %D%/compliance_failures_reply			\
  %D%/compliance_fork_blocking_bypass		\
+ %D%/compliance_fork_lookup			\
  %D%/compliance_fork_provides			\
  %D%/compliance_fork_requires			\
  %D%/compliance_fork_requires2			\

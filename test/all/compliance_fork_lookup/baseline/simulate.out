@@ -1,0 +1,13 @@
+(header ((left) ihello provides) ((right) iworld provides) ((sut) compliance_fork_lookup component))
+(state ((left)) ((right)) ((sut)))
+test/all/compliance_fork_lookup/compliance_fork_lookup.dzn:52:7: error: non-compliance
+<external>.left.hello -> ...
+... -> sut.left.hello
+... <- sut.right.world
+<external>.right.world <- ...
+<non-compliance>
+(state ((left)) ((right)) ((sut)))
+test/all/compliance_fork_lookup/compliance_fork_lookup.dzn:52:7: error: non-compliance
+(trail "left.hello" "right.world" "<non-compliance>")
+(labels "left.hello" "right.cruel")
+(eligible)
