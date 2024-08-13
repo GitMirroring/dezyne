@@ -251,7 +251,7 @@ output, and standard error as three values."
   (or (file-exists? (string-append file-name "/baseline/code.out"))
       (file-exists? (string-append file-name "/baseline/code.err"))))
 
-(define (features file-name)
+(define (file-name->features file-name)
   (define (feature? feature)
     (and (string-contains file-name feature) feature))
   (filter identity
@@ -272,6 +272,13 @@ output, and standard error as three values."
                (and (thread-safe-shell? file-name)
                     "shell"))
            (feature? "space"))))
+
+(define (features file-name)
+  (let* ((features (or (get-meta-option file-name 'features)
+                       '()))
+         (features (append features
+                           (file-name->features file-name))))
+    (delete-duplicates features)))
 
 (define (features-missing file-name language)
   (fold (lambda (feature missing)
