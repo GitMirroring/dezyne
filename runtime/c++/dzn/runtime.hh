@@ -408,7 +408,8 @@ struct event<R (Args...)>
       scoped_handling handling (runtime, locator, &component);
       scoped_activity activity (runtime, locator, 1);
       this->reply = f (args...);
-      runtime.flush (provide, coroutine_id (locator), true);
+      if (runtime.activity (locator) == 1 || runtime.defer)
+        runtime.flush (provide, coroutine_id (locator), true);
       std::string reply_string = ::dzn::to_string (this->reply);
       trace_out (*this->os, *this->dzn_port_meta, reply_string.c_str ());
       this->port_update (reply_string.c_str ());
@@ -555,7 +556,8 @@ struct event<void (Args...)>
       scoped_handling handling (runtime, locator, &component);
       scoped_activity activity (runtime, locator, 1);
       f (args...);
-      runtime.flush (provide, coroutine_id (locator), true);
+      if (runtime.activity (locator) == 1 || runtime.defer)
+        runtime.flush (provide, coroutine_id (locator), true);
       trace_out (*this->os, *this->dzn_port_meta, "return");
       this->port_update ("return");
       this->write_state ();
