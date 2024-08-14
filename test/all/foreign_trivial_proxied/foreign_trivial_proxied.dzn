@@ -1,0 +1,129 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Assert that a stateful provides interface on a foreign component has
+// its state updated correctly to avoid triggering an illegal while
+// meeting its interface contract.
+//
+// Code:
+
+interface itest
+{
+  in void test ();
+  out void done ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on test: idle = false;
+    [!idle] on inevitable: {idle = true; done;}
+  }
+}
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  in void bye ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: {idle = false; world;}
+    [!idle] on bye: idle = true;
+  }
+}
+
+component foreign
+{
+  provides ihello hello;
+}
+
+interface itimer
+{
+  in void set ();
+  out void timeout ();
+  behavior
+  {
+    bool idle = true;
+    on set: idle = false;
+    [!idle] on inevitable: {idle = true; timeout;}
+  }
+}
+
+component foreign_timer
+{
+  provides itimer timer;
+}
+
+interface iindirection
+{
+  in void ping ();
+  out void pong ();
+  behavior
+  {
+    on ping: pong;
+  }
+}
+
+component relay
+{
+  provides itest test;
+  requires itimer timer;
+  requires iindirection indirection;
+  requires ihello hello;
+
+  behavior
+  {
+    on test.test (): timer.set ();
+    [hello.idle] on timer.timeout (): indirection.ping ();
+    on indirection.pong (): hello.hello ();
+    on hello.world (): {hello.bye (); test.done ();}
+  }
+}
+
+component proxy
+{
+  provides ihello h;
+  requires ihello w;
+  behavior
+  {
+    on h.hello (): w.hello ();
+    on w.world (): h.world ();
+    on h.bye (): w.bye ();
+  }
+}
+
+component foreign_trivial_proxied
+{
+  provides itest test;
+  requires iindirection indirection;
+  system
+  {
+    relay r;
+    foreign_timer t; // timer
+    proxy p;
+    foreign f; // gear
+    test <=> r.test;
+    r.timer <=> t.timer;
+    r.indirection <=> indirection;
+    r.hello <=> p.h;
+    p.w <=> f.hello;
+  }
+}
