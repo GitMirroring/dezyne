@@ -408,8 +408,7 @@ struct event<R (Args...)>
       scoped_handling handling (runtime, locator, &component);
       scoped_activity activity (runtime, locator, 1);
       this->reply = f (args...);
-      if (runtime.activity (locator) == 1 || runtime.defer)
-        runtime.flush (provide, coroutine_id (locator), true);
+      runtime.flush (provide, coroutine_id (locator), true);
       std::string reply_string = ::dzn::to_string (this->reply);
       trace_out (*this->os, *this->dzn_port_meta, reply_string.c_str ());
       this->port_update (reply_string.c_str ());
@@ -556,8 +555,7 @@ struct event<void (Args...)>
       scoped_handling handling (runtime, locator, &component);
       scoped_activity activity (runtime, locator, 1);
       f (args...);
-      if (runtime.activity (locator) == 1 || runtime.defer)
-        runtime.flush (provide, coroutine_id (locator), true);
+      runtime.flush (provide, coroutine_id (locator), true);
       trace_out (*this->os, *this->dzn_port_meta, "return");
       this->port_update ("return");
       this->write_state ();
@@ -709,9 +707,10 @@ struct event<void (Args...)>
 
       scoped_activity activity (runtime, locator, -1);
 
-      runtime.deferred_flush (require) = [this,port_update,&locator]
+      runtime.deferred_flush (require) = [this,port_update,provide,&locator,&runtime]
         {
-          if (!port_blocked_p (locator, this->port))
+          if (!port_blocked_p (locator, this->port)
+              && (!runtime.defer || !runtime.foreign (provide)))
             port_update ();
         };
       runtime.deferred (provide) = require;

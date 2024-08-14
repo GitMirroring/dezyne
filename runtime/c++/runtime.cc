@@ -153,7 +153,6 @@ void
 runtime::flush (dzn::component *component, size_t coroutine_id, bool sync_p)
 {
   std::queue<std::function<void ()> > &q = queue (component);
-
   auto &flush = this->deferred_flush (component);
   handling (component) = coroutine_id;
   bool flushed = false;
@@ -170,7 +169,8 @@ runtime::flush (dzn::component *component, size_t coroutine_id, bool sync_p)
       event ();
     }
   handling (component) = 0;
-  if (dzn::component *target = deferred (component))
+  dzn::component *target = deferred (component);
+  if (!sync_p && target)
     {
       deferred (component) = nullptr;
       if (!handling (target))
