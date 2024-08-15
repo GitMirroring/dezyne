@@ -1,9 +1,4 @@
 port.hello
-port.world
-port.return
-port.bye
-port.return
-port.hello
 port.return
 port.cruel
 port.world
@@ -24,3 +19,7 @@ port.return
 port.hello
 port.return
 port.world
+port.hello
+port.return
+port.bye
+port.return

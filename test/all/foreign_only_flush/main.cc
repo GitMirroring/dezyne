@@ -41,7 +41,7 @@ connect_ports (dzn::container< ::foreign, std::function<void ()>>& c)
 static std::map<std::string, std::function<void ()> >
 event_map (dzn::container< ::foreign, std::function<void ()>>& c, bool flush)
 {
-  c.system.port.dzn_meta.require.component = &c;
+  c.system.port.dzn_meta.require.component = nullptr;
   c.system.port.dzn_meta.require.meta = &c.dzn_meta;
   c.system.port.dzn_meta.require.name = "port";
   c.dzn_runtime.performs_flush (&c) = flush;
