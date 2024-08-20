@@ -1189,38 +1189,24 @@
                    (sm:invoke (%defer-qout-action model))
                    (sm:union*
                     (map
-                     (lambda (d)
-                       (let* ((statement (.statement d))
+                     (lambda (defer)
+                       (let* ((statement (.statement defer))
                               (locals (makreel:locals statement)))
                          (sm:if*
                           (sm:invoke (%locals-predicate statement))
                           (sm:goto
                            (name (statement->process-name
-                                  (.statement d)))
+                                  (.statement defer)))
                            (arguments
                             (append
                              (map
-                              (lambda (v)
+                              (lambda (variable)
                                 (simple-format
                                  #f
                                  "~a=~a (i)"
-                                 (.name v)
-                                 (variable-prefix "locals" v)))
-                              locals)
-                             (append-map
-                              (lambda (port)
-                                (map
-                                 (lambda (v)
-                                   (let* ((p (.port v))
-                                          (interface (.type p)))
-                                     (simple-format
-                                      #f "~a=~a (~a)"
-                                      (makreel:full-name v)
-                                      (model-prefix (ast:name v) interface)
-                                      (port-prefix "s" p))))
-                                 (filter (compose (cute ast:eq? port <>) .port)
-                                         shared)))
-                              (map .port shared))))))))
+                                 (.name variable)
+                                 (variable-prefix "locals" variable)))
+                              locals)))))))
                      defers)))))))))
     (sm:process
       (name (statement->process-name o))
@@ -1229,53 +1215,48 @@
        (sm:union*
         `(,@(map
              (lambda (port)
-               (sum-state-action
-                port
-                (sm:union*
-                 `(,(sm:goto (name (statement->process-name o))
-                             (arguments
-                              (map
-                               (lambda (v)
-                                 (let* ((p (.port v))
-                                        (interface (.type p)))
-                                   (simple-format
-                                    #f "~a=~a (~a)"
-                                    (makreel:full-name v)
-                                    (model-prefix (ast:name v) interface)
-                                    (port-prefix "s" p))))
-                               (filter (compose (cute ast:eq? port <>) .port)
-                                       shared))))
-                   ,@defers))))
-             (map .port shared))
+               (let ((shared (filter (compose (cute ast:eq? port <>) .port)
+                                     shared)))
+                 (sm:sequence*
+                  `(,(sum-state-action port)
+                    ,(sm:goto (name (statement->process-name o))
+                              (arguments
+                               (map (lambda (shared-var)
+                                      (let* ((interface (.type port)))
+                                        (simple-format
+                                         #f "~a=~a (~a)"
+                                         (makreel:full-name shared-var)
+                                         (model-prefix (ast:name shared-var)
+                                                       interface)
+                                         (port-prefix "s" port))))
+                                    shared)))))))
+             ports)
           ,@(map (lambda (port)
                    (sm:sequence*
                     (%flush-action port)
                     (sm:goto (name (statement->process-name o))
                              (arguments (makreel:process-parens o)))))
                  (lset-difference ast:eq? requires (map .port shared)))
-          ,@(map
-             (lambda (port)
-               (sm:sequence*
-                (%flush-action port)
-                (sum-state-action
-                 port
-                 (sm:union*
-                  `(,(sm:goto (name (statement->process-name o))
-                              (arguments
-                               (map
-                                (lambda (v)
-                                  (let* ((p (.port v))
-                                         (interface (.type p)))
-                                    (simple-format
-                                     #f "~a=~a (~a)"
-                                     (makreel:full-name v)
-                                     (model-prefix (ast:name v) interface)
-                                     (port-prefix "s" p))))
-                                (filter (compose (cute ast:eq? port <>) .port)
-                                        shared))))
-                    ,@defers)))))
-             (lset-intersection ast:eq? (map .port shared) requires))
-          ,@(if (pair? shared) '()  defers)
+          ,@(map (lambda (port)
+                   (let ((shared (filter (compose (cute ast:eq? port <>) .port)
+                                         shared)))
+                    (sm:sequence*
+                     `(,(%flush-action port)
+                       ,(sum-state-action port)
+                       ,(sm:goto (name (statement->process-name o))
+                                 (arguments
+                                  (map
+                                   (lambda (v)
+                                     (let* ((p (.port v))
+                                            (interface (.type p)))
+                                       (simple-format
+                                        #f "~a=~a (~a)"
+                                        (makreel:full-name v)
+                                        (model-prefix (ast:name v) interface)
+                                        (port-prefix "s" p))))
+                                   shared)))))))
+                 (lset-intersection ast:eq? (map .port shared) requires))
+          ,@defers
           ,(sm:goto (name (statement->process-name next))
                     (arguments (makreel:process-parens next)))))))))
 
