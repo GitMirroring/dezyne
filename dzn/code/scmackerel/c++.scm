@@ -831,11 +831,11 @@ std::basic_ostream<Char, Traits> &")
           `(,@(map port->injected-require-override
                    (ast:injected-port* o))
             ,@(if (not (ast:provides? port)) '()
-               `(,(sm:assign*
-                   (sm:member* (%member-prefix) (code:out-binding port))
-                   (sm:member* (string-append "&" (%member-prefix))
-                               (string-append (code:event-name trigger)
-                                              ".dzn_out_binding")))))
+                  `(,(sm:assign*
+                      (sm:member* (%member-prefix) (code:out-binding port))
+                      (sm:member* (string-append "&" (%member-prefix))
+                                  (string-append (code:event-name trigger)
+                                                 ".dzn_out_binding")))))
             ,@(if (not typed?) `(,call-slot)
                   `(,(sm:assign*
                       (sm:member* (%member-prefix) (code:reply-var return-type))
@@ -962,10 +962,10 @@ std::basic_ostream<Char, Traits> &")
                   (sm:compound*
                    `(,@(map requires->external (filter ast:external?
                                                        (ast:requires-port* o)))
-                     ,@(if (is-a? o <foreign>) `(,(sm:assign*
-                                                   "dzn_runtime.foreign (this)"
-                                                   "true"))
-                           `(,(requires->assignment (ast:requires-port* o))
+                     ,@(if (is-a? o <foreign>) '()
+                           `(,(sm:assign* "dzn_runtime.native (this)"
+                                          "true")
+                             ,(requires->assignment (ast:requires-port* o))
                              ,@(append-map injected->assignments
                                            (ast:injected-port* o))))
                      ,@(map trigger->event-slot (ast:in-triggers o))))))

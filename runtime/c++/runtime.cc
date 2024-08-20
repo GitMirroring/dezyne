@@ -126,9 +126,9 @@ runtime::performs_flush (dzn::component *component)
 }
 
 bool &
-runtime::foreign (dzn::component *component)
+runtime::native (dzn::component *component)
 {
-  return states[component].foreign;
+  return states[component].native;
 }
 
 bool

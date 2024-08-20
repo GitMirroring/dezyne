@@ -160,7 +160,7 @@ struct runtime
     size_t handling;
     size_t blocked;
     void *skip;
-    bool foreign;
+    bool native;
     bool performs_flush;
     std::function<void()> port_update;
     dzn::component *deferred;
@@ -181,7 +181,7 @@ struct runtime
   dzn::component *&deferred (dzn::component *);
   std::queue<std::function<void ()> > &queue (dzn::component *);
   bool &performs_flush (dzn::component *);
-  bool &foreign (dzn::component *);
+  bool &native (dzn::component *);
   void flush (dzn::component *, size_t, bool sync_p);
   template <typename T>
   void flush (T *t)
@@ -399,7 +399,7 @@ struct event<R (Args...)>
       dzn::component *provide = this->dzn_port_meta->provide.component;
 
       if ((runtime.handling (provide) || port_blocked_p (locator, this->port))
-          && !runtime.foreign (provide))
+          && runtime.native (provide))
         collateral_block (locator, provide);
       runtime.reset_skip_block (&component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
@@ -546,7 +546,7 @@ struct event<void (Args...)>
 
       if ((runtime.handling (provide)
            || port_blocked_p (locator, this->port))
-          && !runtime.foreign (provide))
+          && runtime.native (provide))
         collateral_block (locator, provide);
       runtime.reset_skip_block (&component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
@@ -710,7 +710,7 @@ struct event<void (Args...)>
       runtime.deferred_flush (require) = [this,port_update,provide,&locator,&runtime]
         {
           if (!port_blocked_p (locator, this->port)
-              && (!runtime.defer || !runtime.foreign (provide)))
+              && (!runtime.defer || runtime.native (provide)))
             port_update ();
         };
       runtime.deferred (provide) = require;
@@ -725,7 +725,7 @@ struct event<void (Args...)>
                   && !runtime.handling (component)
                   && !runtime.performs_flush (component))
               || (provide
-                  && runtime.foreign (provide)
+                  && !runtime.native (provide)
                   && !runtime.handling (provide)
                   && !runtime.performs_flush (provide)))
             runtime.flush (require, coroutine_id (locator),
