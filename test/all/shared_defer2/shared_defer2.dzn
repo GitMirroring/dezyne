@@ -1,0 +1,34 @@
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+interface iworld
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    on hello: {idle = !idle; world;}
+  }
+}
+
+component shared_defer2
+{
+  provides ihello h;
+  requires iworld w;
+  behavior
+  {
+    [w.idle] on h.hello (): w.hello ();
+    [!w.idle] on h.hello (): defer h.world ();
+    [h.idle] on w.world (): defer h.world ();
+  }
+}
