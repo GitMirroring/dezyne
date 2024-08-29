@@ -1,5 +1,5 @@
 digraph G {
-label="blocking_local_state_diagram" begin[shape="circle" width=0.3 fillcolor="black" style="filled" label=""]
+label="blocking_local_state" begin[shape="circle" width=0.3 fillcolor="black" style="filled" label=""]
 node[shape="rectangle" style="rounded"]
 begin -> 1
 1 [label="sut:[blocked=false]"]
