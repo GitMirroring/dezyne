@@ -46,7 +46,7 @@ public:
   ~pool ()
   {
     if (idle_tasks_.size () != tasks_.size ()) {
-      assert("all (pump) threads are idle and are returned to the pool" == nullptr);
+      assert (false && "all (pump) threads are idle and are returned to the pool");
       std::abort ();
     }
   }
