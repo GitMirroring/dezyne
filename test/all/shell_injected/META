@@ -1,4 +1,4 @@
 ;;; -*- scheme -*-
 ((component #f)
- (skip ("scheme"))
+ (skip ("c" "scheme"))
  (tss #t))
