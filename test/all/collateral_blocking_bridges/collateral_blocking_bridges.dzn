@@ -44,7 +44,7 @@ interface iworld
 component blocking_top
 {
   provides blocking ihello h;
-  requires blocking iworld w;
+  requires iworld w;
 
   requires blocking ihello p;
 
@@ -55,23 +55,10 @@ component blocking_top
   }
 }
 
-component top_proxy
-{
-  provides blocking iworld h;
-  requires blocking iworld w;
-
-  behavior
-  {
-    bool idle = true;
-    [idle] on h.hello (): {w.hello (); idle = false;}
-    [!idle] on w.world (): {h.world (); idle = true;}
-  }
-}
-
 component blocking_middle
 {
   provides blocking ihello h;
-  requires blocking iworld w;
+  requires iworld w;
 
   requires blocking ihello p;
 
@@ -88,7 +75,7 @@ component blocking_middle
 component blocking_bottom
 {
   provides blocking ihello h;
-  requires blocking iworld w;
+  requires iworld w;
 
   behavior
   {
@@ -99,35 +86,23 @@ component blocking_bottom
 
 component adapter
 {
-  provides blocking iworld h;
-  requires blocking ihello b;
+  provides iworld h;
   requires external iworld w;
   behavior
   {
-    on h.hello (): {b.hello (); w.hello ();}
+    on h.hello (): w.hello ();
     on w.world (): h.world ();
-  }
-}
-
-component blocker
-{
-  provides blocking ihello b;
-  behavior
-  {
-    blocking on b.hello (): defer b.reply ();
   }
 }
 
 component external_adapter
 {
-  provides blocking iworld h;
+  provides iworld h;
   requires external iworld w;
   system
   {
     adapter adapt;
     h <=> adapt.h;
-    blocker block;
-    adapt.b <=> block.b;
     adapt.w <=> w;
   }
 }
@@ -141,14 +116,12 @@ component collateral_blocking_bridges
   system
   {
     blocking_top top;
-    top_proxy proxy;
     blocking_middle middle;
     blocking_bottom bottom;
 
     h <=> top.h;
-    top.w <=> proxy.h;
     external_adapter top_adapter;
-    proxy.w <=> top_adapter.h;
+    top.w <=> top_adapter.h;
     top_adapter.w <=> top_w;
 
     top.p <=> middle.h;

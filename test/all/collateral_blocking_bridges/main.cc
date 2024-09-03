@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -52,37 +52,36 @@ main ()
   locator.set (runtime);
   collateral_blocking_bridges sut (locator);
 
-  sut.top_w.in.hello = [&] {};
+  std::promise<void> promise;
+
+  sut.top_w.in.hello = [&] {promise.set_value ();};
   sut.middle_w.in.hello = [&] {};
   sut.bottom_w.in.hello = [&] {};
 
   dzn::check_bindings (sut);
 
   auto f = std::async (std::launch::async, sut.h.in.hello); // 1: run through top to middle and block
-  std::this_thread::sleep_for (std::chrono::milliseconds (100));
+  promise.get_future ().wait ();
   std::string trace = read ();
   if (0);
   // trace
-  else if (trace == "h.hello\n<defer>\ntop_w.hello\ntop_w.return\n<defer>\nmiddle_w.hello\nmiddle_w.return\ntop_w.world\nmiddle_w.world\n<defer>\nbottom_w.hello\nbottom_w.return\nbottom_w.world\nh.return")
+  else if (trace == "h.hello\ntop_w.hello\ntop_w.return\nmiddle_w.hello\nmiddle_w.return\ntop_w.world\nmiddle_w.world\nbottom_w.hello\nbottom_w.return\nbottom_w.world\nh.return")
     {
       sut.top_w.out.world ();    // 2: collaterally blocks on top
       sut.middle_w.out.world (); // 3: releases 1; 1 continues and blocks on bottom
-      std::this_thread::sleep_for (std::chrono::milliseconds (100));
       sut.bottom_w.out.world (); // 4: releases 1 again then 2 finishes
     }
   // trace.1
-  else if (trace == "h.hello\n<defer>\ntop_w.hello\ntop_w.return\n<defer>\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\n<defer>\nbottom_w.hello\nbottom_w.return\ntop_w.world\nbottom_w.world\nh.return")
+  else if (trace == "h.hello\ntop_w.hello\ntop_w.return\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\nbottom_w.hello\nbottom_w.return\ntop_w.world\nbottom_w.world\nh.return")
     {
       sut.middle_w.out.world (); // 2: releases 1; 1 continues and blocks on bottom
-      std::this_thread::sleep_for (std::chrono::milliseconds (100));
       sut.top_w.out.world ();    // 3: collaterally blocks on top
       sut.bottom_w.out.world (); // 4: releases 1 again then 2 finishes
     }
   // trace.2
-  else if (trace == "h.hello\n<defer>\ntop_w.hello\ntop_w.return\n<defer>\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\n<defer>\nbottom_w.hello\nbottom_w.return\nbottom_w.world\ntop_w.world\nh.return")
+  else if (trace == "h.hello\ntop_w.hello\ntop_w.return\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\nbottom_w.hello\nbottom_w.return\nbottom_w.world\ntop_w.world\nh.return")
     {
       sut.middle_w.out.world (); // 2: releases 1; 1 continues and blocks on bottom
-      std::this_thread::sleep_for (std::chrono::milliseconds (100));
       sut.bottom_w.out.world (); // 3: releases 1 again then 2 finishes
       sut.top_w.out.world ();    // 2: releases 1, finishes
       // 1 finished
