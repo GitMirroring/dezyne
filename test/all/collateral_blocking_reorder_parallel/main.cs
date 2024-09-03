@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,22 +29,22 @@ using System.Threading;
 
 public class DebugTraceListener: ConsoleTraceListener
 {
-  public override void Fail(string message)
+  public override void Fail (string message)
   {
-    base.Fail(message);
-    Environment.Exit(1);
+    base.Fail (message);
+    Environment.Exit (1);
   }
 }
 
 class main
 {
-  public static void Main(String[] args)
+  public static void Main (String[] args)
   {
-    Debug.Listeners.Add(new DebugTraceListener());
+    Debug.Listeners.Add (new DebugTraceListener ());
     Debug.AutoFlush = true;
 
-    dzn.Locator locator = new dzn.Locator();
-    dzn.Runtime runtime = new dzn.Runtime();
+    dzn.Locator locator = new dzn.Locator ();
+    dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
     using (collateral_blocking_reorder_parallel sut
       = new collateral_blocking_reorder_parallel (locator, "sut"))
@@ -58,47 +58,47 @@ class main
 
       sut.eleft.in_port.hello = () =>
       {
-        Console.Error.WriteLine("sut.left.e.hello -> <external>.eleft.hello");
-        Console.Error.WriteLine("sut.left.e.return -> <external>.eleft.return");
+        Console.Error.WriteLine ("sut.left.e.hello -> <external>.eleft.hello");
+        Console.Error.WriteLine ("sut.left.e.return -> <external>.eleft.return");
       };
       sut.eright.in_port.hello = () =>
       {
-        Console.Error.WriteLine("sut.right.e.hello -> <external>.eright.hello");
-        Console.Error.WriteLine("sut.right.e.return -> <external>.eright.return");
+        Console.Error.WriteLine ("sut.right.e.hello -> <external>.eright.hello");
+        Console.Error.WriteLine ("sut.right.e.return -> <external>.eright.return");
       };
       sut.rleft.in_port.hello = () =>
       {
-          Console.Error.WriteLine("sut.left.r.hello -> <external>.rleft.hello");
+          Console.Error.WriteLine ("sut.left.r.hello -> <external>.rleft.hello");
           var trl = new System.Threading.Thread (() =>
           {
-              System.Threading.Thread.Sleep(100);
-              if(once_left) {once_left = false; sut.eleft.out_port.world();}
-              sut.rleft.out_port.world();
+              System.Threading.Thread.Sleep (200);
+              if (once_left) {once_left = false; sut.eleft.out_port.world ();}
+              sut.rleft.out_port.world ();
           });
-          trl.Start();
-          Console.Error.WriteLine("sut.left.r.return -> <external>.rleft.return");
+          trl.Start ();
+          Console.Error.WriteLine ("sut.left.r.return -> <external>.rleft.return");
       };
       sut.rright.in_port.hello = () =>
       {
-          Console.Error.WriteLine("sut.right.r.hello -> <external>.rright.hello");
+          Console.Error.WriteLine ("sut.right.r.hello -> <external>.rright.hello");
           var trr = new System.Threading.Thread (() =>
           {
-              System.Threading.Thread.Sleep(100);
-              sut.rright.out_port.world();
+              System.Threading.Thread.Sleep (200);
+              sut.rright.out_port.world ();
           });
-          trr.Start();
-          Console.Error.WriteLine("sut.right.r.return -> <external>.rright.return");
+          trr.Start ();
+          Console.Error.WriteLine ("sut.right.r.return -> <external>.rright.return");
       };
       var t = new Thread (() =>
       {
-        Thread.Sleep(50);
-        sut.pright.in_port.hello();
+        Thread.Sleep (100);
+        sut.pright.in_port.hello ();
       });
-      t.Start();
-      sut.pleft.in_port.hello();
-      t.Join();
+      t.Start ();
+      sut.pleft.in_port.hello ();
+      t.Join ();
 
-      // dzn.pump pump = sut.dzn_locator.get<dzn.pump>();
+      // dzn.pump pump = sut.dzn_locator.get<dzn.pump> ();
       // pump.wait ();
     }
   }

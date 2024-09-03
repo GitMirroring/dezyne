@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,20 +32,20 @@ class main
   {
     string str = string.Empty;
     string line;
-    while((line = System.Console.ReadLine()) != null)
+    while ((line = System.Console.ReadLine ()) != null)
     {
-      str += (string.IsNullOrEmpty(str) ? "" : "\n") + line;
+      str += (string.IsNullOrEmpty (str) ? "" : "\n") + line;
     }
     return str;
   }
 
-  public static void Main(String[] args)
+  public static void Main (String[] args)
   {
-    // Debug.Listeners.Add(new TextWriterTraceListener(Console.Error));
+    // Debug.Listeners.Add (new TextWriterTraceListener (Console.Error));
     // Debug.AutoFlush = true;
 
-    dzn.Locator locator = new dzn.Locator();
-    dzn.Runtime runtime = new dzn.Runtime();
+    dzn.Locator locator = new dzn.Locator ();
+    dzn.Runtime runtime = new dzn.Runtime ();
     locator.set (runtime);
     using (collateral_blocking_bridges sut
       = new collateral_blocking_bridges (locator, "sut"))
@@ -61,18 +61,18 @@ class main
 
       sut.top_w.in_port.hello = () =>
       {
-        dzn.Runtime.trace(sut.top_w.meta, "hello");
-        dzn.Runtime.trace_out(sut.top_w.meta, "return");
+        dzn.Runtime.trace (sut.top_w.meta, "hello");
+        dzn.Runtime.trace_out (sut.top_w.meta, "return");
       };
       sut.middle_w.in_port.hello = () =>
       {
-        dzn.Runtime.trace(sut.middle_w.meta, "hello");
-        dzn.Runtime.trace_out(sut.middle_w.meta, "return");
+        dzn.Runtime.trace (sut.middle_w.meta, "hello");
+        dzn.Runtime.trace_out (sut.middle_w.meta, "return");
       };
       sut.bottom_w.in_port.hello = () =>
       {
-        dzn.Runtime.trace(sut.bottom_w.meta, "hello");
-        dzn.Runtime.trace_out(sut.bottom_w.meta, "return");
+        dzn.Runtime.trace (sut.bottom_w.meta, "hello");
+        dzn.Runtime.trace_out (sut.bottom_w.meta, "return");
       };
 
       System.Threading.Thread f = new System.Threading.Thread (() => // 1: run through top to middle and block
@@ -81,33 +81,33 @@ class main
       });
       f.Start ();
 
-      System.Threading.Thread.Sleep(100);
+      System.Threading.Thread.Sleep (200);
 
       string trace = read ();
       if (false);
       // trace
       else if (trace == "h.hello\n<defer>\ntop_w.hello\ntop_w.return\n<defer>\nmiddle_w.hello\nmiddle_w.return\ntop_w.world\nmiddle_w.world\n<defer>\nbottom_w.hello\nbottom_w.return\nbottom_w.world\nh.return")
       {
-        sut.top_w.out_port.world();    // 2: collaterally blocks on top
-        sut.middle_w.out_port.world(); // 3: releases 1; 1 continues and blocks on bottom
-        System.Threading.Thread.Sleep(100);
-        sut.bottom_w.out_port.world(); // 4: releases 1 again then 2 finishes
+        sut.top_w.out_port.world ();    // 2: collaterally blocks on top
+        sut.middle_w.out_port.world (); // 3: releases 1; 1 continues and blocks on bottom
+        System.Threading.Thread.Sleep (200);
+        sut.bottom_w.out_port.world (); // 4: releases 1 again then 2 finishes
       }
       // trace.1
       else if (trace == "h.hello\n<defer>\ntop_w.hello\ntop_w.return\n<defer>\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\n<defer>\nbottom_w.hello\nbottom_w.return\ntop_w.world\nbottom_w.world\nh.return")
       {
-        sut.middle_w.out_port.world(); // 2: releases 1; 1 continues and blocks on bottom
-        System.Threading.Thread.Sleep(100);
-        sut.top_w.out_port.world();    // 3: collaterally blocks on top
-        sut.bottom_w.out_port.world(); // 4: releases 1 again then 2 finishes
+        sut.middle_w.out_port.world (); // 2: releases 1; 1 continues and blocks on bottom
+        System.Threading.Thread.Sleep (200);
+        sut.top_w.out_port.world ();    // 3: collaterally blocks on top
+        sut.bottom_w.out_port.world (); // 4: releases 1 again then 2 finishes
       }
       // trace.2
       else if (trace == "h.hello\n<defer>\ntop_w.hello\ntop_w.return\n<defer>\nmiddle_w.hello\nmiddle_w.return\nmiddle_w.world\n<defer>\nbottom_w.hello\nbottom_w.return\nbottom_w.world\ntop_w.world\nh.return")
       {
-        sut.middle_w.out_port.world(); // 2: releases 1; 1 continues and blocks on bottom
-        System.Threading.Thread.Sleep(100);
-        sut.bottom_w.out_port.world(); // 3: releases 1 again then 2 finishes
-        sut.top_w.out_port.world();    // 2: releases 1, finishes
+        sut.middle_w.out_port.world (); // 2: releases 1; 1 continues and blocks on bottom
+        System.Threading.Thread.Sleep (200);
+        sut.bottom_w.out_port.world (); // 3: releases 1 again then 2 finishes
+        sut.top_w.out_port.world ();    // 2: releases 1, finishes
         // 1 finished
       }
       else

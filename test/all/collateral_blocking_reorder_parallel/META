@@ -1,3 +1,4 @@
 ;;; -*- scheme -*-
 ((component #f)
- (tss #t))
+ (tss #t)
+ (timeout 600))
