@@ -59,6 +59,7 @@
                   guile-3.0
                   guile-json-4
                   guile-readline
+                  (libc-utf8-locales-for-target)
                   mcrl2-minimal
                   pth
                   scmackerel
