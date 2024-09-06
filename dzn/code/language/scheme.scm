@@ -226,7 +226,7 @@
          o)))
 
 (define-method (scheme:comment (o <ast>))
-  (scheme:comment (.comment o)))
+  (and=> (.comment o) scheme:comment))
 
 (define-method (code:defer-condition (o <defer>))
   (if (not (or (and=> (.arguments o)(compose null? .elements))
