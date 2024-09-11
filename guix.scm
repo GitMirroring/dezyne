@@ -40,7 +40,7 @@
 ;;
 ;; To use the canonical commit that has everything prebuilt:
 ;;
-;;   guix time-machine --commit=918b7d102c2051c3d6c6ba54c8d265affec5282c -- shell
+;;   guix time-machine --commit=f977cb2b609f7122db2cf026cac5ab9d6d44a206 -- shell
 ;;
 ;;; Code:
 
