@@ -2271,7 +2271,8 @@ In C++ the main function for this system might look like this:
 #include "some_system.hh"
 #include "dezyne/runtime.hh"
 #include "dezyne/locator.hh"
-int main()
+int
+main ()
 @{
   dezyne::locator loc;
   dezyne::runtime rt;
@@ -2305,7 +2306,7 @@ the runtime into the system.  Injection example:
 @example
 interface Foo
 @{
-  in void bar();
+  in void bar ();
   behavior
   @{
     on bar:@{@}
@@ -2320,7 +2321,8 @@ component some_component2
 @end example
 
 @example
-int main()
+int
+main ()
 @{
   dezyne::locator loc;
   dezyne::runtime rt;
@@ -2456,34 +2458,39 @@ Generating C++ code with a thread-safe shell for component @code{SYS}
 results in files: @code{SYS.hh}, @code{SYS.cc}, @code{BHV.hh} and
 @code{IA.hh}.
 
-A call of @code{SYS::pp.in.iv()} captures input parameters by value to
+A call of @code{SYS::pp.in.iv ()} captures input parameters by value to
 prevent data races.  The call schedules a call to
-@code{SYS::bhv.pp.in.iv()} and blocks the calling thread until the
+@code{SYS::bhv.pp.in.iv ()} and blocks the calling thread until the
 scheduled call returns.
 
-A call of @code{SYS::rp.out.o()} captures input parameters by value to
+A call of @code{SYS::rp.out.o ()} captures input parameters by value to
 prevent data races.  The call schedules a call to
-@code{SYS::bhv.rp.out.o()} and returns immediately.
+@code{SYS::bhv.rp.out.o ()} and returns immediately.
 
 @example
-component SYS @{
+component SYS
+@{
   provides IA pp;
   requires IA rp;
-  system @{
+  system
+  @{
     BHV bhv;
     pp <=> bhv.pp;
     bhv.rp <=> rp;
   @}
 @}
-component BHV @{
+component BHV
+@{
   provides IA pp;
   requires IA rp;
 @}
 extern int $int$;
-interface IA @{
-  in void iv(int i);
-  out void o(int i);
-  behavior @{
+interface IA
+@{
+  in void iv (int i);
+  out void o (int i);
+  behavior
+  @{
     on iv: @{@}
     on optional: o;
   @}
@@ -2520,15 +2527,17 @@ File SYS.cc:
 SYS::SYS (dzn::locator const& locator)
 : dzn_meta@{"","SYS",0,@{&bhv.dzn_meta@},@{@}@}
 , dzn_locator (locator.clone ().set (dzn_runtime).set (dzn_pump))
-, bhv(dzn_locator)
+, bhv (dzn_locator)
 , pp (bhv.pp)
 , rp (bhv.rp)
 , dzn_pump ()
 @{
-  pp.in.iv = [&] (int i) @{
+  pp.in.iv = [&] (int i)
+  @{
     return dzn::shell (dzn_pump, [&,i] @{return bhv.pp.in.iv (i);@});
   @};
-  rp.out.o = [&] (int i) @{
+  rp.out.o = [&] (int i)
+  @{
     return dzn_pump ([&,i] @{return bhv.rp.out.o (i);@});
   @};
   bhv.pp.out.o = std::ref (pp.out.o);
