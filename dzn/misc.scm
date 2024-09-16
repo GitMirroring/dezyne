@@ -21,6 +21,7 @@
 
 (define-module (dzn misc)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 rdelim)
 
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -46,7 +47,9 @@
             pke
             seq
             singleton?
-            split-lists))
+            split-lists
+            write-line-error)
+  #:re-export (write-line))
 
 (define (disjoin . predicates)
   "Like OR but for predicates:
@@ -218,3 +221,6 @@ the next element."
   (when (%debug?)
     (apply format (current-error-port) fmt args)
     (newline (current-error-port))))
+
+(define (write-line-error o)
+  (write-line o (current-error-port)))
