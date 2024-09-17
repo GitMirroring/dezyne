@@ -202,12 +202,12 @@ the next element."
          (if (= head next) (loop tail)
              (cons head (loop tail))))))))
 
-(define (common-prefix lst-a lst-b)
+(define* (common-prefix lst-a lst-b #:key (eq? eq?))
   (if (or (null? lst-a) (null? lst-b)) '()
       (let ((car-a lst-a (car+cdr lst-a))
             (car-b lst-b (car+cdr lst-b)))
         (if (not (eq? car-a car-b)) '()
-            (cons car-a (common-prefix lst-a lst-b))))))
+            (cons car-a (common-prefix lst-a lst-b #:eq? eq?))))))
 
 
 ;;;
