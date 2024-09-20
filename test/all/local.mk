@@ -60,6 +60,7 @@ SEMANTIC_TESTS =				\
  %D%/hello_block_requires			\
  %D%/hello_choice				\
  %D%/hello_choice_requires			\
+ %D%/hello_cruelworld				\
  %D%/hello_cruelworld_requires			\
  %D%/hello_inevitable_choice			\
  %D%/hello_reply_bool				\
