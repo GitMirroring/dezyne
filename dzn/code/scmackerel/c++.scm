@@ -329,7 +329,7 @@ std::basic_ostream<Char, Traits> &")
                  `(,(sm:assign*
                      (sm:member* (string-append "*" (%member-prefix))
                                  (code:reply-var type))
-                                (c++:ast->expression (.expression o)))))
+                     (c++:ast->expression (.expression o)))))
            ,(sm:if* out-binding (sm:call (name out-binding)))
            ,(sm:assign* out-binding "nullptr")
            ,@(if (not (code:port-release? o)) '()
@@ -572,12 +572,15 @@ std::basic_ostream<Char, Traits> &")
                (sm:compound*
                 `(,@(append-map
                      (lambda (o)
-                       (let ((require (string-append "require.out." (.name o)))
-                             (provide (string-append "provide.out." (.name o))))
-                        `(,(sm:assign*
-                            (string-append require ".other_port_update")
-                            (string-append provide ".port_update"))
-                          ,(sm:assign* provide require))))
+                       (let ((provide (string-append "provide.out." (.name o)))
+                             (require (string-append "require.out." (.name o))))
+                         `(,(sm:assign*
+                             (string-append provide ".other_port_update")
+                             (string-append require ".port_update"))
+                           ,(sm:assign*
+                             (string-append require ".other_port_update")
+                             (string-append provide ".port_update"))
+                           ,(sm:assign* provide require))))
                      (ast:out-event* o))
                   ,@(map (lambda (o)
                            (sm:assign*
