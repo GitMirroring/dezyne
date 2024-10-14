@@ -2,7 +2,7 @@
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 // Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -56,22 +56,21 @@ component fork_event
   }
 }
 
-component block
+component proxy
 {
   provides blocking ihello p;
-  requires blocking iworld r;
+  requires blocking ihello r;
 
   behavior
   {
-    on p.hello (): blocking r.hello ();
-    on r.world (): p.reply ();
+    on p.hello (): r.hello ();
   }
 }
 
 component resource
 {
-  provides blocking iworld p_left;
-  provides blocking iworld p_right;
+  provides blocking ihello p_left;
+  provides blocking ihello p_right;
   requires external iworld r_left;
   requires external iworld r_right;
 
@@ -79,8 +78,8 @@ component resource
   {
     on p_left.hello (): blocking r_left.hello ();
     on p_right.hello (): blocking r_right.hello ();
-    on r_left.world (): {p_left.world (); p_left.reply ();}
-    on r_right.world (): {p_right.world (); p_right.reply ();}
+    on r_left.world (): p_left.reply ();
+    on r_right.world (): p_right.reply ();
   }
 }
 
@@ -93,8 +92,8 @@ component blocking_system_diamond
   system
   {
     fork_event top;
-    block left;
-    block right;
+    proxy left;
+    proxy right;
     resource bottom;
 
     p <=> top.p;
