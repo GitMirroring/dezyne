@@ -75,6 +75,13 @@ port_release (dzn::locator const& locator, dzn::component *component, void *port
   locator.get<dzn::pump> ().release (locator.get<dzn::runtime> (), component, port);
 }
 
+bool
+blocked_p (dzn::locator const& locator, dzn::component *component)
+{
+  return locator.try_get<dzn::pump> ()
+    && locator.get<dzn::pump> ().blocked_p (locator.get<dzn::runtime> (), component);
+}
+
 void
 collateral_block (dzn::locator const& locator, dzn::component *component)
 {
@@ -89,7 +96,7 @@ bool
 port_blocked_p (dzn::locator const& locator, void *port)
 {
   dzn::pump *pump = locator.try_get<dzn::pump> ();
-  return pump ? pump->blocked_p (port) : false;
+  return pump ? pump->port_blocked_p (port) : false;
 }
 
 static std::list<coroutine>::iterator
@@ -109,8 +116,7 @@ find_self (std::list<coroutine> &coroutines)
 }
 
 static std::list<coroutine>::iterator
-find_blocked (std::list<coroutine> &coroutines,
-                                                    void *port)
+find_blocked (std::list<coroutine> &coroutines, void *port)
 {
   return std::find_if (coroutines.begin (), coroutines.end (),
                        [port] (dzn::coroutine & c) {return c.port == port;});
@@ -147,8 +153,9 @@ pump::~pump ()
 }
 
 bool
-pump::blocked_p (void *port)
+pump::port_blocked_p (void *port)
 {
+  assert (port);
   return find_blocked (coroutines, port) != coroutines.end ();
 }
 
@@ -349,6 +356,19 @@ pump::context_switch ()
       switch_context.erase (switch_context.begin ());
       context ();
     }
+}
+
+bool
+pump::blocked_p (dzn::runtime&, dzn::component* component)
+{
+  assert (component);
+  component_meta* c = reinterpret_cast <component_meta*> (component);
+  return std::any_of (c->dzn_meta.require.begin (),
+                        c->dzn_meta.require.end (),
+                        [this,component] (const port::meta* m)
+                        {
+                          return this->port_blocked_p (m->provide.port);
+                        });
 }
 
 void

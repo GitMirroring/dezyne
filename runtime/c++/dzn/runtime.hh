@@ -142,6 +142,7 @@ dump_tree (dzn::component const &c)
 }
 
 // implemented conditionally in pump.cc
+bool blocked_p (locator const &, dzn::component *);
 void collateral_block (locator const &, dzn::component *);
 bool port_blocked_p (locator const &, void *);
 void port_block (locator const &, dzn::component *, void *);
@@ -720,6 +721,7 @@ struct event<void (Args...)>
       else
         {
           runtime.queue (require).push (event);
+
           if (!require
               || (!provide
                   && !runtime.handling (component)
@@ -728,12 +730,11 @@ struct event<void (Args...)>
                   && !runtime.native (provide)
                   && !runtime.handling (provide)
                   && !runtime.performs_flush (provide)))
-            runtime.flush (require, coroutine_id (locator),
-                           activity.value == 1);
-          if (!provide
-              && !no_flush_label_p
-              && runtime.blocked (provide)
-              && runtime.handling (component))
+            runtime.flush (require, coroutine_id (locator), activity.value == 1);
+          else if ((!provide && !port_blocked_p (locator, this->port)
+                    || !runtime.blocked (provide))
+                   && runtime.handling (component)
+                   && blocked_p (locator, component))
             port_update ();
         }
 

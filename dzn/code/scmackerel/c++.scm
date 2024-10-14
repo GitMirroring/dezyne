@@ -767,14 +767,14 @@ std::basic_ostream<Char, Traits> &")
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (simple-format
-                  #f "{{~s,&~a,this,&dzn_meta},{~s,0,0,0}},this" name name name))))
+                  #f "{{~s,&~a,this,&dzn_meta},{~s,&~a,0,0}},this" name name name name))))
   (define (requires->member port)
     (sm:variable
      (type (code:type-name (.type port)))
      (name (.name port))
      (expression (simple-format
                   #f
-                  "{{~s,0,0,0},{~s,&~a,this,&dzn_meta}},this" name name name))))
+                  "{{~s,&~a,0,0},{~s,&~a,this,&dzn_meta}},this" name name name name))))
   (define (requires->external port)
     (sm:assign*
      (simple-format
