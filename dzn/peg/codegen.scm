@@ -23,8 +23,8 @@
             wrap-parser-for-users
             add-peg-compiler!
             define-skip-parser
-            %peg:error
             %peg:debug?
+            %peg:error
             %peg:fall-back?
             %peg:locations?
             %peg:skip?)
@@ -219,7 +219,8 @@ and collects it using procedure (%peg:error)."
               (let loop ((at start))
                 (cond ((or (= at strlen)
                            ;; TODO: decide what to do; inspecting at might not be enough?!!
-                           (unless (and (%fall-back-skip-at) (eq? (%fall-back-skip-at) at))
+                           (unless (and (%fall-back-skip-at)
+                                        (eq? (%fall-back-skip-at) at))
                              (parameterize ((%fall-back-skip-at at))
                                ((%continuation) str strlen at))))
                        (format-error start at)
@@ -227,8 +228,9 @@ and collects it using procedure (%peg:error)."
                       (else
                        (let ((res (false-if-exception (kernel str strlen (1+ at)))))
                          (if res
-                             (begin (format-error (or (string-index str (char-set-complement char-set:whitespace) start at) start) at)
-                                    res)
+                             (begin
+                               (format-error (or (string-index str (char-set-complement char-set:whitespace) start at) start) at)
+                               res)
                              (loop (1+ at)))))))))))))
 
 
@@ -252,11 +254,13 @@ and collects it using procedure (%peg:error)."
     ((first rest ...)
      #`(let* ((next #,(cg-or #'(rest ...) 'body))
               (kernel #,(compile-peg-pattern #'first accum))
-              (res (parameterize ((%continuation (let ((after-that (%continuation)))
-                                                   (lambda (str strlen at)
-                                                     ;;(warn 'cont '#'(rest ...) (substring str at (min strlen (+ at 10))))
-                                                     (or ((partial-match next 'next) str strlen at)
-                                                         ((partial-match after-that 'after-that) str strlen at))))))
+              (res (parameterize
+                       ((%continuation
+                         (let ((after-that (%continuation)))
+                           (lambda (str strlen at)
+                             (or ((partial-match next 'next) str strlen at)
+                                 ((partial-match after-that 'after-that)
+                                  str strlen at))))))
                      ((fall-back-skip kernel) #,str #,strlen #,at))))
          (and res
               ;; update AT and BODY then recurse
@@ -423,8 +427,8 @@ and collects it using procedure (%peg:error)."
                          (error "Bad peg form" nm #'args
                                 "Not one of" (map car peg-compiler-alist)))))))
 
-(define %peg:error (make-parameter (const #f)))
 (define %peg:debug? (make-parameter #f))
+(define %peg:error (make-parameter (const #f)))
 (define %peg:locations? (make-parameter #f))
 (define %peg:skip? (make-parameter (lambda (str strlen at) `(,at ()))))
 
@@ -434,6 +438,7 @@ and collects it using procedure (%peg:error)."
 (define indent 0)
 
 (define (wrap-parser-for-users for-syntax parser accumsym s-syn)
+  "Package the results of a parser."
   #`(lambda (str strlen at)
       (when (trace? '#,s-syn)
         (format (current-error-port) "~a~a\n"
@@ -441,7 +446,8 @@ and collects it using procedure (%peg:error)."
                 '#,s-syn))
       (set! indent (+ indent 4))
       (let* ((comment-res ((%peg:skip?) str strlen at))
-             (comment-loc (and (%peg:locations?) comment-res `(location ,at ,(car comment-res))))
+             (comment-loc (and (%peg:locations?) comment-res
+                               `(location ,at ,(car comment-res))))
              (at (or (and comment-res (car comment-res)) at))
              (res (#,parser str strlen at)))
         (set! indent (- indent 4))
@@ -460,7 +466,8 @@ and collects it using procedure (%peg:error)."
                    (loc `(location ,at ,(car res)))
                    (annotate (if (not (%peg:locations?)) '()
                                  (if (null? (cadr comment-res)) `(,loc)
-                                     `((comment ,(cdr comment-res) ,comment-loc) ,loc))))
+                                     `((comment ,(cdr comment-res) ,comment-loc)
+                                       ,loc))))
                    (at (car res)))
               #,(cond
                  ((eq? accumsym 'name)

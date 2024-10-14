@@ -33,10 +33,10 @@
                 define-peg-string-patterns
                 define-skip-parser
                 %peg:debug?
+                %peg:error
                 %peg:fall-back?
                 %peg:locations?
                 %peg:skip?
-                %peg:error
                 match-pattern
                 search-for-pattern
                 compile-peg-pattern
