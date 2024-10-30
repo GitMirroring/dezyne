@@ -573,15 +573,13 @@
 
 (define (makreel:add-state-placeholder o)
   (match o
-    ((and (? (is? <compound>))
-          (? (cute ast:parent <> <interface>))
-          (? (cute ast:parent <> <on>)))
+    ((? (is? <component>)) o)
+    ((? (is? <compound>))
      (clone o #:elements (makreel:add-state-placeholder (ast:statement* o))))
     (((and (? (is? <action>)) statement) rest ...)
-     (let* ((trigger (car (ast:trigger* (ast:parent statement <on>)))))
-       (cons* statement
-              (make <state>)
-              (makreel:add-state-placeholder rest))))
+     (cons* statement
+            (make <state>)
+            (makreel:add-state-placeholder rest)))
     (((and (? (is? <statement>)) statement) rest ...)
      (cons statement (makreel:add-state-placeholder rest)))
     ((? (is? <ast>))
