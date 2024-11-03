@@ -144,6 +144,7 @@ FEATURE_TESTS =					\
  %D%/hello_function_shared			\
  %D%/hello_function_variable			\
  %D%/hello_header				\
+ %D%/hello_global_function			\
  %D%/hello_guard				\
  %D%/hello_guard_if				\
  %D%/hello_if					\
