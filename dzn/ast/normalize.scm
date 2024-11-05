@@ -1366,8 +1366,13 @@ code check."
         (match o
           ((? ast:illegal?)
            o)
-          (($ <compound>)
-           (let ((tag (make <tag> #:location (location o))))
+          ;; FIXME: make $ goops base class aware
+          ;; to derive <declarative-compound> from <component>
+          ((or ($ <compound>) ($ <declarative-compound>))
+           ;; FIXME: (car (ast:trigger* ...
+           (let* ((location (location (if (not (is-a? (.parent o) <on>)) o
+                                          (car (ast:trigger* (.parent o))))))
+                  (tag (make <tag> #:location location)))
              (clone o #:elements (cons tag (ast:statement* o)))))
           (_
            (let* ((location (location o))
@@ -1384,7 +1389,7 @@ code check."
      (let ((then (add-tag-imperative (tag-imperative-blocks (.then o))))
            (else (and=> (tag-imperative-blocks (.else o)) add-tag-imperative)))
        (clone o #:then then #:else else)))
-    (($ <compound>)
+    ((or ($ <compound>) ($ <declarative-compound>))
      (clone o #:elements (map tag-imperative-blocks (ast:statement* o))))
     ((? (is? <statement>))
      o)

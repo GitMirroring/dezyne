@@ -1,12 +1,11 @@
 verify: ihello: check: deadlock: ok
-verify: ihello: check: unreachable: fail
-test/all/unreachable_component/unreachable_component.dzn:33:26: error: code will never be executed
+verify: ihello: check: unreachable: ok
 verify: ihello: check: livelock: ok
 verify: ihello: check: deterministic: ok
 verify: unreachable_component: check: deterministic: ok
 verify: unreachable_component: check: illegal: ok
 verify: unreachable_component: check: deadlock: ok
 verify: unreachable_component: check: unreachable: fail
-test/all/unreachable_component/unreachable_component.dzn:45:20: error: code will never be executed
+test/all/unreachable_component/unreachable_component.dzn:46:8: error: code will never be executed
 verify: unreachable_component: check: livelock: ok
 verify: unreachable_component: check: compliance: ok

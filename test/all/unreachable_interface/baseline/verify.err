@@ -1,5 +1,5 @@
 verify: unreachable_interface: check: deadlock: ok
 verify: unreachable_interface: check: unreachable: fail
-test/all/unreachable_interface/unreachable_interface.dzn:33:23: error: code will never be executed
+test/all/unreachable_interface/unreachable_interface.dzn:33:16: error: code will never be executed
 verify: unreachable_interface: check: livelock: ok
 verify: unreachable_interface: check: deterministic: ok

@@ -10,7 +10,7 @@ verify: compliance_blocking_out: check: deterministic: ok
 verify: compliance_blocking_out: check: illegal: ok
 verify: compliance_blocking_out: check: deadlock: ok
 verify: compliance_blocking_out: check: unreachable: fail
-test/all/compliance_blocking_out/compliance_blocking_out.dzn:53:30: error: code will never be executed
+test/all/compliance_blocking_out/compliance_blocking_out.dzn:53:18: error: code will never be executed
 verify: compliance_blocking_out: check: livelock: ok
 verify: compliance_blocking_out: check: compliance: fail
 error: component compliance_blocking_out is non-compliant with interface(s) of provides port(s)

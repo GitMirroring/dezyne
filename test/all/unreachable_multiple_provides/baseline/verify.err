@@ -6,7 +6,7 @@ verify: unreachable_multiple_provides: check: deterministic: ok
 verify: unreachable_multiple_provides: check: illegal: ok
 verify: unreachable_multiple_provides: check: deadlock: ok
 verify: unreachable_multiple_provides: check: unreachable: fail
-test/all/unreachable_multiple_provides/unreachable_multiple_provides.dzn:41:21: error: code will never be executed
+test/all/unreachable_multiple_provides/unreachable_multiple_provides.dzn:41:8: error: code will never be executed
 verify: unreachable_multiple_provides: check: livelock: ok
 verify: unreachable_multiple_provides: check: compliance: fail
 error: component unreachable_multiple_provides is non-compliant with interface(s) of provides port(s)

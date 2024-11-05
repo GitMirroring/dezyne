@@ -5,8 +5,7 @@ verify: ihello: check: deterministic: ok
 verify: deadlock_blocking_compliance: check: deterministic: ok
 verify: deadlock_blocking_compliance: check: illegal: ok
 verify: deadlock_blocking_compliance: check: deadlock: ok
-verify: deadlock_blocking_compliance: check: unreachable: fail
-test/all/deadlock_blocking_compliance/deadlock_blocking_compliance.dzn:49:18: error: code will never be executed
+verify: deadlock_blocking_compliance: check: unreachable: ok
 verify: deadlock_blocking_compliance: check: livelock: ok
 verify: deadlock_blocking_compliance: check: compliance: fail
 error: component deadlock_blocking_compliance is non-compliant with interface(s) of provides port(s)

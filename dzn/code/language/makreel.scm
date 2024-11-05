@@ -597,12 +597,12 @@ transformations."
                   add-function-return
                   extract-call
                   makreel:add-state-placeholder
+                  (if (%no-unreachable?) identity tag-imperative-blocks)
                   normalize:state+illegals
                   remove-otherwise
                   makreel:tick-names
                   add-explicit-temporaries
                   add-defer-end
-                  (if (%no-unreachable?) identity tag-imperative-blocks)
                   purge-data
                   ) ast)))
       (when (> (dzn:debugity) 1)

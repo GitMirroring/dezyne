@@ -7,6 +7,6 @@ error: component unreachable_determinism is non-deterministic
 verify: unreachable_determinism: check: illegal: ok
 verify: unreachable_determinism: check: deadlock: ok
 verify: unreachable_determinism: check: unreachable: fail
-test/all/unreachable_determinism/unreachable_determinism.dzn:44:26: error: code will never be executed
+test/all/unreachable_determinism/unreachable_determinism.dzn:44:14: error: code will never be executed
 verify: unreachable_determinism: check: livelock: ok
 verify: unreachable_determinism: check: compliance: ok

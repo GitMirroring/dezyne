@@ -27,10 +27,11 @@ interface ihello
   in void hello ();
   out void world ();
 
-  behaviour
+  behavior
   {
-    on hello: {}
-    [false] on optional: world;
+    bool idle = true;
+    on hello: idle = false;
+    [!idle] on optional: world;
   }
 }
 
@@ -39,9 +40,9 @@ component unreachable_component
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
-    on h.hello (): w.hello ();
+    on h.hello (): {}
     on w.world (): {h.world (); h.world ();}
   }
 }
