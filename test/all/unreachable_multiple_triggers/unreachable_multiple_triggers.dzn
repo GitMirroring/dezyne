@@ -25,13 +25,18 @@
 interface ihello
 {
   in void hello ();
+  in void bye ();
+  in void never ();
   out void world ();
   out void cruel ();
 
-  behaviour {
+  behavior {
+    bool b = false;
     on hello: {}
+    on bye: illegal;
+    on never: b = true;
     on inevitable: world;
-    [false] on inevitable: cruel;
+    [b] on inevitable: cruel;
   }
 }
 
@@ -41,10 +46,9 @@ component unreachable_multiple_triggers
   requires ihello w0;
   requires ihello w1;
 
-  behaviour {
-    on h.hello (): {}
+  behavior {
+    on h.hello (), h.bye (), h.never (): {}
     on w0.world (), w1.cruel (): h.world ();
-    on w0.cruel (), w1.cruel (): {}
     on w1.world (): {}
   }
 }
