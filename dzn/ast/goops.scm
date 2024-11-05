@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -103,7 +103,6 @@
  .location
  .message
  .name
- .noisy?
  .offset
  .port
  .ports
@@ -560,7 +559,6 @@
 
 (define-ast <function> (<scope> <declaration>)
   (signature #:init-form (make <signature-node>))
-  (noisy?)
   (recursive?)
   (statement))
 

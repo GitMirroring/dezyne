@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -60,7 +60,6 @@
     ((dzn ast normalize) normalize:event+illegals)
     ((dzn ast normalize) normalize:state+illegals)
     ((dzn code) code:normalize)
-    ((dzn code) code:normalize+determinism)
     ((dzn code language c++) ast->)
     ((dzn code language makreel) makreel:normalize)
     ((dzn code scmackerel makreel) root->scmackerel)

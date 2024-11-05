@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -200,6 +200,6 @@
     set-blocking-reply-port
     transform-end-of-on
     (annotate-otherwise)
-    add-explicit-temporaries
+    (add-explicit-temporaries)
     purge-data)
    root))

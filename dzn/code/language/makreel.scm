@@ -607,7 +607,7 @@ transformations."
                   normalize:state+illegals
                   remove-otherwise
                   makreel:tick-names
-                  add-explicit-temporaries
+                  (add-explicit-temporaries)
                   add-defer-end
                   purge-data
                   ) ast)))

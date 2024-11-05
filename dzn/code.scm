@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -92,7 +92,6 @@
             code:member-name
             code:model*
             code:normalize
-            code:normalize+determinism
             code:number-argument
             code:number-formals
             code:on
@@ -776,6 +775,7 @@
 (define (code:normalize- ast)
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
+      (add-explicit-temporaries #:call-only? #t)
       add-reply-port
       normalize:event+illegals
       remove-otherwise
@@ -790,17 +790,6 @@ normalizations."
     (when (> (dzn:debugity) 1)
       (ast:pretty-print root (current-error-port)))
     root))
-
-(define (code:normalize+determinism ast)
-  "Code:normalize, plus add-determinism-temporaries."
-  (parameterize ((%normalize:short-circuit? code:short-circuit?))
-    (let ((root ((compose
-                  add-determinism-temporaries
-                  code:normalize-)
-                 ast)))
-      (when (> (dzn:debugity) 1)
-        (ast:pretty-print root (current-error-port)))
-      root)))
 
 (define (code:short-circuit? o)
   (match o

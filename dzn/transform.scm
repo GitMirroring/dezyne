@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -41,10 +42,8 @@
   #:export (inline-functions
             normalize:compounds-wrap)
   #:re-export (add-function-return
-               add-determinism-temporaries
                add-explicit-temporaries
                code:normalize
-               code:normalize+determinism
                extract-call
                makreel:normalize
                normalize:compounds
@@ -54,7 +53,6 @@
                remove-otherwise
                remove-behavior
                simplify-guard-expressions
-               split-complex-expressions
                tag-imperative-blocks
                vm:normalize))
 

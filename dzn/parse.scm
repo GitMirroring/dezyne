@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 202, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2021 Paul Hoogendijk <paul@dezyne.org>
-;;; Copyright © 2014, 2018, 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -39,7 +39,7 @@
   #:use-module (dzn ast display)
   #:use-module (dzn ast goops)
   #:use-module (dzn ast parse)
-  #:use-module (dzn ast silence)
+  #:use-module (dzn ast recursive)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
@@ -306,7 +306,7 @@ parse trees.  When SKIP-WFC?, skip the well-formedness checks.  Unless
               (let* ((ast (parse-tree-alist->ast parse-tree-alist
                                                  #:content-alist content-alist
                                                  #:working-directory dir))
-                     (ast (silence:annotate-functions ast))
+                     (ast (annotate-recursion ast))
                      (ast (if skip-wfc? ast
                               (ast:wfc ast)))
                      (transform (map string->transformation transform)))
@@ -369,7 +369,7 @@ trees.  When SKIP-WFC? skip the well-formedness checks."
         (let* ((ast (parse-tree-alist->ast parse-tree-alist
                                            #:content-alist content-alist
                                            #:working-directory dir))
-               (ast (silence:annotate-functions ast))
+               (ast (annotate-recursion ast))
                (ast (if skip-wfc? ast
                         (ast:wfc ast)))
                (transform (map string->transformation transform)))
