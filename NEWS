@@ -5,6 +5,28 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.18.4 since 2.18.3
+** Verification
+  - The unreachable code check now considers the use of individual
+    triggers in an on-statement.
+** Noteworthy bug fixes
+  - A false negative deadlock when using shared state in an interface
+    that uses a function has been fixed.  This was a regression
+    introduced in 2.18.3.
+  - A bug in the code generator was fixed to handle a `call' with more
+    than two arguments that are `call's.
+  - A bug in the code generator was fixed when using `defer' in a
+    component with a data member without state members.
+  - A bug in the parser was fixed to ignore anything between dollars
+    ($..$), i.e., also the string "import".
+  - Several bugs in the `dzn code --language=dzn' pretty-printer have
+    been fixed for nested namespaces, shared variables and void returns.
+  - The test framework can be built using gcc-14.
+  - A bug in the simulator with respect to eligible labels in defer
+    context has been fixed.
+  - The verification performance impact due to the semantic extension of
+    shared state has been resolved.
+
 * Changes in 2.18.3 since 2.18.2
 ** Code
   - The thread pool destructor in the C++ runtime now documents the
