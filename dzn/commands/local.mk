@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Paul Hoogendijk <paul@dezyne.org>
 #
@@ -25,6 +25,7 @@
 
 dist_%C%_scm_DATA =				\
  %D%/code.scm					\
+ %D%/exec.scm					\
  %D%/graph.scm					\
  %D%/hello.scm					\
  %D%/language.scm				\

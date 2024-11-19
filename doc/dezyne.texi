@@ -161,6 +161,7 @@ The Dezyne command-line tools
 
 * Invoking dzn::                Running Dezyne commands.
 * Invoking dzn code::           Generating code from a Dezyne file.
+* Invoking dzn exec::           Running an arbitrary command-line.
 * Invoking dzn graph::          Generating graphs of Dezyne models.
 * Invoking dzn hello::          A simple sanity check.
 * Invoking dzn language::       Lookup and completion.
@@ -2634,6 +2635,7 @@ foreigns that use the same interfaces need to form a chain of
 @menu
 * Invoking dzn::                Running Dezyne commands.
 * Invoking dzn code::           Generating code from a Dezyne file.
+* Invoking dzn exec::           Running an arbitrary command-line.
 * Invoking dzn graph::          Generating graphs of Dezyne models.
 * Invoking dzn hello::          A simple sanity check.
 * Invoking dzn language::       Lookup and completion.
@@ -2802,6 +2804,42 @@ For other language backends, this options is ignored.
 @itemx -s @var{model}
 Generate thread-safe system shell for model @var{model}.  This option
 can be used multiple times.  @xref{Thread-safe Shell}.
+
+@end table
+
+@node Invoking dzn exec
+@section Invoking @command{dzn exec}
+
+The @command{dzn exec} command runs any command with arguments.
+
+@example
+dzn @var{dzn-option}@dots{} exec @var{option}@dots{} @file{command-line}@dots{}
+@end example
+
+The @file{command-line} can be anny command-line to run.  This is
+helpful for a Docker container that has @command{dzn} as its @emph{entry
+point}.
+
+Running
+
+@example
+dzn exec ltsconvert hello.aut hello.dot
+@end example
+
+runs @command{dzn parse} and returns the preprocessed stream for
+@file{examples/hello.dzn}.
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn exec}, and then exit.
+
+@item --verbose
+@itemx -v
+Show the command to be executed.
 
 @end table
 
