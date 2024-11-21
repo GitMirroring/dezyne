@@ -109,22 +109,20 @@
   "The mCRL2 has no support for anonymous temporary variables, Dezyne does
 as do all programming languages, so we must determine which statements
 require a temporary variable."
-  (define typed-action/call?
-    (conjoin (disjoin (is? <action>) (is? <call>))
-             ast:typed?))
+  (define action/call?
+    (disjoin (is? <action>) (is? <call>)))
   (define temporary?
     (conjoin (disjoin (is? <action>)
                       (is? <binary>)
                       (is? <call>))
-             ast:typed?
              (compose pair?
-                      (cute tree-collect typed-action/call? <>))
+                      (cute tree-collect action/call? <>))
              (disjoin
               (cute as <> <arguments>)
               (cute ast:parent <> <arguments>)
               (compose (cute as <> <binary>) .parent)
               (compose (cute ast:parent <> <binary>) .parent))))
-  (cond ((is-a? o <call>)
+  (cond ((or (is-a? o <action>) (is-a? o <call>))
          (tree-collect temporary? o))
         ((or (is-a? o <assign>) (is-a? o <variable>))
          (append
@@ -133,15 +131,15 @@ require a temporary variable."
                (tree-collect
                 (conjoin
                  (is? <not>)
-                 (compose pair? (cute tree-collect typed-action/call? <>)))
+                 (compose pair? (cute tree-collect action/call? <>)))
                 o))))
         ((is-a? o <if>)
-         (tree-collect typed-action/call? (.expression o)))
+         (tree-collect action/call? (.expression o)))
         ((or (as o <expression>)
              (and (is-a? o <reply>) (.expression o))
              (and (is-a? o <return>) (.expression o)))
          =>
-         (cute tree-collect typed-action/call? <>))
+         (cute tree-collect action/call? <>))
         (else
          '())))
 
@@ -159,38 +157,36 @@ require a temporary variable."
   "In C derived languages the evaluation order of the arguments is
 implementation defined, in Dezyne we assume a left to right order. This
 requires the introduction of temporaries for function calls."
-  (define typed-action/call?
-    (conjoin (disjoin (is? <action>)
-                      (is? <call>))
-             ast:typed?))
-  (define >1-argument-typed-action/call?
+  (define action/call?
+    (disjoin (is? <action>) (is? <call>)))
+  (define >1-argument-action/call?
     (compose (cute > <> 1)
              length
              (cute filter (compose pair?
-                                   (cute tree-collect typed-action/call? <>))
+                                   (cute tree-collect action/call? <>))
                    <>)
              ast:argument*))
-  (define >1-typed-action/call?
+  (define >1-action/call?
     (compose (cute > <> 1)
              length
-             (cute tree-collect typed-action/call? <>)))
+             (cute tree-collect action/call? <>)))
   (let* ((arguments (tree-collect
                      (conjoin (is? <arguments>)
                               (compose (cute > <> 1) length .elements)
-                              >1-typed-action/call?)
+                              >1-action/call?)
                      o))
-         (arguments (filter >1-argument-typed-action/call? arguments))
+         (arguments (filter >1-argument-action/call? arguments))
          (arguments (append-map ast:argument* arguments))
          (expressions (tree-collect
                        (conjoin (disjoin (is? <minus>) (is? <plus>))
-                                >1-typed-action/call?)
+                                >1-action/call?)
                        o))
          (expressions (append-map
                        (lambda (x)
                          (let ((expressions (list (.left x) (.right x))))
                            (filter
                             (compose pair?
-                                     (cute tree-collect typed-action/call? <>))
+                                     (cute tree-collect action/call? <>))
                             expressions)))
                        expressions)))
     (append arguments expressions)))
@@ -1152,6 +1148,11 @@ the same level."
         ((is-a? o <expression>)
          (tree-map (cute replace-expression old <> var) o))
         ((is-a? o <arguments>)
+         (let* ((arguments (ast:argument* o))
+                (arguments (filter-map (cute replace-expression old <> var)
+                                       arguments)))
+           (clone o #:elements arguments)))
+        ((is-a? o <arguments>)
          (tree-map (cute replace-expression old <> var) o))
         (else
          o)))
@@ -1310,6 +1311,7 @@ add-explicit-temporaries transformation for splitting argument lists."
   (let* ((expression (.expression o))
          (variable-expression (add-temporary? o))
          (type (ast:type variable-expression))
+         (void? (is-a? type <void>))
          (local-type? (ast:eq? (ast:parent type <model>)
                                (ast:parent o <model>)))
          (type-name (cond
@@ -1322,8 +1324,10 @@ add-explicit-temporaries transformation for splitting argument lists."
                           #:type.name type-name
                           #:expression variable-expression
                           #:location location))
+         (temporary (if void? variable-expression temporary))
          (temporary (clone temporary #:parent (ast:parent o <behavior>)))
          (var (make <var> #:name name #:location location))
+         (var (if void? #f var))
          (o (tree-map
              (cute replace-expression variable-expression <> var)
              o))
@@ -1368,7 +1372,7 @@ expressions explicit."
                     (o (clone o #:then then #:else else-clause)))
                (if (not (add-temporary? o)) o
                    (split+add-temporaries o))))))
-      (($ <call>)
+      ((or ($ <action>) ($ <call>))
        (let ((split? (or (split-complex? o) (add-temporary? o))))
          (if (not split?) o
              (let ((o (split+add-temporaries o)))
