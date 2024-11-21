@@ -180,7 +180,8 @@
          (return? (list-index (cute ast:eq? <> o) continuations))
          (call (and=> return? (cute list-ref calls <>)))
          (return? (and call
-                       (not (is-a? (ast:type call) <void>))))
+                       (not (or (is-a? (ast:type call) <void>)
+                                (is-a? (ast:type call) <extern>)))))
          (parameters (if (not return?) parameters
                          (append parameters
                                  (list (makreel:return-variable call)))))
