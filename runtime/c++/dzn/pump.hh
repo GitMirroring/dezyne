@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019, 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2016-2019, 2021-2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -29,6 +29,7 @@
 #include <dzn/config.hh>
 #include <dzn/coroutine.hh>
 #include <dzn/meta.hh>
+#include <dzn/runtime.hh>
 
 #include <condition_variable>
 #include <functional>
@@ -123,11 +124,12 @@ template < typename L, typename ... Args, typename = typename std::enable_if < !
 #else
 template < typename L, typename ... Args, typename = typename std::enable_if < !std::is_void<typename std::result_of<L (Args ...)>::type>::value >::type >
 #endif
-auto shell (dzn::pump &pump, L && l, Args && ...args) -> decltype (l (std::forward<Args> (args)...))
+auto shell (dzn::pump &pump, L && l, Args && ...args) -> typename dzn::unwrap_data<decltype (l (std::forward<Args> (args)...))>::type
 {
-  std::promise<decltype (l (std::forward<Args> (args)...))> p;
+  typedef decltype (l (std::forward<Args> (args)...)) reply_t;
+  std::promise<reply_t> p;
   pump ([&] {p.set_value (l (std::forward<Args> (args)...));});
-  return p.get_future ().get ();
+  return static_cast<typename dzn::unwrap_data<reply_t>::type> (p.get_future ().get ());
 }
 }
 

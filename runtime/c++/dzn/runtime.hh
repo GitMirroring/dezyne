@@ -3,7 +3,7 @@
 // Copyright © 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -50,6 +50,37 @@ namespace dzn
 {
 template <typename T>
 std::string to_string (T t);
+
+template <typename T>
+struct data
+{
+  T value;
+  data () = default;
+  data (T const & value)
+    : value (value)
+  {}
+  operator T const & () const
+  {
+    return value;
+  }
+  data& operator = (T const & value)
+  {
+    this->value = value;
+    return *this;
+  }
+};
+
+template <typename T>
+struct unwrap_data { using type = T; };
+template <typename U>
+struct unwrap_data<dzn::data<U>> { using type = U; };
+
+template <typename T>
+std::string to_string (data<T> t)
+{
+  return "return";
+}
+
 inline std::string
 to_string (bool b)
 {

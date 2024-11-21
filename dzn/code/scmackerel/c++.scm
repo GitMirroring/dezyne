@@ -321,6 +321,9 @@ std::basic_ostream<Char, Traits> &")
       (ast->code (code:wrap-compound o)))
      (else
       (let* ((type (ast:type o))
+             (type (if (not (is-a? (.expression o) <data>)) type
+                       ((compose .type .signature .event car ast:trigger*)
+                        (ast:parent o <on>))))
              (reply-port (.port o))
              (port-name (.name reply-port))
              (out-binding (string-append "(*" (%member-prefix)
@@ -431,8 +434,11 @@ std::basic_ostream<Char, Traits> &")
 ;;;
 (define-method (interface->sm:statements-unmemoized (o <interface>))
   (define (event->slot event)
-    (let ((type (code:type-name (ast:type event)))
-          (formals (ast:formal* event)))
+    (let* ((type (ast:type event))
+           (extern? (is-a? type <extern>))
+           (type (if (not extern?) (code:type-name type)
+                     (format #f "dzn::data<~a>" (code:type-name type))))
+           (formals (ast:formal* event)))
       (sm:variable
        (type (simple-format #f "dzn::~a::event<~a>"
                             (code:direction event)
@@ -787,9 +793,13 @@ std::basic_ostream<Char, Traits> &")
      (name (.name port))
      (expression (sm:member* (simple-format #f "dzn_locator.get< ~a> ()" type)))))
   (define (type->reply-variable o)
-    (sm:variable
-     (type (string-append (code:type-name o) "*"))
-     (name (code:reply-var o))))
+    (let ((extern? (is-a? o <extern>)))
+      (sm:variable
+       (type (string-append
+              (if (not extern?) (code:type-name o)
+                  (format #f "dzn::data<~a>" (code:type-name o)))
+              "*"))
+       (name (code:reply-var o)))))
   (define (port->out-binding port)
     (sm:variable
      (type "std::function<void ()>*")
