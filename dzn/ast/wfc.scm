@@ -808,6 +808,8 @@
                (matching-types (filter (cut ast:equal? <> reply-type) types)))
           (cond
            ((pair? matching-types) '())
+           ((equal? reply-type-name "<unknown type>")
+            `(,(wfc-error o (format #f "cannot determine type of expression of reply"))))
            (port
             `(,(wfc-error o (format #f "type mismatch: no event with reply type `~a' for port `~a'"
                                     reply-type-name (.name port)))

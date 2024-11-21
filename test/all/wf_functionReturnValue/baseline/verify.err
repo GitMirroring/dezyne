@@ -1,4 +1,3 @@
-test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:42:5: error: cannot use extern type `int' as return type
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:48:5: error: missing return
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:54:9: error: missing return
 test/all/wf_functionReturnValue/wf_functionReturnValue.dzn:66:12: error: missing return
