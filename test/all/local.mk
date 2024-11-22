@@ -205,6 +205,7 @@ REGRESSION_TESTS =				\
  %D%/complex_arguments3				\
  %D%/complex_arguments4				\
  %D%/complex_arguments5				\
+ %D%/complex_arguments6				\
  %D%/complex_assign0				\
  %D%/complex_assign1				\
  %D%/complex_assign2				\
