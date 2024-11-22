@@ -189,7 +189,7 @@
          (let ((temporaries (noisy-temporaries o)))
            (match temporaries
              ((one two rest ...)
-              one)
+              (find (negate (is? <var>)) temporaries))
              (_
               #f))))
         (else
