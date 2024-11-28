@@ -160,6 +160,7 @@ FEATURE_TESTS =					\
  %D%/hello_out					\
  %D%/hello_out_state				\
  %D%/hello_parse				\
+ %D%/hello_project				\
  %D%/hello_reorder				\
  %D%/hello_reply				\
  %D%/hello_shared				\
