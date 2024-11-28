@@ -33,6 +33,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages boost)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages pth)
@@ -57,7 +58,9 @@
     (inputs (list bash-minimal
                   boost
                   guile-3.0
+                  guile-gcrypt
                   guile-json-4
+                  guile-gcrypt
                   guile-readline
                   (libc-utf8-locales-for-target)
                   mcrl2-next-minimal
