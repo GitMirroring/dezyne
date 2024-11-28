@@ -83,6 +83,22 @@ if test "x$have_smackerel_sm_indent" != "xyes"; then
   AC_MSG_ERROR([SCMackerel's sm:indent is missing; please upgrade to 0.5.2.])
 fi
 
+dnl Check whether we're using Guile-Gcrypt 0.2.x or later.
+AC_CACHE_CHECK([whether Guile-Gcrypt is available and recent enough],
+  [dzn_cv_have_recent_guile_gcrypt],
+  [GUILE_CHECK([retval],
+    [(use-modules (gcrypt hash))
+     (equal? (hash-algorithm sha256)
+             (lookup-hash-algorithm 'sha256))])
+   if test "$retval" = 0; then
+     dzn_cv_have_recent_guile_gcrypt="yes"
+   else
+     dzn_cv_have_recent_guile_gcrypt="no"
+   fi])
+if test "x$dzn_cv_have_recent_guile_gcrypt" != "xyes"; then
+  AC_MSG_ERROR([A recent Guile-Gcrypt could not be found; please install it.])
+fi
+
 AC_PATH_PROG([HELP2MAN], [help2man])
 AM_CONDITIONAL([have_help2man], [test -n "$HELP2MAN"])
 AC_PATH_PROGS([PERL5], [perl5 perl])
