@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -108,9 +108,11 @@ Parse a Dezyne file and produce an AST
          (skip-wfc? (dzn:command-line:get 'skip-wfc #f))
          (imports (command-line:get 'import))
          (locations? (command-line:get 'locations))
+         (fall-back? (option-ref options 'fall-back #f))
          (model-name (option-ref options 'model #f))
          (transform (dzn:multi-opt 'transform)))
-    (parameterize ((%locations? locations?)
+    (parameterize ((%peg:fall-back? fall-back?)
+                   (%locations? locations?)
                    (%peg:error (peg:format-display-syntax-error file-name)))
       (parse:call-with-handle-exceptions
        (lambda _
