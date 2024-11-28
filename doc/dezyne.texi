@@ -3128,6 +3128,13 @@ Resolve imports and produce a content stream.  This pre-processed
 content can also be processed later by the parser and it has the
 advantage of being independent of the file-system.
 
+@item --no-directives
+@itemx -D
+Do not include @code{#file} and @code{#imported} directives in
+pre-processed stream, removing the need to use, know, or learn
+@code{grep -v ^#}.  @option{--no-directives} implies
+@option{--preprocess}.
+
 @item --help
 @itemx -h
 Display help on invoking @command{dzn parse}, and then exit.

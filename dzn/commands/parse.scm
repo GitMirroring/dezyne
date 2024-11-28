@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -58,6 +58,7 @@
             (model (single-char #\m) (value #t))
             (list-models (single-char #\l))
             (locations (single-char #\L))
+            (no-directives (single-char #\D))
             (preprocess (single-char #\E))
             (parse-tree (single-char #\t))
             (output (single-char #\o) (value #t))))
@@ -71,6 +72,7 @@
 Usage: dzn parse [OPTION]... [FILE]...
 Parse a Dezyne file and produce an AST
 
+  -D, --no-directives    do not include file-directives in content stream
   -f, --fall-back        use fall-back parser
   -E, --preprocess       resolve imports and produce content stream
   -h, --help             display this help and exit
@@ -139,9 +141,11 @@ Parse a Dezyne file and produce an AST
 
 (define (preprocess options file-name)
   (let ((debug? (dzn:command-line:get 'debug #f))
+        (directives? (not (command-line:get 'no-directives)))
         (imports (command-line:get 'import)))
     (parse:call-with-handle-exceptions
-     (lambda _ (parse:file->stream file-name #:imports imports))
+     (lambda _ (parse:file->stream file-name #:imports imports
+                                   #:file-directives? directives?))
      #:backtrace? debug?
      #:exit? #f
      #:file-name file-name)))
@@ -168,6 +172,7 @@ Parse a Dezyne file and produce an AST
          (output-file-name (option-ref options 'output "-"))
          (parse-tree? (command-line:get 'parse-tree))
          (preprocess? (option-ref options 'preprocess #f))
+         (no-directives? (command-line:get 'no-directives))
          (verbose? (dzn:command-line:get 'verbose)))
     (cond
      (list-models?
@@ -182,7 +187,8 @@ Parse a Dezyne file and produce an AST
                   (display "parse: errors found\n"))))
         (unless tree
           (exit EXIT_FAILURE))))
-     (preprocess?
+     ((or preprocess?
+          no-directives?)
       (let ((tree (preprocess options file-name)))
         (if tree (display tree)
             (exit EXIT_FAILURE))))

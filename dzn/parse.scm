@@ -349,7 +349,7 @@ optionally using CONTENT-ALIST of form
          (compose (cute equal? <> "file")
                   (cute match:substring <> 1))))
 
-(define* (parse:file->stream file-name #:key (imports '()))
+(define* (parse:file->stream file-name #:key (imports '()) (file-directives? #t))
   "Read @var{file-name}, using @var{imports} to resolve @code{import}
 statements and return the expanded dezyne text, similar to @command{gcc
 -E}."
@@ -357,17 +357,20 @@ statements and return the expanded dezyne text, similar to @command{gcc
   (define import+content->stream-lines
     (match-lambda
       ((file-name . content)
-       (list (format #f "#imported ~s" file-name)
-             content))))
+       (if (not file-directives?) (list content)
+           (list (format #f "#imported ~s" file-name)
+                 content)))))
 
   (let ((content-alist (parse:file->content-alist file-name #:imports imports)))
 
     (define file+content->stream-lines
       (match-lambda
         ((file-name . content)
-         (if (parse:preprocessed? content) (list content)
-             (list (format #f "#file ~s" file-name)
-                   content)))))
+         (let ((need-directive? (and file-directives?
+                                     (not (parse:preprocessed? content)))))
+          (if (not need-directive?) (list content)
+              (list (format #f "#file ~s" file-name)
+                    content))))))
 
     (let* ((file+content (car content-alist))
            (imports (cdr content-alist))
