@@ -80,11 +80,13 @@
          (dir (dirname source-file)))
     (map (cute code:relative-file-name dir <>) import-files)))
 
-(define* (code:dump generate #:key file-name)
+(define* (code:dump generate #:key file-name verbose?)
   (cond
    ((equal? file-name "-")
     (generate))
    (else
+    (when verbose?
+      (format (current-error-port) "  DZN      ~a\n" file-name))
     (mkdir-p (dirname file-name))
     (with-output-to-file file-name
       generate))))

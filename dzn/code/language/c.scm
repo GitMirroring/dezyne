@@ -176,7 +176,7 @@
 ;;;
 ;;; Entry point.
 ;;;
-(define* (ast-> root #:key (dir ".") model)
+(define* (ast-> root #:key (dir ".") model verbose?)
   "Entry point."
 
   (code:foreign-conflict? root)

@@ -2743,8 +2743,11 @@ When generating code for @code{C++}, a dependency file is generated as
 system.
 
 @example
-dzn @var{dzn-option}@dots{} code @var{option}@dots{} @file{FILE}
+dzn @var{dzn-option}@dots{} code @var{option}@dots{} @file{FILE}@dots{}
 @end example
+
+If @file{FILE} is a directory, code is generated for all @file{.dzn}
+files in that directory.
 
 The @var{option}s can be among the following:
 

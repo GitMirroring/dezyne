@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -128,13 +128,13 @@
 ;;;
 ;;; Entry points.
 ;;;
-(define* (dependency-diagram root #:key dir model)
+(define* (dependency-diagram root #:key dir model verbose?)
   (x:source-dependent root))
 
-(define* (system-diagram root #:key dir model)
+(define* (system-diagram root #:key dir model verbose?)
   (parameterize ((%sut (runtime:get-sut root (ast:get-model root (ast:dotted-name model)))))
     (parameterize ((%instances (runtime:create-instances (%sut))))
       (x:source-sut (%sut)))))
 
-(define* (ast-> ast #:key dir model)
+(define* (ast-> ast #:key dir model verbose?)
   (system-diagram ast #:model model))

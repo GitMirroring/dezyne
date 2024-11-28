@@ -30,6 +30,8 @@
             copy-recursively
             delete-file-recursively
             directory-exists?
+            dzn-file?
+            file-name->dzn-files
             find-files
             list-directory
             list-files
@@ -397,3 +399,14 @@ match the terminating newline of a line."
                  (cons (string-append prologue indent)
                        tab-len))
                words))))
+
+
+;;;
+;;; Dezyne.
+;;;
+(define (dzn-file? file-name)
+  (string-suffix? ".dzn" file-name))
+
+(define (file-name->dzn-files file-name)
+  (if (not (file-is-directory? file-name)) (list file-name)
+      (list-files file-name dzn-file?)))

@@ -678,7 +678,7 @@ transformations."
     (let ((sm (root->scmackerel o)))
       (scmackerel:display sm))))
 
-(define* (ast-> ast #:key dir model)
+(define* (ast-> ast #:key dir model verbose?)
   (let* ((root (makreel:normalize ast))
          (init (command-line:get 'init))
          (file-name (code:root-file-name root dir ".mcrl2")))

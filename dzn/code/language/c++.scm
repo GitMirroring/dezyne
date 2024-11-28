@@ -61,7 +61,7 @@
 ;;;
 ;;; Entry point.
 ;;;
-(define* (ast-> root #:key (dir ".") model)
+(define* (ast-> root #:key (dir ".") model verbose?)
   "Entry point."
 
   (code:foreign-conflict? root)
@@ -81,11 +81,11 @@
           (format depend "~a: ~a~a\n" (basename header-file-name)
                   (code:relative-file-name dir source-file)
                   (string-join import-files " " 'prefix))))
-      (code:dump generator #:file-name header-file-name)
+      (code:dump generator #:file-name header-file-name #:verbose? verbose?)
 
       (if (c++:generate-source? root)
           (let ((generator (sm:indenter (cute print-code-ast root))))
-            (code:dump generator #:file-name source-file-name)
+            (code:dump generator #:file-name source-file-name #:verbose? verbose?)
             (when depend-dir
               (format depend "~a: ~a\n"
                       (basename source-file-name)
@@ -96,7 +96,7 @@
           (when (is-a? model <component-model>)
             (let ((generator (sm:indenter (cute print-main-ast model)))
                   (main-file-name (code:source-file-name "main" dir ".cc")))
-              (code:dump generator #:file-name main-file-name)
+              (code:dump generator #:file-name main-file-name #:verbose? verbose?)
               (when depend-dir
                 (format depend "~a: ~a\n" (basename main-file-name) source-file-name))))))
       (when depend

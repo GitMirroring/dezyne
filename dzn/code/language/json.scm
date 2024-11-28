@@ -103,7 +103,7 @@
 ;;;
 ;;; Entry points.
 ;;;
-(define* (system-diagram root #:key dir model)
+(define* (system-diagram root #:key dir model verbose?)
   (let* ((root (if (not model) root
                    (ast:filter-model root model)))
          (root (if (%locations?) root (remove-location root)))
@@ -111,6 +111,6 @@
          (generate (cute x:source (.node root))))
     (code:dump generate #:file-name file-name)))
 
-(define* (ast-> ast #:key dir model)
+(define* (ast-> ast #:key dir model verbose?)
   (let ((model (ast:get-model ast model)))
     (system-diagram ast #:dir dir #:model model)))

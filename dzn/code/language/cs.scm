@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -114,7 +114,7 @@
 ;;;
 ;;; Entry point.
 ;;;
-(define* (ast-> root #:key (dir ".") model)
+(define* (ast-> root #:key (dir ".") model verbose?)
   "Entry point."
 
   (code:foreign-conflict? root)

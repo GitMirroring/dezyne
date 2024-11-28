@@ -601,7 +601,7 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (ast->dzn (o <ast>))
   (generator->string (cute print-ast o)))
 
-(define* (ast-> root #:key (dir ".") model)
+(define* (ast-> root #:key (dir ".") model verbose?)
   "Entry point."
   (let ((file-name (code:root-file-name root dir ".dzn"))
         (generator (sm:indenter (cute print-ast root) #:gnu? #f)))

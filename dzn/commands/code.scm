@@ -40,6 +40,7 @@
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn parse)
+  #:use-module (dzn shell-util)
   #:export (%languages
             parse-opts
             main))
@@ -84,8 +85,8 @@
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))
         (format port "\
-Usage: dzn code [OPTION]... DZN-FILE
-Generate code for Dezyne models in DZN-FILE
+Usage: dzn code [OPTION]... {DZN-FILE|DIRECTORY}...
+Generate code for Dezyne models in DZN-FILEs and DIRECTORY(s)
 
   -c, --calling-context=TYPE  generate extra parameter of TYPE for every event
   -C, --no-constraint         do not use a constraining process
@@ -111,10 +112,64 @@ Languages: ~a
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
+(define* (file->code file-name
+                     #:key
+                     backtrace?
+                     calling-context
+                     dir
+                     model
+                     language
+                     locations?
+                     (options '())
+                     shell
+                     verbose?)
+
+  (define (shell-error ast model-name)
+    (let* ((model (ast:lookup ast model-name))
+           (message
+            (cond
+             ((not model)
+              (format #f "No such model for --shell: `~a'." model-name))
+             ((not (is-a? model <system>))
+              (format #f "Option `--shell' cannot be used with ~a: `~a'."
+                      (ast-name model)
+                      (ast:dotted-name model)))
+             ((ast:imported? model)
+              (format #f "Option `--shell' cannot be used with imported `~a'."
+                      (ast:dotted-name model)))
+             (else
+              #f))))
+      (and message
+           (make <error> #:ast (or model ast) #:message message))))
+
+  ;; Parse --model=MODEL cuts MODEL from AST; avoid that
+  (let* ((ast (parse options file-name))
+         (errors (filter-map (cute shell-error ast <>) shell)))
+
+    (parse:call-with-handle-exceptions
+     (lambda _
+       (when (pair? errors)
+         (apply throw 'well-formedness-error errors))
+       (code ast
+             #:calling-context calling-context
+             #:dir dir
+             #:model model
+             #:language language
+             #:locations? locations?
+             #:shell shell
+             #:verbose? verbose?))
+     #:backtrace? backtrace?
+     #:file-name file-name)))
+
+
+;;;
+;;; Entry point.
+;;;
 (define (main args)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (file-name (car files))
+         (files (append-map file-name->dzn-files files))
+         (multiple? (> (length files) 1))
          (debug? (dzn:command-line:get 'debug #f))
          (dir (option-ref options 'output #f))
          (calling-context (option-ref options 'calling-context #f))
@@ -130,23 +185,10 @@ Languages: ~a
          (no-unreachable? (command-line:get 'no-unreachable))
          (shell (multi-opt options 'shell)))
 
-    (define (shell-error ast model-name)
-      (let* ((model (ast:lookup ast model-name))
-             (message
-              (cond
-               ((not model)
-                (format #f "No such model for --shell: `~a'." model-name))
-               ((not (is-a? model <system>))
-                (format #f "Option `--shell' cannot be used with ~a: `~a'."
-                        (ast-name model)
-                        (ast:dotted-name model)))
-               ((ast:imported? model)
-                (format #f "Option `--shell' cannot be used with imported `~a'."
-                        (ast:dotted-name model)))
-               (else
-                #f))))
-        (and message
-             (make <error> #:ast (or model ast) #:message message))))
+    (when (and (> (length files) 1)
+               (not (equal? language "c++")))
+      (format (current-error-port) "dzn code: multiple files only supported for c++\n")
+      (exit EXIT_OTHER_FAILURE))
 
     (parameterize ((%calling-context calling-context)
                    (%no-constraint? no-constraint?)
@@ -157,18 +199,13 @@ Languages: ~a
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external)
                    (%shell shell))
-      (let* ((ast (parse options file-name))
-             (errors (filter-map (cute shell-error ast <>) shell)))
-        (parse:call-with-handle-exceptions
-         (lambda _
-           (when (pair? errors)
-             (apply throw 'well-formedness-error errors))
-           (code ast
-                 #:calling-context calling-context
-                 #:dir dir
-                 #:model model
-                 #:language language
-                 #:locations? locations?
-                 #:shell shell))
-         #:backtrace? debug?
-         #:file-name file-name)))))
+      (for-each (cut file->code <>
+                     #:backtrace? debug?
+                     #:calling-context calling-context
+                     #:dir dir
+                     #:model model
+                     #:language language
+                     #:locations? locations?
+                     #:shell shell
+                     #:verbose? multiple?)
+                files))))
