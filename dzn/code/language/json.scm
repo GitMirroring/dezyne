@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -103,7 +103,7 @@
 ;;;
 ;;; Entry points.
 ;;;
-(define* (system-diagram root #:key dir model verbose?)
+(define* (system-diagram root #:key dir empty-files? model verbose?)
   (let* ((root (if (not model) root
                    (ast:filter-model root model)))
          (root (if (%locations?) root (remove-location root)))
@@ -111,6 +111,6 @@
          (generate (cute x:source (.node root))))
     (code:dump generate #:file-name file-name)))
 
-(define* (ast-> ast #:key dir model verbose?)
+(define* (ast-> ast #:key dir empty-files? model verbose?)
   (let ((model (ast:get-model ast model)))
     (system-diagram ast #:dir dir #:model model)))

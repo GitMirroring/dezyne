@@ -77,7 +77,8 @@
             (queue-size (single-char #\q) (value #t))
             (queue-size-defer (value #t))
             (queue-size-external (value #t))
-            (shell (single-char #\s) (value #t))))
+            (shell (single-char #\s) (value #t))
+            (touch-empty-files (single-char #\t))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
@@ -103,6 +104,7 @@ Generate code for Dezyne models in DZN-FILEs and DIRECTORY(s)
       --queue-size-external=SIZE
                               use queue size=SIZE [~a] for external
   -s, --shell=MODEL           generate thread safe system shell for MODEL
+  -t, --touch-empty-files     generate empty files for consistency
   -U, --no-unreachable        do not generate unreachable code tags
 
 Languages: ~a
@@ -117,6 +119,7 @@ Languages: ~a
                      backtrace?
                      calling-context
                      dir
+                     empty-files?
                      model
                      language
                      locations?
@@ -153,6 +156,7 @@ Languages: ~a
        (code ast
              #:calling-context calling-context
              #:dir dir
+             #:empty-files? empty-files?
              #:model model
              #:language language
              #:locations? locations?
@@ -173,6 +177,7 @@ Languages: ~a
          (debug? (dzn:command-line:get 'debug #f))
          (dir (option-ref options 'output #f))
          (calling-context (option-ref options 'calling-context #f))
+         (empty-files? (command-line:get 'touch-empty-files #f))
          (language (option-ref options 'language %default-language))
          (locations? (option-ref options 'locations #f))
          (model (option-ref options 'model #f))
@@ -203,6 +208,7 @@ Languages: ~a
                      #:backtrace? debug?
                      #:calling-context calling-context
                      #:dir dir
+                     #:empty-files? empty-files?
                      #:model model
                      #:language language
                      #:locations? locations?

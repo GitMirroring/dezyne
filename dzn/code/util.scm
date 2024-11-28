@@ -41,7 +41,8 @@
             code:generate-source?
             code:relative-file-name
             code:root-file-name
-            code:source-file-name))
+            code:source-file-name
+            code:touch))
 
 (define (code:source-file-name base dir ext)
   (cond ((equal? dir "-") "-")
@@ -90,6 +91,11 @@
     (mkdir-p (dirname file-name))
     (with-output-to-file file-name
       generate))))
+
+(define* (code:touch file-name #:key verbose?)
+  (when verbose?
+    (format (current-error-port) "  TOUCH    ~a\n" file-name))
+  (code:dump (const display) #:file-name file-name))
 
 (define-method (code:base-name (o <foreign>))
   (string-join (ast:full-name o) "_"))

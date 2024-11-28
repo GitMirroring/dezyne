@@ -779,8 +779,15 @@ normalizations."
 ;;;
 ;;; Entry point.
 ;;;
-(define* (code ast #:key (ast-> 'ast->) calling-context dir language locations?
-               model shell verbose?)
+(define* (code ast #:key (ast-> 'ast->)
+               calling-context
+               dir
+               empty-files?
+               language
+               locations?
+               model
+               shell
+               verbose?)
   (let* ((module (resolve-module `(dzn code language ,(string->symbol language))))
          (ast-> (false-if-exception (module-ref module ast->))))
     (unless ast->
@@ -789,4 +796,5 @@ normalizations."
     (parameterize ((%calling-context calling-context)
                    (%locations? locations?)
                    (%shell shell))
-      (ast-> ast #:dir dir #:model model #:verbose? verbose?))))
+      (ast-> ast #:dir dir #:empty-files? empty-files? #:model model
+             #:verbose? verbose?))))

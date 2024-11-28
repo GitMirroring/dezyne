@@ -61,7 +61,7 @@
 ;;;
 ;;; Entry point.
 ;;;
-(define* (ast-> root #:key (dir ".") model verbose?)
+(define* (ast-> root #:key (dir ".") empty-files? model verbose?)
   "Entry point."
 
   (code:foreign-conflict? root)
@@ -89,7 +89,9 @@
             (when depend-dir
               (format depend "~a: ~a\n"
                       (basename source-file-name)
-                      (basename header-file-name)))))
+                      (basename header-file-name))))
+          (and empty-files?
+               (code:touch source-file-name #:verbose? verbose?)))
 
       (when model
         (let ((model (false-if-exception (ast:get-model root model)))) ;FIXME

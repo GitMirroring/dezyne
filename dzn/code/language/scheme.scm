@@ -262,7 +262,7 @@
 ;;; Entry point.
 ;;;
 
-(define* (ast-> root #:key (dir ".") model verbose?)
+(define* (ast-> root #:key (dir ".") empty-files? model verbose?)
   "Entry point."
 
   (code:foreign-conflict? root)
