@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 #
@@ -334,6 +334,10 @@ AC_CONFIG_FILES([test/bin/run:test/bin/run.in],
                 [chmod +x test/bin/run])
 AC_CONFIG_FILES([test/bin/run-baseline:test/bin/run-baseline.in],
                 [chmod +x test/bin/run-baseline])
+AC_CONFIG_FILES([test/bin/run-build:test/bin/run-build.in],
+                [chmod +x test/bin/run-build])
+AC_CONFIG_FILES([test/bin/run-execute:test/bin/run-execute.in],
+                [chmod +x test/bin/run-execute])
 AC_CONFIG_FILES([runtime/c++/dzn/meta.hh])
 
 AC_OUTPUT

@@ -43,6 +43,9 @@
   #:export (%default-stages
             get-meta-option
             run-baseline
+            run-baseline
+            run-build
+            run-execute
             run-test))
 
 (define %default-stages

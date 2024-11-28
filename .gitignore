@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -75,6 +75,8 @@ Makefile.in
 /test/bin/reorder
 /test/bin/run
 /test/bin/run-baseline
+/test/bin/run-build
+/test/bin/run-execute
 /test/all/parse_preprocessed_foo/parse_preprocessed_foo.dzn
 /test/all/parse_preprocessed_imported_bar/parse_preprocessed_imported_bar.dzn
 /test/all/parse_preprocessed_imported_baz/parse_preprocessed_imported_baz.dzn
