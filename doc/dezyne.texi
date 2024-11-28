@@ -163,6 +163,7 @@ The Dezyne command-line tools
 * Invoking dzn code::           Generating code from a Dezyne file.
 * Invoking dzn exec::           Running an arbitrary command-line.
 * Invoking dzn graph::          Generating graphs of Dezyne models.
+* Invoking dzn hash::           Computing the cryptographic hash of a dzn-file.
 * Invoking dzn hello::          A simple sanity check.
 * Invoking dzn language::       Lookup and completion.
 * Invoking dzn lts::            Manipulate and query an LTS.
@@ -2637,6 +2638,7 @@ foreigns that use the same interfaces need to form a chain of
 * Invoking dzn code::           Generating code from a Dezyne file.
 * Invoking dzn exec::           Running an arbitrary command-line.
 * Invoking dzn graph::          Generating graphs of Dezyne models.
+* Invoking dzn hash::           Computing the cryptographic hash of a dzn-file.
 * Invoking dzn hello::          A simple sanity check.
 * Invoking dzn language::       Lookup and completion.
 * Invoking dzn lts::            Manipulate and query an LTS.
@@ -2942,6 +2944,43 @@ one of @code{ports} or @code{extended}.
 @code{ports} Hides the state of the component's or system's ports,
 @code{extended} hides the interface's or component's extended state,
 i.e., all but the main (first) state variable and implies @code{ports}.
+
+@end table
+
+@node Invoking dzn hash
+@section Invoking @command{dzn hash}
+
+The @command{dzn hash} command computes the SHA1 hash of a Dezyne file
+and its imports.
+
+@example
+dzn @var{dzn-option}@dots{} hash @var{option}@dots{} @file{FILE}@dots{}
+@end example
+
+The @file{FILE} must be a Dezyne-file.  The hash can be used for caching
+or verification purposes.
+
+Using @option{--verbose} on @command{dzn} also prints the name of the
+file.  Running
+
+@example
+dzn --verbose hash examples/hello.dzn
+@end example
+
+prints a hash of @file{hello.dzn} and its imports.  It matches the
+output of running
+
+@example
+dzn parse --no-directives examples/hello.dzn | sha1sum
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn hash}, and then exit.
 
 @end table
 

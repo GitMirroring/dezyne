@@ -61,6 +61,7 @@ dzn/peg/string-peg.scm
 dzn/peg/using-parsers.scm
 
 Shell utilities from GNU Guix
+dzn/hash/base64.scm
 dzn/shell-util.scm
 
 Test intergration from Gash

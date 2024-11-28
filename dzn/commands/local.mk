@@ -27,6 +27,7 @@ dist_%C%_scm_DATA =				\
  %D%/code.scm					\
  %D%/exec.scm					\
  %D%/graph.scm					\
+ %D%/hash.scm					\
  %D%/hello.scm					\
  %D%/language.scm				\
  %D%/lts.scm					\
