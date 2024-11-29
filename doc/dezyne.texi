@@ -2738,6 +2738,10 @@ except for trivial cases---this generated Dezyne code is combined with
 ``handwritten'' code in the target language to create a Dezyne
 application, @xref{Code Integration}.
 
+When generating code for @code{C++}, a dependency file is generated as
+@file{<output-directory>/.deps/<base>.dzn.dep} for use by the build
+system.
+
 @example
 dzn @var{dzn-option}@dots{} code @var{option}@dots{} @file{FILE}
 @end example

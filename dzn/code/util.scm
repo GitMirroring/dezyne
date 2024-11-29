@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -34,8 +34,12 @@
   #:use-module (dzn shell-util)
 
   #:export (code:dump
+            code:depend-dir
+            code:depend-file-name
+            code:depend-imports
             code:foreign-conflict?
             code:generate-source?
+            code:relative-file-name
             code:root-file-name
             code:source-file-name))
 
@@ -47,6 +51,34 @@
 (define (code:root-file-name root dir ext)
   (let ((base (basename (ast:source-file root) ".dzn")))
     (code:source-file-name base dir ext)))
+
+(define (code:depend-dir dir)
+  (cond ((equal? dir "-") #f)
+        (dir (string-append dir "/.deps"))
+        (else ".deps")))
+
+(define (code:depend-file-name root dir)
+  (let ((base (basename (ast:source-file root) ".dzn"))
+        (dir (code:depend-dir dir)))
+    (and dir
+         (string-append dir "/" base ".dzn.dep"))))
+
+(define (code:relative-file-name dir file-name)
+  (if (or (not dir) (absolute-file-name? file-name)) file-name
+      (let* ((dir-components (string-split dir #\/))
+             (file-components (string-split file-name #\/))
+             (common (common-prefix dir-components file-components #:eq? equal?))
+             (file-components (drop file-components (length common)))
+             (parent-components (map (const "..") (iota (1- (length file-components)))))
+             (file-components (append parent-components file-components)))
+        (string-join file-components "/"))))
+
+(define (code:depend-imports root)
+  (let* ((imports (ast:import* root))
+         (import-files (map .name imports))
+         (source-file (ast:source-file root))
+         (dir (dirname source-file)))
+    (map (cute code:relative-file-name dir <>) import-files)))
 
 (define* (code:dump generate #:key file-name)
   (cond
