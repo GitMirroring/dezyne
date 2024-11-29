@@ -2,7 +2,7 @@
 #
 # Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 # Copyright © 2016, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-# Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
 # This file is part of Dezyne.
@@ -86,6 +86,14 @@ $(OUT)/%.o: $(OUT)/%.cc
 	mkdir -p $(dir $@)
 	$(COMPILE.cc) $(TEST_CXXFLAGS) $(NOWARN_FLAGS) -o $@ $<
 
+$(OUT)/%.hh:
+	@echo $@ is out of date
+	exit 66
+
+$(OUT)/%.cc:
+	@echo $@ is out of date
+	exit 66
+
 $(foreach f, $(wildcard $(IN)/c++/*.cc), $(eval $(OUT)/test: $(patsubst $(IN)/c++/%.cc, $(OUT)/%.o, $(f))))
 
 $(OUT)/test: $(patsubst $(IN)/%.cc, $(OUT)/%.o, $(wildcard $(IN)/*.cc))
@@ -97,3 +105,4 @@ $(OUT)/test: $(MAIN_O) $(abs_top_builddir)/runtime/.libs/libdzn-c++.so
 	$(LINK.cc) $(TEST_CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 -include $(patsubst $(IN)/%.cc, $(OUT)/%.d, $(wildcard $(IN)/*.cc))
+include $(wildcard $(OUT)/.deps/*.dep)
