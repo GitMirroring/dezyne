@@ -2715,6 +2715,13 @@ Be more verbose, show progress.
 @itemx -V
 Display the current version of @code{dzn}, and then exit.
 
+@item --version-number
+Display the current version-number of @code{dzn}, and then exit.  This
+may simplify getting the version in environments where Dezyne is the
+only program in use that conforms to the GNU coding standards
+(@pxref{--version, standdards for command-line interfaces,, standards,
+GNU Coding Standards}).
+
 @end table
 
 @quotation Note

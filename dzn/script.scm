@@ -86,14 +86,16 @@
             (threads (value #t))
             (transform (single-char #\t) (value #t))
             (verbose (single-char #\v))
-            (version (single-char #\V))))
+            (version (single-char #\V))
+            (version-number)))
          (options (getopt-long args option-spec
                                #:stop-at-first-non-option #t))
          (verbose? (option-ref options 'verbose #f))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
          (usage? (and (not help?) (null? files)))
-         (version? (option-ref options 'version #f)))
+         (version? (option-ref options 'version #f))
+         (version-number? (option-ref options 'version-number #f)))
 
     (define (list-commands dir)
       (let* ((uninstalled? (getenv "DZN_UNINSTALLED"))
@@ -111,6 +113,8 @@
 
     (when version?
       (show-version-and-exit))
+    (when version-number?
+      (show-version-number-and-exit))
     (when (or help? usage?)
       (let* ((port (if usage? (current-error-port) (current-output-port)))
              (commands (list-commands "/dzn/commands/"))

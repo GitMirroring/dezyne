@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -39,6 +39,7 @@
             %locations?
             multi-opt
             show-version-and-exit
+            show-version-number-and-exit
             EXIT_OTHER_FAILURE))
 
 (define EXIT_OTHER_FAILURE 2)
@@ -116,4 +117,9 @@
   (display %copyright-info)
   (newline)
   (display %license-info)
+  (exit EXIT_SUCCESS))
+
+(define* (show-version-number-and-exit)
+  "Display ters version-number and EXIT_SUCCESS."
+  (format #t "~a\n" %package-version)
   (exit EXIT_SUCCESS))
