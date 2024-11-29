@@ -47,6 +47,7 @@
             %queue-size
             %queue-size-defer
             %queue-size-external
+            %runtime-dir
             %template-dir
             %test-dir
             %version-major
@@ -77,6 +78,9 @@
 (define %bindir
   (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
       "@bindir@"))
+
+(define %runtime-dir
+  (string-append %pkgdatadir "/runtime"))
 
 (define %template-dir
   (string-append
