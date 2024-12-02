@@ -45,7 +45,8 @@
   #:use-module (dzn misc)
   #:use-module (dzn parse peg)
   #:use-module (dzn peg util)
-  #:use-module (dzn parse tree)
+  #:use-module ((dzn parse tree) #:select (tree:normalize))
+  #:use-module (dzn shell-util)
 
   #:declarative? #f
 
@@ -119,6 +120,9 @@
   (if (parse:preprocessed? string) (parse:stream->content-alist string)
       `(("-" . ,string))))
 
+(define (file->string-unmemozized file-name-symbol)
+  (parse:file->string (symbol->string file-name-symbol)))
+
 (define* (parse:file->content-alist file-name #:key (imports '())
                                     (content-alist '())
                                     ignore-import-error?)
@@ -131,29 +135,30 @@ of form:
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
-  (define (canonicalize-path-memoized file-name)
-    (if (equal? file-name "-" ) "-"
-        ((pure-funcq
-          (lambda (file-name-symbol)
-            (canonicalize-path (symbol->string file-name-symbol))))
-         (string->symbol file-name))))
-
   (define (read-file file-name)
     (let ((content (parse:file->string file-name)))
       (cons file-name content)))
 
   (define (resolve from imports imported content-alist)
     (filter-map (lambda (import)
-                  (let* ((paths (cons (dirname from) imports))
-                         (file-name (search-path paths import)))
+                  (let* ((imports (cons (dirname from) imports))
+                         (file-name (search-path imports import)))
                     (unless (or file-name ignore-import-error?)
-                      (throw 'import-error import paths content-alist))
+                      (throw 'import-error import imports content-alist))
                     file-name))
                 imported))
 
   (define (canonical-file-name=? a b)
-    (string=? (canonicalize-path-memoized a)
-              (canonicalize-path-memoized b)))
+    (string=? (canonicalize-file a)
+              (canonicalize-file b)))
+
+  (define (file->string file-name)
+    (cond ((assoc file-name content-alist canonical-file-name=?)
+           => cdr)
+          (else
+           ((pure-funcq file->string-unmemozized)
+            (if (equal? file-name "-") '-
+                (string->symbol (canonicalize-file file-name)))))))
 
   (let ((content (parse:file->string file-name)))
     (if (parse:preprocessed? content) (parse:stream->content-alist content)

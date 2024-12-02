@@ -3,6 +3,7 @@
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017, 2019, 2020, 2021, 2022, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
+;;; Copyright © 2022, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -22,11 +23,15 @@
 (define-module (dzn shell-util)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
+
   #:export (block-format
+            canonicalize-file
             copy-recursively
             delete-file-recursively
             directory-exists?
@@ -251,6 +256,14 @@ also be included.  If FAIL-ON-ERROR? is true, raise an exception upon error."
                             dir
                             stat)
           string<?)))
+
+(define (canonicalize-file-unmemoized file-name-symbol)
+  (canonicalize-path (symbol->string file-name-symbol)))
+
+(define (canonicalize-file file-name)
+  (if (equal? file-name "-" ) "-"
+      ((pure-funcq canonicalize-file-unmemoized)
+       (string->symbol file-name))))
 
 
 ;;;
