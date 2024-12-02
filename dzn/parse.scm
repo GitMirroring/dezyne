@@ -135,10 +135,6 @@ of form:
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
-  (define (read-file file-name)
-    (let ((content (parse:file->string file-name)))
-      (cons file-name content)))
-
   (define (resolve from imports imported content-alist)
     (filter-map (lambda (import)
                   (let* ((imports (cons (dirname from) imports))
@@ -160,33 +156,25 @@ specified in IMPORTS."
             (if (equal? file-name "-") '-
                 (string->symbol (canonicalize-file file-name)))))))
 
-  (let ((content (parse:file->string file-name)))
+  (define* ((file->imports content-alist) file-name)
+    (let ((file-names (map car content-alist)))
+      (if (member file-name file-names canonical-file-name=?) '()
+          (let* ((content (file->string file-name))
+                 (content-alist `(,@content-alist
+                                  (,file-name . ,content)))
+                 (imported (peg:imported-file-names content))
+                 (imported (resolve file-name imports imported content-alist)))
+            `(,@(append-map (file->imports content-alist) imported)
+              ,file-name)))))
+
+  (let ((content (file->string file-name)))
     (if (parse:preprocessed? content) (parse:stream->content-alist content)
-        (let* ((content-alist (acons file-name content content-alist))
-               (file-names (resolve file-name imports
-                                    (peg:imported-file-names content)
-                                    content-alist)))
-          (let loop ((file-names file-names)
-                     (content-alist content-alist))
-            (if (null? file-names) (reverse content-alist)
-                (let* ((file-names (delete-duplicates
-                                    file-names
-                                    canonical-file-name=?))
-                       (file-names (lset-difference
-                                    canonical-file-name=?
-                                    file-names
-                                    (map car content-alist)))
-                       (alist (reverse (map read-file file-names)))
-                       (content-alist (append alist content-alist))
-                       (file-names
-                        (append-map
-                         (match-lambda
-                           ((file-name . content)
-                            (resolve file-name imports
-                                     (peg:imported-file-names content)
-                                     content-alist)))
-                         alist)))
-                  (loop file-names content-alist))))))))
+        (let* ((imports ((file->imports '()) file-name))
+               (imports (delete-duplicates imports canonical-file-name=?))
+               (alist (map cons imports (map file->string imports))))
+          (match alist
+            ((imports ... file-name)
+             `(,file-name ,@imports)))))))
 
 
 ;;;
@@ -310,8 +298,8 @@ optionally using CONTENT-ALIST of form
     `((FILE-NAME . CONTENT) ...)
 "
   (define (expand-imports ast-alist)
-    (let ((file (car ast-alist))
-          (imports (cdr ast-alist)))
+    (let* ((file (car ast-alist))
+           (imports (cdr ast-alist)))
       (match file
         ((file-name . root)
          (let* ((imports (append-map (match-lambda
@@ -385,11 +373,12 @@ statements and return the expanded dezyne text, similar to @command{gcc
                    content))))))
 
   (let* ((content-alist (parse:file->content-alist file-name #:imports imports))
-         (imports (cdr content-alist))
-         (file+content (last content-alist))
+         (file+content imports (match content-alist
+                                 ((file+content imports ...)
+                                  (values file+content imports))))
          (file-lines (file+content->stream-lines file+content))
          (import-lines (append-map import+content->stream-lines imports))
-         (lines (append import-lines file-lines)))
+         (lines (append file-lines import-lines)))
     (string-join lines "\n")))
 
 (define (parse:stream->content-alist stream)

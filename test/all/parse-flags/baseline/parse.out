@@ -74,7 +74,7 @@ parse -o- test/language/interface1.dzn => 1
 parse --fall-back test/all/parse_import_path/parse_import_path.dzn
 parse --fall-back test/all/parse_import_path/parse_import_path.dzn => 0
 parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn
-(("test/all/parse_import_path/parse_import_path.dzn" root (file-name "test/all/parse_import_path/parse_import_path.dzn" (location 0 0)) (import "component.dzn" (location 793 814)) (component (compound-name (name "S" (location 826 827)) (location 826 827)) (ports (location 832 832)) (system (instances-and-bindings (instance (compound-name (name "C" (location 847 848)) (location 847 848)) (name "c" (location 849 850)) (location 847 851)) (location 847 851)) (location 832 855)) (location 816 857)) (comment "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n" (location 0 793)) (location 793 858)) ("test/all/parse_import_path/component.dzn" root (file-name "test/all/parse_import_path/component.dzn" (location 0 0)) (import "interface.dzn" (location 793 814)) (component (compound-name (name "C" (location 826 827)) (location 826 827)) (ports (port (provides (location 832 840)) (port-qualifiers (location 841 841)) (compound-name (name "I" (location 841 842)) (location 841 842)) (name "i" (location 843 844)) (location 832 845)) (location 832 845)) (location 816 847)) (comment "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n" (location 0 793)) (location 793 848)) ("test/all/parse_import_path/interface.dzn" root (file-name "test/all/parse_import_path/interface.dzn" (location 0 0)) (interface (compound-name (name "I" (location 869 870)) (location 869 870)) (types-and-events (event (direction "in" (location 875 877)) (type-name (compound-name (name "void" (location 878 882)) (location 878 882)) (location 878 882)) (event-name (name "e" (location 883 884)) (location 883 884)) (formals (location 884 886)) (location 875 887)) (location 875 887)) (behavior (behavior-compound (behavior-statements (location 905 905)) (location 901 906)) (location 890 906)) (location 859 908)) (comment "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n" (location 0 859)) (location 859 915)))parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn => 0
+(("test/all/parse_import_path/parse_import_path.dzn" root (file-name "test/all/parse_import_path/parse_import_path.dzn" (location 0 0)) (import "component.dzn" (location 793 814)) (component (compound-name (name "S" (location 826 827)) (location 826 827)) (ports (location 832 832)) (system (instances-and-bindings (instance (compound-name (name "C" (location 847 848)) (location 847 848)) (name "c" (location 849 850)) (location 847 851)) (location 847 851)) (location 832 855)) (location 816 857)) (comment "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n" (location 0 793)) (location 793 858)) ("test/all/parse_import_path/interface.dzn" root (file-name "test/all/parse_import_path/interface.dzn" (location 0 0)) (interface (compound-name (name "I" (location 869 870)) (location 869 870)) (types-and-events (event (direction "in" (location 875 877)) (type-name (compound-name (name "void" (location 878 882)) (location 878 882)) (location 878 882)) (event-name (name "e" (location 883 884)) (location 883 884)) (formals (location 884 886)) (location 875 887)) (location 875 887)) (behavior (behavior-compound (behavior-statements (location 905 905)) (location 901 906)) (location 890 906)) (location 859 908)) (comment "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n// Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n" (location 0 859)) (location 859 915)) ("test/all/parse_import_path/component.dzn" root (file-name "test/all/parse_import_path/component.dzn" (location 0 0)) (import "interface.dzn" (location 793 814)) (component (compound-name (name "C" (location 826 827)) (location 826 827)) (ports (port (provides (location 832 840)) (port-qualifiers (location 841 841)) (compound-name (name "I" (location 841 842)) (location 841 842)) (name "i" (location 843 844)) (location 832 845)) (location 832 845)) (location 816 847)) (comment "// Dezyne --- Dezyne command line tools\n//\n// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>\n//\n// This file is part of Dezyne.\n//\n// Dezyne is free software: you can redistribute it and/or modify it\n// under the terms of the GNU Affero General Public License as\n// published by the Free Software Foundation, either version 3 of the\n// License, or (at your option) any later version.\n//\n// Dezyne is distributed in the hope that it will be useful, but\n// WITHOUT ANY WARRANTY; without even the implied warranty of\n// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n// Affero General Public License for more details.\n//\n// You should have received a copy of the GNU Affero General Public\n// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.\n//\n" (location 0 793)) (location 793 848)))parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn => 0
 --verbose parse parse --parse-tree test/all/parse_import_path/parse_import_path.dzn
 parse:--verbose parse --parse-tree test/all/parse_import_path/parse_import_path.dzn => 1
 parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn
@@ -110,33 +110,6 @@ component S
   }
 }
 
-#imported "test/all/parse_import_path/component.dzn"
-// Dezyne --- Dezyne command line tools
-//
-// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
-//
-// This file is part of Dezyne.
-//
-// Dezyne is free software: you can redistribute it and/or modify it
-// under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// Dezyne is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public
-// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
-//
-import interface.dzn;
-
-component C
-{
-  provides I i;
-}
-
 #imported "test/all/parse_import_path/interface.dzn"
 // Dezyne --- Dezyne command line tools
 //
@@ -167,6 +140,33 @@ interface I
 }
 
 typo
+
+#imported "test/all/parse_import_path/component.dzn"
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2020 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+import interface.dzn;
+
+component C
+{
+  provides I i;
+}
 parse --preprocess test/all/parse_import_path/parse_import_path.dzn => 0
 parse --preprocess test/all/parse_import_path/parse_import_path.dzn | --verbose parse -
 parse: errors found
