@@ -370,23 +370,22 @@ statements and return the expanded dezyne text, similar to @command{gcc
            (list (format #f "#imported ~s" file-name)
                  content)))))
 
-  (let ((content-alist (parse:file->content-alist file-name #:imports imports)))
+  (define file+content->stream-lines
+    (match-lambda
+      ((file-name . content)
+       (let ((need-directive? (and file-directives?
+                                   (not (parse:preprocessed? content)))))
+         (if (not need-directive?) (list content)
+             (list (format #f "#file ~s" file-name)
+                   content))))))
 
-    (define file+content->stream-lines
-      (match-lambda
-        ((file-name . content)
-         (let ((need-directive? (and file-directives?
-                                     (not (parse:preprocessed? content)))))
-          (if (not need-directive?) (list content)
-              (list (format #f "#file ~s" file-name)
-                    content))))))
-
-    (let* ((file+content (car content-alist))
-           (imports (cdr content-alist))
-           (file-lines (file+content->stream-lines file+content))
-           (import-lines (append-map import+content->stream-lines imports))
-           (lines (append file-lines import-lines)))
-      (string-join lines "\n"))))
+  (let* ((content-alist (parse:file->content-alist file-name #:imports imports))
+         (imports (cdr content-alist))
+         (file+content (last content-alist))
+         (file-lines (file+content->stream-lines file+content))
+         (import-lines (append-map import+content->stream-lines imports))
+         (lines (append import-lines file-lines)))
+    (string-join lines "\n")))
 
 (define (parse:stream->content-alist stream)
   "Split pre-processed string STREAM at preprocessing markers
