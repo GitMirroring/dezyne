@@ -130,9 +130,11 @@ such unnamed lists."
     (if (not from) ""
         (string-append
          (format #f "In ~a:\n" file-name)
-         (let loop ((from from))
-           (if from (string-append (format #f "imported from ~a:\n" from)
-                                   (loop (assoc-ref imported-from (basename from))))
+         (let loop ((from from) (visited '()))
+           (if (and from (not (member from visited)))
+               (string-append (format #f "imported from ~a:\n" from)
+                              (loop (assoc-ref imported-from (basename from))
+                                    (cons from visited)))
                "\n"))))))
 
 (define (peg:error-message content-alist file-name string pos message)
