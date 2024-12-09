@@ -473,7 +473,8 @@
 
 (define-method (code:defer-condition (o <defer>))
   (not (or (and=> (.arguments o)(compose null? .elements))
-           (null? (ast:variable* (ast:parent o <component>))))))
+           (null? (filter (compose not (is? <extern>) ast:type)
+                          (ast:variable* (ast:parent o <component>)))))))
 
 (define-method (code:capture-local (o <defer>))
   (let* ((references (tree-collect (disjoin(is? <assign>)
