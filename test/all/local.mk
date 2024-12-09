@@ -299,6 +299,7 @@ REGRESSION_TESTS =				\
  %D%/defer_collateral_blocking			\
  %D%/defer_cruel				\
  %D%/defer_data					\
+ %D%/defer_data_no_state			\
  %D%/defer_double				\
  %D%/defer_empty_selection			\
  %D%/defer_foreign				\
