@@ -1,19 +1,13 @@
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:32:9: error: cannot use statement after recursive call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:33:9: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:45:16: error: cannot use typed function in recursion
-test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:45:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:49:16: error: cannot use typed function in recursion
-test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:49:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:64:7: error: cannot use statement after recursive call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:65:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:79:7: error: cannot use statement after recursive call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:80:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:112:14: error: cannot use typed function in recursion
-test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:112:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:116:14: error: cannot use typed function in recursion
-test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:116:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:14: error: cannot use typed function in recursion
-test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:130:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:14: error: cannot use typed function in recursion
-test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:134:7: info: statement after call
 test/all/wf_functionTailRecursion/wf_functionTailRecursion.dzn:198:7: error: code will never be executed

@@ -3,7 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2024 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -1020,8 +1020,7 @@
                                   continuation)))
           (cond
            (assign
-            `(,(wfc-error o "cannot use typed function in recursion")
-              ,(wfc-info assign "statement after call")))
+            `(,(wfc-error o "cannot use typed function in recursion")))
            (continuation
             `(,(wfc-error o "cannot use statement after recursive call")
               ,(wfc-info continuation "statement after call")))
