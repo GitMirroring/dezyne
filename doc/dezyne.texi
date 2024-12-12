@@ -3502,8 +3502,11 @@ The @command{dzn verify} command exhaustively checks a Dezyne file for
 verification errors in Dezyne models.  @xref{Formal Verification}.
 
 @example
-dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}
+dzn @var{dzn-option}@dots{} verify @var{option}@dots{} @file{FILE}@dots{}
 @end example
+
+If @file{FILE} is a directory, all @file{.dzn}-files in that directory
+are verified.
 
 The @var{option}s can be among the following:
 

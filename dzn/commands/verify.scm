@@ -39,6 +39,7 @@
   #:use-module (dzn commands parse)
   #:use-module (dzn config)
   #:use-module (dzn parse)
+  #:use-module (dzn shell-util)
   #:use-module (dzn verify pipeline)
   #:export (parse-opts
             main))
@@ -68,8 +69,8 @@
     (when (or help? usage?)
       (let ((port (if usage? (current-error-port) (current-output-port))))
         (format port "\
-Usage: dzn verify [OPTION]... DZN-FILE
-Check DZN-FILE for verification errors in Dezyne models
+Usage: dzn verify [OPTION]... {DZN-FILE|DIRECTORY}...
+Check FILEs and DIRECTORYs for verification errors in Dezyne models
 
   -a, --all                keep going after first error DEPRECATED
   -C, --no-constraint      do not use a constraining process
@@ -89,11 +90,66 @@ Check DZN-FILE for verification errors in Dezyne models
         (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
+(define* (file->verify file-name
+                       #:key
+                       backtrace?
+                       keep-going?
+                       model-name
+                       multiple?
+                       no-constraint?
+                       no-interfaces?
+                       no-unreachable?
+                       (options '())
+                       out
+                       queue-size
+                       queue-size-defer
+                       queue-size-external
+                       verbose?)
+  (let* ((ast (parse options file-name))
+         (model (and model-name
+                     (parse:call-with-handle-exceptions
+                      (lambda _ (ast:get-model ast model-name))
+                      #:backtrace? backtrace?
+                      #:file-name file-name))))
+    (when (and=> model ast:imported?)
+      (let ((name (ast:dotted-name model)))
+        (format (current-error-port)
+                "~a:error: cannot verify imported model: ~a\n"
+                (ast:source-file ast)
+                name)
+        (format (current-error-port)
+                "~a:info: ~a imported from here\n"
+                (ast:source-file model)
+                name))
+      (exit EXIT_OTHER_FAILURE))
+    (let ((root (makreel:normalize ast)))
+      (cond
+       (out
+        (let ((formats (verification:formats)))
+          (unless (member out formats)
+            (format #t "formats:~a\n"
+                    (string-join (verification:formats)
+                                 "\n  " 'prefix))
+            (exit EXIT_OTHER_FAILURE))
+          (verification:partial root model-name #:out out)))
+       (else
+        (when verbose?
+          (format (current-error-port) "  VERIFY   ~a\n" file-name))
+        (let ((result (verification:verify
+                       options root
+                       #:keep-going? keep-going?
+                       #:model-name model-name
+                       #:multiple? multiple?
+                       #:no-interfaces? no-interfaces?)))
+          (unless (zero? result)
+            (exit result))))))))
+
 (define (main args)
   (setvbuf (current-output-port) 'line)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
-         (file-name (car files))
+         (files (append-map file-name->dzn-files files))
+         (multiple? (> (length files) 1))
          (all? (option-ref options 'all #f))
          (debug? (dzn:command-line:get 'debug #f))
          (keep-going? (option-ref options 'keep-going #f))
@@ -116,39 +172,18 @@ Check DZN-FILE for verification errors in Dezyne models
                    (%queue-size queue-size)
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external))
-
-      (let* ((ast (parse options file-name))
-             (model (and model-name (parse:call-with-handle-exceptions
-                                     (lambda _ (ast:get-model ast model-name))
-                                     #:backtrace? debug?
-                                     #:file-name file-name)))
-             (root (makreel:normalize ast)))
-        (when (and=> model ast:imported?)
-          (let ((name (ast:dotted-name model)))
-            (format (current-error-port)
-                    "~a:error: cannot verify imported model: ~a\n"
-                    (ast:source-file root)
-                    name)
-            (format (current-error-port)
-                    "~a:info: ~a imported from here\n"
-                    (ast:source-file model)
-                    name))
-          (exit EXIT_OTHER_FAILURE))
-        (cond
-         (out
-          (let ((formats (verification:formats)))
-            (unless (member out formats)
-              (format #t "formats:~a\n" (string-join (verification:formats)
-                                                     "\n  " 'prefix))
-              (exit EXIT_OTHER_FAILURE))
-            (let* ((model (parse:call-with-handle-exceptions
-                           (lambda _ (ast:get-model ast model-name))
-                           #:backtrace? debug?
-                           #:file-name file-name))
-                   (model-name (ast:dotted-name model)))
-              (verification:partial root model-name #:out out))))
-         (else
-          (exit (verification:verify options root
-                                     #:keep-going? keep-going?
-                                     #:model-name model-name
-                                     #:no-interfaces? no-interfaces?))))))))
+      (for-each (cut file->verify <>
+                     #:backtrace? debug?
+                     #:keep-going? keep-going?
+                     #:model-name model-name
+                     #:multiple? multiple?
+                     #:no-constraint? no-constraint?
+                     #:no-interfaces? no-interfaces?
+                     #:no-unreachable? no-unreachable?
+                     #:options options
+                     #:out out
+                     #:queue-size queue-size
+                     #:queue-size-defer queue-size-defer
+                     #:queue-size-external queue-size-external
+                     #:verbose? multiple?)
+                files))))

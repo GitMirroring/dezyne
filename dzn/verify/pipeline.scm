@@ -769,7 +769,9 @@ init for MODEL unless INIT."
 (define-method (makreel:name-equal? (model <model>) name)
   (equal? name (makreel:unticked-dotted-name model)))
 
-(define* (verification:models root #:key model-name no-interfaces?)
+(define* (verification:models root #:key model-name
+                              multiple?
+                              no-interfaces?)
   (let* ((models (ast:model** root))
          (model (find (cute makreel:name-equal? <> model-name) models)))
     (if (is-a? model <interface>) (list model)
@@ -779,12 +781,15 @@ init for MODEL unless INIT."
                                                 .behavior)
                                        models)))
                (interfaces (filter (is? <interface>) models))
-               (component-interfaces (map .type (append-map ast:port* components)))
-               (interfaces (if model component-interfaces
-                               (append interfaces component-interfaces)))
-               (interfaces (delete-duplicates interfaces ast:eq?))
-               (interfaces (if (not no-interfaces?) interfaces
-                               (remove ast:imported? interfaces))))
+               (ports (append-map ast:port* components))
+               (component-interfaces (map .type ports))
+               (interfaces (cond (no-interfaces? '())
+                                 (model component-interfaces)
+                                 ((not multiple?)
+                                  (append interfaces component-interfaces))
+                                 (multiple?
+                                  (filter (negate ast:imported?) interfaces))))
+               (interfaces (delete-duplicates interfaces ast:eq?)))
           (append interfaces components)))))
 
 
@@ -797,10 +802,12 @@ init for MODEL unless INIT."
     (unmemoized-verify-pipeline out root model #:stdout? #t)))
 
 (define* (verification:verify options root #:key keep-going? model-name
-                              no-interfaces?)
-  (let ((models (verification:models root
-                                     #:model-name model-name
-                                     #:no-interfaces? no-interfaces?)))
+                              multiple? no-interfaces?)
+  (let ((models (verification:models
+                 root
+                 #:model-name model-name
+                 #:multiple? multiple?
+                 #:no-interfaces? no-interfaces?)))
     (let loop ((models models) (error? #f))
       (if (or (and (not keep-going?) error?) (null? models)) (if error? 1 0)
           (let* ((model (car models))
