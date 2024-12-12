@@ -108,6 +108,7 @@ SEMANTIC_ERROR_TESTS =				\
 
 FEATURE_TESTS =					\
  %D%/compliance_external			\
+ %D%/cruel_project				\
  %D%/deadlock_implicit				\
  %D%/determinism0				\
  %D%/determinism1				\
