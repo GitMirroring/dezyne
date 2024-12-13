@@ -227,9 +227,6 @@ actions."
       (newline)
       (display (makreel:init-process (options-init options))))))
 
-(define (component-stage)
-  "verify-component")
-
 (define (in-out:dzn->aut+provides-aut options)
   (let* ((model (options-model options))
          (root (options-root options))
@@ -240,7 +237,7 @@ actions."
            ;; "aut-failures" pipeline.  Running the already memoized
            ;; "verify-component" gives us the same result, and has
            ;; already been memoized.
-           (get-lts (result-split (verify-pipeline (component-stage) root model)))
+           (get-lts (result-split (verify-pipeline "verify-component" root model)))
            "\n\x04\n"
            (verify-pipeline "aut-failures" root model #:init provides-init)))))
 
@@ -723,7 +720,7 @@ init for MODEL unless INIT."
 
 (define* (mcrl2:verify-component-asserts model root #:key keep-going?)
   (let* ((model-name (makreel:unticked-dotted-name model))
-         (result status (verify-pipeline (component-stage) root model))
+         (result status (verify-pipeline "verify-component" root model))
          (result (result-split result))
          (lts-tags (get-tags result))
          (unreachable (assert-unreachable lts-tags (model-tags model)))
