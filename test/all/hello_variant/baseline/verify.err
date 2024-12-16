@@ -1,0 +1,11 @@
+verify: ihello: check: deadlock: ok
+verify: ihello: check: unreachable: ok
+verify: ihello: check: livelock: ok
+verify: ihello: check: deterministic: ok
+verify: hello_variant: check: deterministic: ok
+verify: hello_variant: check: illegal: ok
+verify: hello_variant: check: deadlock: fail
+error: invariant violation in model hello_variant
+verify: hello_variant: check: unreachable: skip
+verify: hello_variant: check: livelock: ok
+verify: hello_variant: check: compliance: skip

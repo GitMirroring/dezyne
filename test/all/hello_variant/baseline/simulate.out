@@ -1,0 +1,12 @@
+(header ((h) ihello provides) ((sut) hello_variant component))
+(state ((h)) ((sut) (idle . true)))
+test/all/hello_variant/hello_variant.dzn:42:5: error: invariant
+<external>.h.cruel -> ...
+... -> sut.h.cruel
+... <- sut.h.return
+<external>.h.return <- ...
+<invariant>
+(state ((h)) ((sut) (idle . false)))
+(trail "h.cruel" "h.return" "<invariant>")
+(labels "h.hello" "h.cruel")
+(eligible)

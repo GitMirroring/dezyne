@@ -171,6 +171,7 @@ FEATURE_TESTS =					\
  %D%/hello_two					\
  %D%/hello_usuk					\
  %D%/hello_void					\
+ %D%/hello_variant				\
  %D%/ihello_mock				\
  %D%/ihello_nonstrict				\
  %D%/illegal_component0				\
