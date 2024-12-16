@@ -61,13 +61,16 @@
   (* (or peg-ws peg-eol peg-line peg-block)))
 
 (define (peg:imports string)
+  ;; . 'import'? eagerly SKIP anything with import in it
   (define-peg-string-patterns
-    "root <- (import / SKIP+)*
+    "root <- (dollars / import / SKIP)*
+dollars < DOLLAR (!DOLLAR .)* DOLLAR#
+file-name <- (!SEMICOLON !DOLLAR .)+
 import <-- IMPORT file-name SEMICOLON
+DOLLAR < '$'
 IMPORT < 'import' ![a-zA-Z_0-9]
-file-name <- (!SEMICOLON .)+
 SEMICOLON < ';'
-SKIP < !IMPORT . 'import'*")
+SKIP < . 'import'?")
   (peg:tree (match-pattern root string)))
 
 (define peg:skip-parse peg-skip)
