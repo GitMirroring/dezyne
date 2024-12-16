@@ -325,6 +325,7 @@ REGRESSION_TESTS =				\
  %D%/determinism_modeling			\
  %D%/determinism_silent				\
  %D%/dollars					\
+ %D%/dollar_import				\
  %D%/double_collateral_blocking_shell		\
  %D%/double_hello_block				\
  %D%/double_inevitable				\
