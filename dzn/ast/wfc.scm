@@ -747,6 +747,12 @@
    (imperative-context o)
    (illegal o)))
 
+(define-method (wfc (o <invariant>))
+  (let* ((expression (.expression o))
+         (wfce (wfc expression))
+         (predicate-errors (wfc-predicate expression)))
+    (append wfce predicate-errors)))
+
 (define-method (wfc (o <reply>))
   (append
    (imperative-context o)
@@ -1464,7 +1470,9 @@
         `(,(wfc-error o (format #f "~a in member variable initializer" class)))))
      ((and (not (ast:parent o <on>))
            (not (ast:parent o <function>))
-           (not (and (equal? class "compound") (ast:declarative? o))))
+           (not (ast:parent o <invariant>))
+           (not (or (and (equal? class "compound") (ast:declarative? o))
+                    (and (is-a? o <call>) (ast:declarative? o)))))
       (let ((class (if (equal? class "compound") "imperative compound" class)))
         `(,(wfc-error o (format #f "~a outside on" class)))))
      ((and (is-a? (ast:type o) <void>)
