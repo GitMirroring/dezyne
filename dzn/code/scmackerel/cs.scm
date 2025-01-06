@@ -263,7 +263,7 @@
 (define-method (root->statements (o <root>))
   (let ((enums (code:enum* o)))
     (append
-     (map .value (ast:data* o))
+     (map (compose (cute string-append <> "\n") .value) (ast:data* o))
      (append-map code:->namespace
                  enums
                  (map code:enum->sm:enum-struct enums)))))
