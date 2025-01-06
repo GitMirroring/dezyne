@@ -4,7 +4,7 @@
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -61,8 +61,8 @@ interface ITransfer
       on move: arrived;
 
       on transfer: {s = State.Transferring; isPicked = false;}
-      on transfer: {s = State.Transferring; picked; isPicked = true;}
-      on transfer: {s = State.Ready; picked; placed;}
+      on transfer: {picked; s = State.Transferring; isPicked = true;}
+      on transfer: {picked; placed; s = State.Ready;}
     }
     [s.Moving]
     {
