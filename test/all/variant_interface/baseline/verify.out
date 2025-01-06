@@ -1,0 +1,8 @@
+model: variant_interface
+hello
+return
+hello
+return
+hello
+return
+<invariant>

@@ -1,0 +1,24 @@
+(header ((client) variant_interface provides) ((sut) variant_interface interface))
+(state ((client)) ((sut) (count . 0)))
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut) (count . 1)))
+(trail "hello" "return")
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+(state ((client)) ((sut) (count . 2)))
+(trail "hello" "return")
+test/all/variant_interface/variant_interface.dzn:32:5: error: invariant
+<external>.hello -> ...
+... -> sut.hello
+... <- sut.return
+<external>.return <- ...
+<invariant>
+(state ((client)) ((sut) (count . 3)))
+(trail "hello" "return" "<invariant>")
+(labels "hello")
+(eligible)

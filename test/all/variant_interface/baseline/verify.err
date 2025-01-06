@@ -1,0 +1,5 @@
+verify: variant_interface: check: deadlock: fail
+error: invariant violation in model variant_interface
+verify: variant_interface: check: unreachable: skip
+verify: variant_interface: check: livelock: ok
+verify: variant_interface: check: deterministic: ok
