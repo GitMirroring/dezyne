@@ -1,0 +1,6 @@
+(header ((h) ihello provides) ((sut) variant_immediately component))
+(state ((h)) ((sut)))
+test/all/variant_immediately/variant_immediately.dzn:32:5: error: invariant
+<invariant>
+(state ((h)) ((sut)))
+(trail "<invariant>")
