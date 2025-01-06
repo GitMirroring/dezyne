@@ -1,0 +1,10 @@
+model: variant_component
+h.hello
+h.return
+h.hello
+h.return
+h.hello
+h.return
+h.hello
+h.return
+<invariant>

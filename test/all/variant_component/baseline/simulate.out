@@ -1,0 +1,30 @@
+(header ((h) ihello provides) ((sut) variant_component component))
+(state ((h)) ((sut) (count . 0)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (count . 1)))
+(trail "h.hello" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (count . 2)))
+(trail "h.hello" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (count . 3)))
+(trail "h.hello" "h.return")
+test/all/variant_component/variant_component.dzn:36:15: error: invariant
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+<invariant>
+(state ((h)) ((sut) (count . 4)))
+(trail "h.hello" "h.return" "<invariant>")
+(labels "h.hello")
+(eligible)
