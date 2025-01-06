@@ -1,0 +1,128 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// The interfaces of the cruise_control component to its external actors
+// are in this file so they can be shared between a correct and an
+// incorrect working version.
+//
+// Code:
+
+interface ihmi
+{
+  in void enable ();
+  in void disable ();
+
+  in bool set ();
+  in bool resume ();
+  in void cancel ();
+
+  out void inactive ();
+
+  behavior
+  {
+    enum State {Disabled,Enabled,Active};
+    enum Setpoint {Unset,Set};
+
+    State state = State.Disabled;
+    Setpoint setpoint = Setpoint.Unset;
+
+    on disable: // always allow
+    {
+      state = State.Disabled;
+      setpoint = Setpoint.Unset; //forget about the previous setpoint
+    }
+
+    [!state.Disabled] on enable: {/* ignore when not disabled */}
+    [!state.Active] on cancel: {/* ignore when not active */}
+    [!state.Enabled] on set, resume: reply (false);
+
+    [state.Disabled] on enable: state = State.Enabled;
+    [state.Enabled] {
+      on set, resume: reply (false);
+      on set: {state = State.Active; setpoint = Setpoint.Set; reply (true);}
+      on resume: {
+        [setpoint.Set] {state = State.Active; reply (true);}
+        [setpoint.Unset] reply (false);
+      }
+    }
+    [state.Active]
+    {
+      // this may or may not happen
+      on inevitable: {state = State.Enabled; inactive;}
+      on cancel: state = State.Enabled;
+    }
+  }
+}
+
+// observe (brake and clutch) pedals
+interface ipedals
+{
+  in bool enable ();
+  in void disable ();
+  out void engage ();
+  out void disengage ();
+  behavior
+  {
+    enum State {Unmonitored, Disengaged, Engaged};
+    State state = State.Unmonitored;
+    [state.Unmonitored] {
+      on enable: {state = State.Disengaged; reply (state.Engaged);}
+      on enable: {state = State.Engaged; reply (state.Engaged);}
+    }
+    [!state.Unmonitored] {
+      on disable: state = State.Unmonitored;
+      on inevitable: {
+        if (state.Disengaged) {state = State.Engaged; engage;}
+        else {state = State.Disengaged; disengage;}
+      }
+    }
+  }
+}
+
+// interface to the throttle actuator PID control
+interface ithrottle
+{
+  in void setpoint (); // close loop and calculate actuator input
+  in void reset ();    // open loop
+  out void unset ();   // sponaneous open loop
+
+  behavior
+  {
+    bool active = false;
+    on setpoint: active = true;
+    on reset: active = false;
+    [active] on inevitable: {active = false; unset;}
+  }
+}
+
+interface itimer
+{
+  in void start ();
+  out void timeout ();
+  in void cancel ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on start: idle = false;
+    [!idle] on inevitable: timeout;
+    on cancel: idle = true;
+  }
+}
