@@ -1,0 +1,61 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import ihello.dzn;
+import ihello_reply_bool.dzn;
+
+component parse_predicate
+{
+  provides ihello h;
+  requires ihello_reply_bool w;
+
+  behavior
+  {
+    enum E {A};
+    bool true_p () = true;
+    bool func () { return true; }
+
+    // Not allowed; should be reported
+    E non_bool () = E.A;
+    bool has_args (bool b) = b;
+    bool recursive () = true_p () && recursive ();
+    bool expression_not_predicate_func () =  true_p () && func ();
+    bool expression_not_predicate_action () =  true_p () && w.hello ();
+
+    on h.hello (): [false || func ()] {}
+    on h.hello (): [false || w.hello ()] {}
+
+    invariant true && func ();
+    invariant true && w.hello ();
+
+    // Allowed; should not be reported
+    bool b = false;
+    bool ok1 () = b;
+    bool ok2 () = true;
+    bool ok3 () = ok2 () && ok1 ();
+
+    [ok1 ()] on h.hello (): {}
+    [ok2 ()] on h.hello (): {}
+    [ok3 ()] on h.hello (): {}
+  }
+}

@@ -717,6 +717,7 @@ PARSER_TESTS =					\
  %D%/parse_preprocessed_imported_baz		\
  %D%/parse.space.lookup				\
  %D%/parse_port_qualifier			\
+ %D%/parse_predicate				\
  %D%/parse_reply_void_expression		\
  %D%/parse_return_void_expression		\
  %D%/parse_space_duplicate_definition		\

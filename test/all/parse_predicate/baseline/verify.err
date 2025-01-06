@@ -1,0 +1,15 @@
+test/all/parse_predicate/parse_predicate.dzn:39:5: error: expression function `non_bool' does not have bool as return type
+test/all/parse_predicate/parse_predicate.dzn:39:5: warning: expression function `non_bool' is never called
+test/all/parse_predicate/parse_predicate.dzn:40:5: error: expression function `has_args' has arguments
+test/all/parse_predicate/parse_predicate.dzn:40:5: warning: expression function `has_args' is never called
+test/all/parse_predicate/parse_predicate.dzn:41:5: error: expression function `recursive' is recursive
+test/all/parse_predicate/parse_predicate.dzn:42:5: error: expression of expression function `expression_not_predicate_func' is not a predicate
+test/all/parse_predicate/parse_predicate.dzn:42:59: info: call to function `func' not allowed here
+test/all/parse_predicate/parse_predicate.dzn:42:5: warning: expression function `expression_not_predicate_func' is never called
+test/all/parse_predicate/parse_predicate.dzn:43:5: error: expression of expression function `expression_not_predicate_action' is not a predicate
+test/all/parse_predicate/parse_predicate.dzn:43:61: info: action not allowed here
+test/all/parse_predicate/parse_predicate.dzn:43:5: warning: expression function `expression_not_predicate_action' is never called
+test/all/parse_predicate/parse_predicate.dzn:45:30: error: call to function `func' not allowed here
+test/all/parse_predicate/parse_predicate.dzn:46:30: error: action not allowed here
+test/all/parse_predicate/parse_predicate.dzn:48:23: error: call to function `func' not allowed here
+test/all/parse_predicate/parse_predicate.dzn:49:23: error: action not allowed here
