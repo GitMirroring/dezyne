@@ -1,0 +1,4 @@
+model: variant_defer
+h.hello
+h.return
+<invariant>

@@ -1,0 +1,11 @@
+verify: ihello_world: check: deadlock: ok
+verify: ihello_world: check: unreachable: ok
+verify: ihello_world: check: livelock: ok
+verify: ihello_world: check: deterministic: ok
+verify: variant_defer: check: deterministic: ok
+verify: variant_defer: check: illegal: ok
+verify: variant_defer: check: deadlock: fail
+error: invariant violation in model variant_defer
+verify: variant_defer: check: unreachable: skip
+verify: variant_defer: check: livelock: ok
+verify: variant_defer: check: compliance: skip

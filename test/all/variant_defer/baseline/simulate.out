@@ -1,0 +1,12 @@
+(header ((h) ihello_world provides) ((sut) variant_defer component))
+(state ((h) (idle . true)) ((sut) (b . true)))
+test/all/variant_defer/variant_defer.dzn:32:5: error: invariant
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+<invariant>
+(state ((h) (idle . false)) ((sut) (b . false)))
+(trail "h.hello" "h.return" "<invariant>")
+(labels "h.hello" "<defer>")
+(eligible)

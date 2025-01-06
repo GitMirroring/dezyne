@@ -674,6 +674,7 @@ REGRESSION_TESTS =				\
  %D%/unused_function				\
  %D%/unused_interface_type			\
  %D%/variant_component				\
+ %D%/variant_defer				\
  %D%/wostream
 
 PARSER_TESTS =					\
