@@ -1,0 +1,50 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+import ihello.dzn;
+
+component unreachable_predicates
+{
+  provides ihello h;
+
+  behavior
+  {
+    bool defered = false;
+    bool reachable0 () = true;           // declarative called (from guard)
+    bool reachable1 () = true;           // declarative called (from invariant)
+    bool reachable2 () = true;           // imperative called
+    bool reachable3 () = true;           // imperative and declarative called
+    bool reachable4 () = !reachable5 (); // declarative called
+    bool reachable5 () = !reachable6 (); // indirect declarative called
+    bool reachable6 () = !reachable7 (); // indirect declarative called
+    bool reachable7 () = false;          // indirect declarative called
+    bool unused0 () = true;              // unused
+    bool unused1 () = locally_used ();   // unused
+    bool locally_used () = true;         // called by unused expression function
+
+    [reachable0 ()] on h.hello(): {bool b = reachable2 (); b = reachable3 ();}
+    [true] invariant reachable1 ();
+    [true] invariant reachable3 ();
+    [true] invariant reachable4 ();
+  }
+}

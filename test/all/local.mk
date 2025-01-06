@@ -665,6 +665,7 @@ REGRESSION_TESTS =				\
  %D%/unreachable_interface	 		\
  %D%/unreachable_multiple_provides		\
  %D%/unreachable_multiple_triggers		\
+ %D%/unreachable_predicates			\
  %D%/unreachable_return				\
  %D%/unused_assign				\
  %D%/unused_event				\
