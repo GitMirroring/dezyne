@@ -1,7 +1,7 @@
 #! /bin/sh
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Dezyne.
 #
@@ -23,6 +23,15 @@ pwd
 dir=$1
 base=$(basename $dir)
 out=$dir/out
+
+dzn hash $dir
+mkdir -p $out
+dzn hash $dir/empty.dzn $dir/ihello_world.dzn | tee $out/simple.hash
+sha1sum --check $out/simple.hash
+
+dzn --verbose hash -I $dir - < $dir/hello_project.dzn | tee $out/hello_project.hash
+dzn parse --no-directives $dir/hello_project.dzn | sha1sum | tee $out/hello_project.sha1sum
+diff -u $out/hello_project.hash $out/hello_project.sha1sum
 dzn code --language=c++ --output=$out/c++ --touch-empty-files --model=$base $dir
 
 if ! test -f runtime/.libs/libdzn-c++.so; then
