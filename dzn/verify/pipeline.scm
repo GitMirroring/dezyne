@@ -783,14 +783,13 @@ init for MODEL unless INIT."
                                         .behavior) models))
            (component-names (map makreel:unticked-dotted-name components))
            (interfaces (filter (is? <interface>) models))
-           (interface-names (map makreel:unticked-dotted-name interfaces))
-           (component-interface-names
-            (map (compose makreel:unticked-dotted-name .type)
-                 (append-map ast:port* components)))
-           (interface-names (append interface-names component-interface-names))
-           (interface-names (delete-duplicates interface-names)))
-      (if no-interfaces? component-names
-          (append interface-names component-names))))
+           (component-interfaces (map .type (append-map ast:port* components)))
+           (interfaces (append interfaces component-interfaces))
+           (interfaces (delete-duplicates interfaces ast:eq?))
+           (interfaces (if (not no-interfaces?) interfaces
+                           (remove ast:imported? interfaces)))
+           (interface-names (map makreel:unticked-dotted-name interfaces)))
+      (append interface-names component-names)))
   (let ((model-names (model-names-for-verification root)))
     (let loop ((model-names model-names) (error? #f))
       (if (or (and (not keep-going?) error?) (null? model-names)) (if error? 1 0)
