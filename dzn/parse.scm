@@ -130,11 +130,12 @@ of form:
 An import file name is resolved by searching for it in its parent
 directory and up the ancestral tree and then along the directories
 specified in IMPORTS."
-  (define (canonicalize-path-memoized path)
-    ((pure-funcq
-      (lambda (path-symbol)
-        (canonicalize-path (symbol->string path-symbol))))
-     (string->symbol path)))
+  (define (canonicalize-path-memoized file-name)
+    (if (equal? file-name "-" ) "-"
+        ((pure-funcq
+          (lambda (file-name-symbol)
+            (canonicalize-path (symbol->string file-name-symbol))))
+         (string->symbol file-name))))
 
   (define (read-file file-name)
     (let ((content (parse:file->string file-name)))
