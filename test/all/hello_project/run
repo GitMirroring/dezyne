@@ -32,6 +32,9 @@ sha1sum --check $out/simple.hash
 dzn --verbose hash -I $dir - < $dir/hello_project.dzn | tee $out/hello_project.hash
 dzn parse --no-directives $dir/hello_project.dzn | sha1sum | tee $out/hello_project.sha1sum
 diff -u $out/hello_project.hash $out/hello_project.sha1sum
+
+dzn verify $dir
+
 dzn code --language=c++ --output=$out/c++ --touch-empty-files --model=$base $dir
 
 if ! test -f runtime/.libs/libdzn-c++.so; then
