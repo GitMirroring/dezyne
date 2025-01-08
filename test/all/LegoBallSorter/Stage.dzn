@@ -2,7 +2,7 @@
 //
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 //
 // This file is part of Dezyne.
@@ -24,9 +24,8 @@
 //
 // Code:
 
-import IConstrainedMove.dzn;
+import ITouchSense.dzn;
 import ConstrainedAxis.dzn;
-import lego.dzn;
 
 interface IMove2D
 {
@@ -55,38 +54,6 @@ interface IMove2D
 
     on inevitable: [s.Calibrating] {s = State.Ready; calibrated;}
     on inevitable: [s.Moving] {s = State.Ready; arrived;}
-  }
-}
-
-component Stage
-{
-  provides IMove2D ctrl;
-
-  requires IMove xMotor;
-  requires ITouchSense xHomeSensor;
-  requires ITouchSense xEndSensor;
-
-  requires IMove yMotor;
-  requires ITouchSense yHomeSensor;
-  requires ITouchSense yEndSensor;
-
-  system
-  {
-    Move2D bhv;
-    ConstrainedAxis xAxis;
-    ConstrainedAxis yAxis;
-
-    ctrl <=> bhv.ctrl;
-    bhv.xAxis <=> xAxis.ctrl;
-    bhv.yAxis <=> yAxis.ctrl;
-
-    xAxis.motor <=> xMotor;
-    xAxis.homeSensor <=> xHomeSensor;
-    xAxis.endSensor <=> xEndSensor;
-
-    yAxis.motor <=> yMotor;
-    yAxis.homeSensor <=> yHomeSensor;
-    yAxis.endSensor <=> yEndSensor;
   }
 }
 
@@ -148,5 +115,38 @@ component Move2D
     }
     on ctrl.move(x, y): [nMoving != 0 || nCalibrated != 2] {}
     on xAxis.arrived(), yAxis.arrived(): [nMoving > 0] tryArrived();
+  }
+}
+
+
+component Stage
+{
+  provides IMove2D ctrl;
+
+  requires IMove xMotor;
+  requires ITouchSense xHomeSensor;
+  requires ITouchSense xEndSensor;
+
+  requires IMove yMotor;
+  requires ITouchSense yHomeSensor;
+  requires ITouchSense yEndSensor;
+
+  system
+  {
+    Move2D bhv;
+    ConstrainedAxis xAxis;
+    ConstrainedAxis yAxis;
+
+    ctrl <=> bhv.ctrl;
+    bhv.xAxis <=> xAxis.ctrl;
+    bhv.yAxis <=> yAxis.ctrl;
+
+    xAxis.motor <=> xMotor;
+    xAxis.homeSensor <=> xHomeSensor;
+    xAxis.endSensor <=> xEndSensor;
+
+    yAxis.motor <=> yMotor;
+    yAxis.homeSensor <=> yHomeSensor;
+    yAxis.endSensor <=> yEndSensor;
   }
 }

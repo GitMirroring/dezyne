@@ -3,7 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,24 +24,8 @@
 //
 // Code:
 
-import lego.dzn;
 import IMove.dzn;
-
-component Motor
-{
-  provides IMove ctrl;
-  requires imotor hw;
-
-  system
-  {
-    timer pollTimer;
-    Move bhv;
-
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.motor <=> hw;
-  }
-}
+import foreign_timer.dzn;
 
 component Move
 {
@@ -71,5 +55,21 @@ component Move
     on ctrl.stop(): {motor.stop(); timer.cancel();}
     on ctrl.coast(): {motor.coast(); timer.cancel();}
     on ctrl.position(pos): motor.position(pos);
+  }
+}
+
+component Motor
+{
+  provides IMove ctrl;
+  requires imotor hw;
+
+  system
+  {
+    timer pollTimer;
+    Move bhv;
+
+    ctrl <=> bhv.ctrl;
+    bhv.timer <=> pollTimer.port;
+    bhv.motor <=> hw;
   }
 }

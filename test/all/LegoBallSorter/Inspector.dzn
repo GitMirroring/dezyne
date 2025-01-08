@@ -4,7 +4,7 @@
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,11 +25,9 @@
 //
 // Code:
 
- import Motor.dzn;
-import TouchSensor.dzn;
-import LightSensor.dzn;
+import ITouchSense.dzn;
+import ILightSense.dzn;
 import Stage.dzn;
-import lego.dzn;
 
 interface IInspect
 {
@@ -75,40 +73,6 @@ interface IInspect
     {
       on inevitable: {prepared; s = State.Ready;}
     }
-  }
-}
-
-component Inspector
-{
-  provides IInspect ctrl;
-
-  requires IMove stageXMotor;
-  requires ITouchSense stageXHomeSensor;
-  requires ITouchSense stageXEndSensor;
-
-  requires IMove stageYMotor;
-  requires ITouchSense stageYHomeSensor;
-  requires ITouchSense stageYEndSensor;
-
-  requires ILightSense sensor;
-
-  system
-  {
-    Inspect bhv;
-    Stage stage;
-
-    ctrl <=> bhv.ctrl;
-    bhv.sensor <=> sensor;
-    bhv.stage <=> stage.ctrl;
-
-    stage.xMotor <=> stageXMotor;
-    stage.xHomeSensor <=> stageXHomeSensor;
-    stage.xEndSensor <=> stageXEndSensor;
-
-    stage.yMotor <=> stageYMotor;
-    stage.yHomeSensor <=> stageYHomeSensor;
-    stage.yEndSensor <=> stageYEndSensor;
-
   }
 }
 
@@ -193,5 +157,39 @@ component Inspect
       on ctrl.stop(): stop();
       on stage.arrived(): {ctrl.prepared(); s = State.Ready;}
     }
+  }
+}
+
+component Inspector
+{
+  provides IInspect ctrl;
+
+  requires IMove stageXMotor;
+  requires ITouchSense stageXHomeSensor;
+  requires ITouchSense stageXEndSensor;
+
+  requires IMove stageYMotor;
+  requires ITouchSense stageYHomeSensor;
+  requires ITouchSense stageYEndSensor;
+
+  requires ILightSense sensor;
+
+  system
+  {
+    Inspect bhv;
+    Stage stage;
+
+    ctrl <=> bhv.ctrl;
+    bhv.sensor <=> sensor;
+    bhv.stage <=> stage.ctrl;
+
+    stage.xMotor <=> stageXMotor;
+    stage.xHomeSensor <=> stageXHomeSensor;
+    stage.xEndSensor <=> stageXEndSensor;
+
+    stage.yMotor <=> stageYMotor;
+    stage.yHomeSensor <=> stageYHomeSensor;
+    stage.yEndSensor <=> stageYEndSensor;
+
   }
 }

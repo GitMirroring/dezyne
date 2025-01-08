@@ -22,8 +22,8 @@
 //
 // Code:
 
-import Motor.dzn;
 import TouchSensor.dzn;
+import Motor.dzn;
 import LightSensor.dzn;
 
 component Brick3

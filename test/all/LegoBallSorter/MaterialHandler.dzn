@@ -4,7 +4,7 @@
 // Copyright © 2016, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,49 +32,6 @@ import IHandle.dzn;
 import Inspector.dzn;
 import Conveyor.dzn;
 
-
-component Armor
-{
-  provides IHandleRobust ctrl;
-  requires IHandle handler;
-  behavior
-  {
-    enum State {Lost, Calibrating, Idle, Operating};
-    State s = State.Lost;
-
-    on ctrl.stop(): {s = State.Lost; handler.stop();}
-    [s.Lost] on ctrl.calibrate(): {s = State.Calibrating; handler.calibrate();}
-    [!s.Lost] on ctrl.calibrate(): {}
-    [s.Calibrating] on handler.calibrated(): {s = State.Idle; ctrl.calibrated();}
-    [s.Idle] on ctrl.operate(): {s = State.Operating; handler.operate();}
-    [!s.Idle] on ctrl.operate(): {}
-    [s.Operating] on handler.finished(): {s = State.Idle; ctrl.finished();}
-  }
-}
-
-component MaterialHandler
-{
-  provides IHandleRobust ctrl;
-  requires ITransfer robot;
-  requires IInspect inspector;
-  requires IFeed feedPort;
-  requires IConvey acceptPort;
-  requires IConvey rejectPort;
-  system
-  {
-    ctrl <=> armor.ctrl;
-    Armor armor;
-    armor.handler <=> handler.ctrl;
-    Handler handler;
-    handler.robot <=> robot;
-    handler.inspector <=> inspector;
-    handler.feedPort <=> feedPort;
-    handler.acceptPort <=> acceptPort;
-    handler.rejectPort <=> rejectPort;
-
-  }
-}
-
 interface IHandle
 {
   in void calibrate();
@@ -94,6 +51,25 @@ interface IHandle
     [s.Calibrating] on inevitable: {calibrated; s = State.Idle;}
     [s.Idle] on operate: s = State.Operating;
     [s.Operating] on inevitable: {s = State.Idle; finished;}
+  }
+}
+
+component Armor
+{
+  provides IHandleRobust ctrl;
+  requires IHandle handler;
+  behavior
+  {
+    enum State {Lost, Calibrating, Idle, Operating};
+    State s = State.Lost;
+
+    on ctrl.stop(): {s = State.Lost; handler.stop();}
+    [s.Lost] on ctrl.calibrate(): {s = State.Calibrating; handler.calibrate();}
+    [!s.Lost] on ctrl.calibrate(): {}
+    [s.Calibrating] on handler.calibrated(): {s = State.Idle; ctrl.calibrated();}
+    [s.Idle] on ctrl.operate(): {s = State.Operating; handler.operate();}
+    [!s.Idle] on ctrl.operate(): {}
+    [s.Operating] on handler.finished(): {s = State.Idle; ctrl.finished();}
   }
 }
 
@@ -285,5 +261,28 @@ component Handler
         on rejectPort.conveyed(): {isRejectEmpty = true; tryFinished();}
       }
     }
+  }
+}
+
+component MaterialHandler
+{
+  provides IHandleRobust ctrl;
+  requires ITransfer robot;
+  requires IInspect inspector;
+  requires IFeed feedPort;
+  requires IConvey acceptPort;
+  requires IConvey rejectPort;
+  system
+  {
+    Armor armor;
+    ctrl <=> armor.ctrl;
+    Handler handler;
+    armor.handler <=> handler.ctrl;
+    handler.robot <=> robot;
+    handler.inspector <=> inspector;
+    handler.feedPort <=> feedPort;
+    handler.acceptPort <=> acceptPort;
+    handler.rejectPort <=> rejectPort;
+
   }
 }

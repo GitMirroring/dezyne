@@ -4,7 +4,7 @@
 // Copyright © 2016, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,28 +28,6 @@
 import IFeed.dzn;
 import Feeder.dzn;
 import Conveyor.dzn;
-import lego.dzn;
-
-component FeedPort
-{
-  provides IFeed ctrl;
-  requires IFeed feeder;
-  requires IMove motor;
-  requires ITouchSense sensor;
-
-  system
-  {
-    FeedConvey bhv;
-    Conveyor conveyor;
-
-    ctrl <=> bhv.ctrl;
-    bhv.conveyor <=> conveyor.ctrl;
-    bhv.feeder <=> feeder;
-
-    conveyor.motor <=> motor;
-    conveyor.sensor <=> sensor;
-  }
-}
 
 component FeedConvey
 {
@@ -73,5 +51,26 @@ component FeedConvey
 
     [next] on conveyor.conveyed(): ctrl.consumeNextBall();
     [!next] on conveyor.conveyed(): ctrl.consumeLastBall();
+  }
+}
+
+component FeedPort
+{
+  provides IFeed ctrl;
+  requires IFeed feeder;
+  requires IMove motor;
+  requires ITouchSense sensor;
+
+  system
+  {
+    FeedConvey bhv;
+    Conveyor conveyor;
+
+    ctrl <=> bhv.ctrl;
+    bhv.conveyor <=> conveyor.ctrl;
+    bhv.feeder <=> feeder;
+
+    conveyor.motor <=> motor;
+    conveyor.sensor <=> sensor;
   }
 }

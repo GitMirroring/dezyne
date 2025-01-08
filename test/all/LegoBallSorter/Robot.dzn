@@ -4,7 +4,7 @@
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,52 +27,189 @@
 
 import ITransfer.dzn;
 import Motor.dzn;
-import IConstrainedMove.dzn;
 import HomeConstrainedAxis.dzn;
 import EndConstrainedAxis.dzn;
 import ConstrainedAxis.dzn;
 
-component Robot
+interface IRetain
 {
-  provides ITransfer ctrl;
+  in void stop();
+  in void calibrate();
+  out void calibrated();
 
-  // required by aggregate components
-  requires IMove hoistMotor;
-  requires ITouchSense hoistEndSensor;
-  requires IMove gripperMotor;
-  requires ITouchSense gripperEndSensor;
-  requires IMove trolleyMotor;
-  requires ITouchSense trolleyEndSensor;
-  requires IMove truckMotor;
-  requires ITouchSense truckHomeSensor;
-  //requires ITouchSense truckEndSensor;
+  in void retain(); // raise, close
+  in void release(); // lower, open
+  out void ready();
 
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+    bool isHolding = false; // true => up/closed, false => down/open
+
+    on stop: {s = State.Lost; isHolding = false;}
+
+    [s.Lost]
+    {
+      on calibrate: s = State.Calibrating;
+    }
+    [s.Calibrating]
+    {
+      on inevitable: {calibrated; s = State.Ready; isHolding = true;}  // hoist is up => safe to move
+    }
+    [s.Ready]
+    {
+      [!isHolding]
+      {
+        on retain: s = State.Moving;
+        on retain: {ready; isHolding = true;}
+      }
+      [isHolding]
+      {
+        on release: s = State.Moving;
+        on release: {ready; isHolding = false;}
+      }
+    }
+    [s.Moving]
+    {
+      on inevitable: {
+        ready;
+        s = State.Ready;
+        isHolding = !isHolding;
+      }
+    }
+  }
+}
+
+component Lift
+{
+  provides IRetain ctrl;
+  requires IConstrainedMove winch;
+
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+    bool isHolding = false; // true => up/closed, false => down/open
+
+    on ctrl.stop(): {winch.stop(); s = State.Lost; isHolding = false;}
+
+    [s.Lost]
+    {
+      on ctrl.calibrate(): {winch.calibrate(); s = State.Calibrating;}
+    }
+    [s.Calibrating]
+    {
+      on winch.homed(): {winch.move($(config.get("Position::Robot::Z::Up"))$);} // end sensor pressed position
+      on winch.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
+    }
+    [s.Ready]
+    {
+      [!isHolding]
+      {
+        on ctrl.retain(): {winch.move($(config.get("Position::Robot::Z::Up"))$); s = State.Moving;}
+      }
+      [isHolding]
+      {
+        on ctrl.release(): {winch.move($(config.get("Position::Robot::Z::Down"))$); s = State.Moving;}
+      }
+    }
+    [s.Moving]
+    {
+      on winch.arrived():
+      {
+        ctrl.ready();
+        s = State.Ready;
+        isHolding = !isHolding;
+      }
+    }
+  }
+}
+
+component Hoist
+{
+  provides IRetain ctrl;
+
+  requires IMove motor; // required by HalfConstrainedAxis winch
+  requires ITouchSense endSensor; // required by HalfConstrainedAxis winch
 
   system
   {
-    Transfer bhv;
-    Hoist hoist;
-    Gripper gripper;
-    EndConstrainedAxis trolley;
-    HomeConstrainedAxis truck;
+    Lift bhv;
+    EndConstrainedAxis winch;
 
     ctrl <=> bhv.ctrl;
-    bhv.hoist <=> hoist.ctrl;
-    bhv.gripper <=> gripper.ctrl;
-    bhv.trolley <=> trolley.ctrl;
-    bhv.truck <=> truck.ctrl;
-
-    hoist.motor <=> hoistMotor;
-    hoist.endSensor <=> hoistEndSensor;
-    gripper.motor <=> gripperMotor;
-    gripper.endSensor <=> gripperEndSensor;
-    trolley.motor <=> trolleyMotor;
-    trolley.endSensor <=> trolleyEndSensor;
-    truck.motor <=> truckMotor;
-    truck.homeSensor <=> truckHomeSensor;
-    //truck.endSensor <=> truckEndSensor;
+    bhv.winch <=> winch.ctrl;
+    winch.motor <=> motor;
+    winch.endSensor <=> endSensor;
   }
 }
+
+component Grip
+{
+  provides IRetain ctrl;
+  requires IConstrainedMove gripper;
+
+  behavior
+  {
+    enum State {Lost, Calibrating, Ready, Moving};
+    State s = State.Lost;
+    bool isHolding = false;
+
+    on ctrl.stop(): {gripper.stop(); s = State.Lost; isHolding = false;}
+
+    [s.Lost]
+    {
+      on ctrl.calibrate(): {gripper.calibrate(); s = State.Calibrating;}
+    }
+    [s.Calibrating]
+    {
+      on gripper.homed(): {gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
+      on gripper.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
+    }
+    [s.Ready]
+    {
+      [!isHolding]
+      {
+        on ctrl.retain(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
+      }
+      [isHolding]
+      {
+        on ctrl.release(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Open"))$);}
+      }
+    }
+    [s.Moving]
+    {
+      on gripper.arrived(): {
+        ctrl.ready();
+        s = State.Ready;
+        isHolding = !isHolding;
+      }
+    }
+  }
+}
+
+
+component Gripper
+{
+  provides IRetain ctrl;
+
+  requires IMove motor; // required by motor
+  requires ITouchSense endSensor;
+
+  system
+  {
+    Grip bhv;
+    EndConstrainedAxis gripper;
+
+    ctrl <=> bhv.ctrl;
+    bhv.gripper <=> gripper.ctrl;
+
+    gripper.motor <=> motor;
+    gripper.endSensor <=> endSensor;
+  }
+}
+
 
 component Transfer
 {
@@ -218,180 +355,44 @@ component Transfer
   }
 }
 
-interface IRetain
+component Robot
 {
-  in void stop();
-  in void calibrate();
-  out void calibrated();
+  provides ITransfer ctrl;
 
-  in void retain(); // raise, close
-  in void release(); // lower, open
-  out void ready();
+  // required by aggregate components
+  requires IMove hoistMotor;
+  requires ITouchSense hoistEndSensor;
+  requires IMove gripperMotor;
+  requires ITouchSense gripperEndSensor;
+  requires IMove trolleyMotor;
+  requires ITouchSense trolleyEndSensor;
+  requires IMove truckMotor;
+  requires ITouchSense truckHomeSensor;
+  //requires ITouchSense truckEndSensor;
 
-  behavior
-  {
-    enum State {Lost, Calibrating, Ready, Moving};
-    State s = State.Lost;
-    bool isHolding = false; // true => up/closed, false => down/open
-
-    on stop: {s = State.Lost; isHolding = false;}
-
-    [s.Lost]
-    {
-      on calibrate: s = State.Calibrating;
-    }
-    [s.Calibrating]
-    {
-      on inevitable: {calibrated; s = State.Ready; isHolding = true;}  // hoist is up => safe to move
-    }
-    [s.Ready]
-    {
-      [!isHolding]
-      {
-        on retain: s = State.Moving;
-        on retain: {ready; isHolding = true;}
-      }
-      [isHolding]
-      {
-        on release: s = State.Moving;
-        on release: {ready; isHolding = false;}
-      }
-    }
-    [s.Moving]
-    {
-      on inevitable: {
-        ready;
-        s = State.Ready;
-        isHolding = !isHolding;
-      }
-    }
-  }
-}
-
-component Hoist
-{
-  provides IRetain ctrl;
-
-  requires IMove motor; // required by HalfConstrainedAxis winch
-  requires ITouchSense endSensor; // required by HalfConstrainedAxis winch
 
   system
   {
-    Lift bhv;
-    EndConstrainedAxis winch;
+    Transfer bhv;
+    Hoist hoist;
+    Gripper gripper;
+    EndConstrainedAxis trolley;
+    HomeConstrainedAxis truck;
 
     ctrl <=> bhv.ctrl;
-    bhv.winch <=> winch.ctrl;
-    winch.motor <=> motor;
-    winch.endSensor <=> endSensor;
-  }
-}
-
-component Lift
-{
-  provides IRetain ctrl;
-  requires IConstrainedMove winch;
-
-  behavior
-  {
-    enum State {Lost, Calibrating, Ready, Moving};
-    State s = State.Lost;
-    bool isHolding = false; // true => up/closed, false => down/open
-
-    on ctrl.stop(): {winch.stop(); s = State.Lost; isHolding = false;}
-
-    [s.Lost]
-    {
-      on ctrl.calibrate(): {winch.calibrate(); s = State.Calibrating;}
-    }
-    [s.Calibrating]
-    {
-      on winch.homed(): {winch.move($(config.get("Position::Robot::Z::Up"))$);} // end sensor pressed position
-      on winch.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
-    }
-    [s.Ready]
-    {
-      [!isHolding]
-      {
-        on ctrl.retain(): {winch.move($(config.get("Position::Robot::Z::Up"))$); s = State.Moving;}
-      }
-      [isHolding]
-      {
-        on ctrl.release(): {winch.move($(config.get("Position::Robot::Z::Down"))$); s = State.Moving;}
-      }
-    }
-    [s.Moving]
-    {
-      on winch.arrived():
-      {
-        ctrl.ready();
-        s = State.Ready;
-        isHolding = !isHolding;
-      }
-    }
-  }
-}
-
-component Gripper
-{
-  provides IRetain ctrl;
-
-  requires IMove motor; // required by motor
-  requires ITouchSense endSensor;
-
-  system
-  {
-    Grip bhv;
-    EndConstrainedAxis gripper;
-
-    ctrl <=> bhv.ctrl;
+    bhv.hoist <=> hoist.ctrl;
     bhv.gripper <=> gripper.ctrl;
+    bhv.trolley <=> trolley.ctrl;
+    bhv.truck <=> truck.ctrl;
 
-    gripper.motor <=> motor;
-    gripper.endSensor <=> endSensor;
-  }
-}
-
-component Grip
-{
-  provides IRetain ctrl;
-  requires IConstrainedMove gripper;
-
-  behavior
-  {
-    enum State {Lost, Calibrating, Ready, Moving};
-    State s = State.Lost;
-    bool isHolding = false;
-
-    on ctrl.stop(): {gripper.stop(); s = State.Lost; isHolding = false;}
-
-    [s.Lost]
-    {
-      on ctrl.calibrate(): {gripper.calibrate(); s = State.Calibrating;}
-    }
-    [s.Calibrating]
-    {
-      on gripper.homed(): {gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
-      on gripper.arrived(): {ctrl.calibrated(); s = State.Ready; isHolding = true;}
-    }
-    [s.Ready]
-    {
-      [!isHolding]
-      {
-        on ctrl.retain(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Closed"))$);}
-      }
-      [isHolding]
-      {
-        on ctrl.release(): {s = State.Moving; gripper.move($(config.get("Position::Robot::Gripper::Open"))$);}
-      }
-    }
-    [s.Moving]
-    {
-      on gripper.arrived(): {
-        ctrl.ready();
-        s = State.Ready;
-        isHolding = !isHolding;
-      }
-    }
+    hoist.motor <=> hoistMotor;
+    hoist.endSensor <=> hoistEndSensor;
+    gripper.motor <=> gripperMotor;
+    gripper.endSensor <=> gripperEndSensor;
+    trolley.motor <=> trolleyMotor;
+    trolley.endSensor <=> trolleyEndSensor;
+    truck.motor <=> truckMotor;
+    truck.homeSensor <=> truckHomeSensor;
+    //truck.endSensor <=> truckEndSensor;
   }
 }

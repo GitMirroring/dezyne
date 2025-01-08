@@ -25,9 +25,8 @@
 //
 // Code:
 
-import TouchSensor.dzn;
-import Motor.dzn;
-import lego.dzn;
+import ITouchSense.dzn;
+import IMove.dzn;
 
 interface IConvey
 {

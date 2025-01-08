@@ -3,7 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -25,22 +25,7 @@
 // Code:
 
 import ILightSense.dzn;
-
-component LightSensor
-{
-  provides ILightSense ctrl;
-  requires ilight hw;
-
-  system
-  {
-    timer pollTimer;
-    LightSense bhv;
-
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.sensor <=> hw;
-  }
-}
+import foreign_timer.dzn;
 
 component LightSense
 {
@@ -59,5 +44,21 @@ component LightSense
       if (st.accept) ctrl.accept();
       else ctrl.reject();
     }
+  }
+}
+
+component LightSensor
+{
+  provides ILightSense ctrl;
+  requires ilight hw;
+
+  system
+  {
+    timer pollTimer;
+    LightSense bhv;
+
+    ctrl <=> bhv.ctrl;
+    bhv.timer <=> pollTimer.port;
+    bhv.sensor <=> hw;
   }
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -22,29 +22,7 @@
 //
 // Code:
 
-import config.dzn;
-
-interface itimer
-{
-  extern milliseconds_t $Integer$;
-  in void create(milliseconds_t ms);
-  in void cancel();
-  out void timeout();
-
-  behavior
-  {
-    enum State {Idle, Pending};
-    State state = State.Idle;
-    [state.Idle] {
-      on create: { state = State.Pending; }
-      on cancel: {}
-    }
-    [state.Pending] {
-      on cancel: { state = State.Idle; }
-      on inevitable: { timeout; state = State.Idle; }
-    }
-  }
-}
+import lego.dzn;
 
 component timer
 {

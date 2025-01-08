@@ -3,7 +3,7 @@
 // Copyright © 2014, 2015 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -27,24 +27,8 @@
 //
 // Code:
 
-import lego.dzn;
 import ITouchSense.dzn;
-
-component TouchSensor
-{
-  provides ITouchSense ctrl;
-  requires itouch hw;
-
-  system
-  {
-    timer pollTimer;
-    TouchSense bhv;
-
-    ctrl <=> bhv.ctrl;
-    bhv.timer <=> pollTimer.port;
-    bhv.sensor <=> hw;
-  }
-}
+import foreign_timer.dzn;
 
 component TouchSense
 {
@@ -71,5 +55,21 @@ component TouchSense
       if (previous.pressed && current.released) ctrl.released();
       previous = current;
     }
+  }
+}
+
+component TouchSensor
+{
+  provides ITouchSense ctrl;
+  requires itouch hw;
+
+  system
+  {
+    timer pollTimer;
+    TouchSense bhv;
+
+    ctrl <=> bhv.ctrl;
+    bhv.timer <=> pollTimer.port;
+    bhv.sensor <=> hw;
   }
 }

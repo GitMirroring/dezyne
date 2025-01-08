@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017 Rob Wieringa <rma.wieringa@gmail.com>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,7 +28,6 @@ import Inspector.dzn;
 import Conveyor.dzn;
 import FeedPort.dzn;
 import Feeder.dzn;
-import lego.dzn;
 
 component BallSorter
 {
