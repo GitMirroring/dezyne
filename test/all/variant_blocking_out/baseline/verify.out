@@ -1,0 +1,6 @@
+model: variant_blocking_out
+h.hello
+w.hello
+w.return
+w.cruel
+<invariant>

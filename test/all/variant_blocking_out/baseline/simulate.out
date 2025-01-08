@@ -1,0 +1,18 @@
+(header ((h) ihello provides) ((sut) variant_blocking_out component) ((w) iworld requires))
+(state ((h)) ((sut) (b . true)) ((w) (busy . false)))
+test/all/variant_blocking_out/variant_blocking_out.dzn:47:5: error: invariant
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- <external>.w.cruel
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.cruel <- ...
+<invariant>
+(state ((h)) ((sut) (b . false)) ((w) (busy . true)))
+(trail "h.hello" "w.hello" "w.return" "w.cruel" "<invariant>")
+(labels "h.hello" "w.world" "w.cruel")
+(eligible)
