@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -105,15 +105,6 @@ Generate graph from a Dezyne model
          (state? (equal? backend "state"))
          (debug? (dzn:command-line:get 'debug #f))
          (locations? (option-ref options 'locations #f))
-         ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-         (parse-options (filter (negate (compose (cute eq? <> 'model) car))
-                                options))
-         (ast (parameterize ((%language "makreel"))
-                (parse parse-options file-name)))
-         (model (parse:call-with-handle-exceptions
-                 (lambda _ (ast:get-model ast model-name))
-                 #:backtrace? debug?
-                 #:file-name file-name))
          (language (option-ref options 'format "dot"))
          (queue-size (command-line:get-number 'queue-size (%queue-size)))
          (queue-size-defer (command-line:get-number 'queue-size-defer
@@ -126,20 +117,17 @@ Generate graph from a Dezyne model
     (when (and remove
                (not (member remove '("ports" "extended"))))
       (format (current-error-port) "graph: remove ~a ignored\n" remove))
-    (unless model
-      (format (current-error-port) "~a: No dezyne model found.\n" file-name)
-      (exit EXIT_OTHER_FAILURE))
-    (cond (dependency? (code ast
-                             #:ast-> 'dependency-diagram
-                             #:model model
-                             #:language language))
-          (lts? (lts ast
-                     #:model model
-                     #:queue-size queue-size
-                     #:queue-size-defer queue-size-defer
-                     #:queue-size-external queue-size-external))
-          (state? (state-diagram ast
-                                 #:format language
+    (parameterize ((%language "makreel"))
+      (let* ((ast (parse options file-name))
+             (model (parse:call-with-handle-exceptions
+                     (lambda _ (ast:get-model ast model-name))
+                     #:backtrace? debug?
+                     #:file-name file-name)))
+        (unless model
+          (format (current-error-port) "~a: No dezyne model found.\n" file-name)
+          (exit EXIT_OTHER_FAILURE))
+        (cond (dependency? (code ast
+                                 #:ast-> 'dependency-diagram
                                  #:model model
                                  #:queue-size queue-size
                                  #:queue-size-defer queue-size-defer
@@ -149,9 +137,25 @@ Generate graph from a Dezyne model
                                  #:actions? actions?
                                  #:labels? labels?
                                  #:returns? returns?))
-          (else (code ast
-                      #:ast-> 'system-diagram
-                      #:dir "-"
-                      #:model model
-                      #:language language
-                      #:locations? locations?)))))
+              (lts? (lts ast
+                         #:model model
+                         #:queue-size queue-size
+                         #:queue-size-defer queue-size-defer
+                         #:queue-size-external queue-size-external))
+              (state? (state-diagram ast
+                                     #:format language
+                                     #:model model
+                                     #:queue-size queue-size
+                                     #:queue-size-defer queue-size-defer
+                                     #:queue-size-external queue-size-external
+                                     #:ports? ports?
+                                     #:extended? extended?
+                                     #:actions? actions?
+                                     #:labels? labels?
+                                     #:returns? returns?))
+              (else (code ast
+                          #:ast-> 'system-diagram
+                          #:dir "-"
+                          #:model model
+                          #:language language
+                          #:locations? locations?)))))))

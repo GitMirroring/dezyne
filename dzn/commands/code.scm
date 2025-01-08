@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -157,10 +157,7 @@ Languages: ~a
                    (%queue-size-defer queue-size-defer)
                    (%queue-size-external queue-size-external)
                    (%shell shell))
-      ;; Parse --model=MODEL cuts MODEL from AST; avoid that
-      (let* ((parse-options (filter (compose not (cut eq? <> 'model) car)
-                                    options))
-             (ast (parse parse-options file-name))
+      (let* ((ast (parse options file-name))
              (errors (filter-map (cute shell-error ast <>) shell)))
         (parse:call-with-handle-exceptions
          (lambda _

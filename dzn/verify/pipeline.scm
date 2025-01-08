@@ -766,6 +766,27 @@ init for MODEL unless INIT."
           (else
            #f))))
 
+(define-method (makreel:name-equal? (model <model>) name)
+  (equal? name (makreel:unticked-dotted-name model)))
+
+(define* (verification:models root #:key model-name no-interfaces?)
+  (let* ((models (ast:model** root))
+         (model (find (cute makreel:name-equal? <> model-name) models)))
+    (if (is-a? model <interface>) (list model)
+        (let* ((components (if (is-a? model <component>) (list model)
+                               (filter (conjoin (is? <component>)
+                                                (negate ast:imported?)
+                                                .behavior)
+                                       models)))
+               (interfaces (filter (is? <interface>) models))
+               (component-interfaces (map .type (append-map ast:port* components)))
+               (interfaces (if model component-interfaces
+                               (append interfaces component-interfaces)))
+               (interfaces (delete-duplicates interfaces ast:eq?))
+               (interfaces (if (not no-interfaces?) interfaces
+                               (remove ast:imported? interfaces))))
+          (append interfaces components)))))
+
 
 ;;;
 ;;; Entry points.
@@ -777,24 +798,14 @@ init for MODEL unless INIT."
 
 (define* (verification:verify options root #:key keep-going? model-name
                               no-interfaces?)
-  (define (model-names-for-verification root)
-    (let* ((models (ast:model** root))
-           (components (filter (conjoin (is? <component>) (negate ast:imported?)
-                                        .behavior) models))
-           (component-names (map makreel:unticked-dotted-name components))
-           (interfaces (filter (is? <interface>) models))
-           (component-interfaces (map .type (append-map ast:port* components)))
-           (interfaces (append interfaces component-interfaces))
-           (interfaces (delete-duplicates interfaces ast:eq?))
-           (interfaces (if (not no-interfaces?) interfaces
-                           (remove ast:imported? interfaces)))
-           (interface-names (map makreel:unticked-dotted-name interfaces)))
-      (append interface-names component-names)))
-  (let ((model-names (model-names-for-verification root)))
-    (let loop ((model-names model-names) (error? #f))
-      (if (or (and (not keep-going?) error?) (null? model-names)) (if error? 1 0)
-          (let* ((model-name (car model-names))
+  (let ((models (verification:models root
+                                     #:model-name model-name
+                                     #:no-interfaces? no-interfaces?)))
+    (let loop ((models models) (error? #f))
+      (if (or (and (not keep-going?) error?) (null? models)) (if error? 1 0)
+          (let* ((model (car models))
+                 (model-name (makreel:unticked-dotted-name model))
                  (this-error? (mcrl2:verify root model-name
                                             #:keep-going? keep-going?))
                  (error? (or error? this-error?)))
-            (loop (cdr model-names) error?))))))
+            (loop (cdr models) error?))))))

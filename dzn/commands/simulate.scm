@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -125,26 +125,28 @@ Simulate a Dezyne model
          (internal? (command-line:get 'internal #f))
          (locations? (command-line:get 'locations verbose?))
          (trace (command-line:get 'format "trace"))
-         (trail (option-ref options 'trail #f))
-         (status (simulate ast
-                           #:model-name model-name
-                           #:compliance-check? (not no-compliance?)
-                           #:deadlock-check? (not no-deadlock?)
-                           #:interface-determinism-check?
-                           (not no-interface-determinism?)
-                           #:interface-livelock-check?
-                           (not no-interface-livelock?)
-                           #:queue-full-check? (not no-queue-full?)
-                           #:refusals-check? (not no-refusals?)
-                           #:internal? internal?
-                           #:locations? locations?
-                           #:queue-size queue-size
-                           #:queue-size-defer queue-size-defer
-                           #:queue-size-external queue-size-external
-                           #:state? state?
-                           #:strict? strict?
-                           #:trace trace
-                           #:trail trail
-                           #:verbose? verbose?)))
-    (when (is-a? status <error>)
-      (exit EXIT_FAILURE))))
+         (trail (option-ref options 'trail #f)))
+    (parameterize ((%language "makreel"))
+      (let* ((ast (parse options file-name))
+             (status (simulate ast
+                               #:model-name model-name
+                               #:compliance-check? (not no-compliance?)
+                               #:deadlock-check? (not no-deadlock?)
+                               #:interface-determinism-check?
+                               (not no-interface-determinism?)
+                               #:interface-livelock-check?
+                               (not no-interface-livelock?)
+                               #:queue-full-check? (not no-queue-full?)
+                               #:refusals-check? (not no-refusals?)
+                               #:internal? internal?
+                               #:locations? locations?
+                               #:queue-size queue-size
+                               #:queue-size-defer queue-size-defer
+                               #:queue-size-external queue-size-external
+                               #:state? state?
+                               #:strict? strict?
+                               #:trace trace
+                               #:trail trail
+                               #:verbose? verbose?)))
+        (when (is-a? status <error>)
+          (exit EXIT_FAILURE))))))

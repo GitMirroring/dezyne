@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020, 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
@@ -115,11 +115,12 @@ Parse a Dezyne file and produce an AST
          (let* ((ast (parse:file->ast file-name #:imports imports))
                 (ast (if skip-wfc? ast
                          (ast:wfc ast)))
-                (ast (if (not model-name) ast
-                         (let ((model (ast:get-model ast model-name)))
-                           (ast:filter-model ast model))))
-                (transform (map string->transformation transform)))
-           ((apply compose identity (reverse transform)) ast)))
+                (transform (map string->transformation transform))
+                (ast (fold (lambda (transform ast)
+                             (transform ast))
+                           ast
+                           transform)))
+           ast))
        #:backtrace? debug?
        #:exit? exit?
        #:file-name file-name))))
