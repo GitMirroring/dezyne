@@ -533,6 +533,7 @@ REGRESSION_TESTS =				\
  %D%/implicit_temporary2			\
  %D%/implicit_temporary3			\
  %D%/import_cycle				\
+ %D%/implies_expressions			\
  %D%/import_path				\
  %D%/imported.space				\
  %D%/inevitable_multiple_requires		\
