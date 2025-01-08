@@ -548,6 +548,7 @@ REGRESSION_TESTS =				\
  %D%/interface_enum				\
  %D%/interface_int				\
  %D%/interface_missing_reply			\
+ %D%/invariant_blocking_two_out			\
  %D%/invariant_sync_out				\
  %D%/iteration					\
  %D%/label_instance_mismatch			\
