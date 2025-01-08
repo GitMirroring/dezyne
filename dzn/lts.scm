@@ -80,6 +80,7 @@
             node?
             node-edges
             node-state
+            prioritize-invariant
             remove-illegal
             remove-state-loops))
 
@@ -107,6 +108,7 @@
 (define %<defer> (make-shared-string "<defer>"))
 (define %<flush> (make-shared-string "<flush>"))
 (define %<illegal> (make-shared-string "<illegal>"))
+(define %<invariant> (make-shared-string "<invariant>"))
 (define %<state> (make-shared-string "<state>"))
 (define %<queue-full> (make-shared-string "<queue-full>"))
 (define %inevitable (make-shared-string "inevitable"))
@@ -553,6 +555,16 @@ from LABELS."
 ;;;
 ;;; Trace generation.
 ;;;
+
+(define (prioritize-invariant-edges edges)
+  (let ((invariant (filter (lambda (e) (eq? %<invariant> (edge-label e))) edges)))
+    (if (pair? invariant) invariant edges)))
+
+(define (prioritize-invariant lts)
+  (define (prioritize-invariant-node node)
+    (set-field node (node-edges) (prioritize-invariant-edges (node-edges node))))
+  (vector-map-one prioritize-invariant-node lts))
+
 (define* (generate-traces initial lts provides-ports provides-in dir base
                           #:key verbose?)
 
@@ -641,7 +653,8 @@ from LABELS."
          (< index (vector-length lts))
          (let ((node (vector-ref lts index)))
            (hashq-set! done index #t)
-           (let loop ((edges (node-edges node)) (generated-trace? #f))
+           (let loop ((edges (prioritize-invariant-edges (node-edges node)))
+                      (generated-trace? #f))
              (if (null? edges) generated-trace?
                  (let* ((edge (car edges))
                         (edge-index (edge-to edge)))
