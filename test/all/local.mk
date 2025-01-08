@@ -551,6 +551,7 @@ REGRESSION_TESTS =				\
  %D%/invariant_blocking_two_out			\
  %D%/invariant_out_forward			\
  %D%/invariant_sync_out				\
+ %D%/invariant_two_out				\
  %D%/iteration					\
  %D%/label_instance_mismatch			\
  %D%/livelock_choice				\
