@@ -3,7 +3,7 @@
 #+TITLE: Tentative Dezyne Road Map
 
 Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-Copyright © 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2020, 2021, 2022, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 
   Copying and distribution of this file, with or without modification,
@@ -37,76 +37,86 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
 * TODO
 ** Release 2.19
-  - Pass regression test
-    + Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
-      + test/all/illegal_external_nonsynchronous
-      + test/all/livelock_synchronous_illegal
-      + test/all/queuefull_external_sync
-    + data_full: split into smaller tests, preferrably trace-based,
-      and without handwritten main's
-    + Bring multiple events on a single modeling event properly under test
-      + Require flush on provides port: h.<flush>
-      + Make test fail if without flush
-      + Test in combination with foreign
-  - dezyne.org
-    + blog post about free software?
-  - register #dezyne
-  - Choose different scenarios in simulator
-    + interface on optional a b; on optional a b c;
-    + component with such a provides port
-  - Remove interleaving (ladders) of requires in/reply and other events in makreel
-    + enable lts for queuefull_component0, queuefull_component1,
-      queuefull_external_sync, blocking_queuefull,
-      blocking_queuefull_reply
-  - Finish and merge wip-stitch
-    + Cleanup dzn/lts.scm!
-  - replace dzn traces with dzn test, i.e. LTS-based testing
-  - refactor node/parent
-    + Finish and merge wip-parent
-  - external debugging
-    + Finish and merge wip-sequential
-  - early return / deprecate reply
-    + Finish and merge wip-return
-  - ast/tree cleanup, serialization
-    + Finish and merge wip-serialize
-  - refactor sm:tag into mCRL2 if -> <> tag ()
-  - Prefer reporting shorter compliance traces over longer illegal
-    traces (prefix any with compliance)
-  - Use shared state from provides ports for defer. This requires
-    something like postponing the defer_qin to capture the shared state
-    at the run to completion. Currently the reply reorder seems/is the
-    problem.
+  - dzn hash, dzn code, dzn verify on multiple files / directory
+    - Finish and merge wip-build
+  - Invariants
+    + Finish and merge wip-invariant
+  - Data return
+    - Finish and merge wip-data
 
 ** Release 2.20
-  - Module
-    + module specifications (aka aggregate interfaces)
-  - Functional verification
-  - Module based testing:
-    + develop single threaded approach to testing on scheme prototype.
-  - active system (thread-safe-shell) abstraction: external & blocking
+  - Refactor node/parent
+    + Finish and merge wip-canonical-on
+    + Finish and merge wip-parent
+  - External functions
+    + non-deterministic behavior in verification
+    + Finish and merge wip-external-function
+  - Global functions
+    + Finish and merge wip-global-function
 
 ** Release 2.21
+  - Refactor transformations
+    + Finish and merge wip-transform
+  - ast/tree cleanup, serialization
+    + Finish and merge wip-serialize
+  - External debugging
+    + Finish and merge wip-trivial-runtime, wip-sequential
+
+** Release 2.22
+  - Early return / deprecate reply
+    + Finish and merge wip-return
+  - Replace dzn traces with dzn test, i.e. LTS-based testing
+
+** Release 2.23
+  - Remove the need for a daemon
+    + Parsing performance
+    + Serialization performance
+    + WFC performance
+
+** Release 2.24
   - Data
-    + Support global functions (with ports?)
     + Deprecate injected, replace with global functions
     + Data behavior (data interfaces, data shims)
     + Structured state types
     + C: Support data with dzn_pump_run
 
-** Release 2.22
+** Release 2.25
+  - Finish and merge wip-stitch
+    + Cleanup dzn/lts.scm!
+  - Replace dzn traces with dzn test, i.e. LTS-based testing
+
+** Release 2.26
+  - Module
+    + Module specifications (aka aggregate interfaces)
+  - Functional verification
+  - Module based testing:
+    + Develop single threaded approach to testing on scheme prototype.
+  - Active system (thread-safe-shell) abstraction: external & blocking
+
+** Release 2.27
+  - Impossible futures
+    + XFAIL: compliance_livelock
+    + XFAIL: compliance_livelock_escape
+    + XFAIL: compliance_livelock_refusal
+    + XFAIL: external_blocking_livelock
+
+** Release 2.28
   - Hierarchical behaviors (sub machines)
 
 ** Release 3.0
-  - Pass regression test
-    + XFAIL: external_blocking_livelock
-    + XFAIL: compliance_livelock
   - Simplify grammar through syntax
+    + Retire UK English spelling of 'behaviour'
+    + extern => data
+    + external => delayed
+    + Get rid of "illegal" => "violation" (?)
+      (See <https://www.gnu.org/prep/standards/html_node/GNU-Manuals.html#GNU-Manuals>)
+    + Remove concept of "event" if favor of a "message" that can be defined and
+      either sent or received => Rethink "on" and "action".
     + reconsider '.' as infix operator for scoping, field test (Pauls
       sugar), port event separator, ...
-    + replace [<port>.]reply by:
-      + return (allowing early return from on), and
-      + <port>.release ()
-    + Disallow UK English spelling of 'behaviour'
+    + Move to DSL in Scheme, reduce C-like language parser to "just
+      another convenient-for-some frontent".
+  - Spritely Goblins?
   - Documentation
     + Finish and merge wip-doc-snippets branch.
       - Merge snippets/tests with doc/dezyne.texi.
@@ -143,13 +153,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Documentation
     + Finish and merge wip-doc
       - Execution Semantics: generate!
-  - Code cleanups
-    + parse options => parse #:imports #:model ...
-    + cleanup and upstream PEG
-    + Factor-out AST library?
-      - Move define-ast to define-node
-      - <foreign>, <port>?  Use node: prefixes?
   - LSP
+    + drop in favor of tree-sitter?
     + move ast/wfc.scm tests into PEG parser
     + move ast/wfc.scm tests into TREE postprocessor?
   - Module based testing:
@@ -168,385 +173,4 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish C99 support (what about MISRA-C?)
     + Finish JavaScript support
     + Review and finish Scheme support
-
-* DONE
-  - shared state
-    + Finish and merge wip-shared-state
-    + Finish and merge wip-scmackerel
-      + else illegal
-      + cs: shared state
-      + c++, cs: remove port duplication in code?
-      + Use hash table for interface state?
-      + Refactor semantics: aspect-oriented
-      + Add CSP alphabetized parallel support (weak illegals, modules)
-      + Refactor makreel with alphabetized parallel
-  - Distinguish component, defer and external queue full errors.
-  - Provide user with external queue full debug ability.
-  - shared state
-    + Increase regression test coverage
-      - hello_proxy_nondet
-      - constrained_alarm
-      - ... need more tests!!!
-    + Document it!
-  - Implicit interface constraints
-    + Finish and merge wip-constraint
-      + wip <- wip-unreachable <- wip-integer
-        <- wip-async <- wip-ast <- wip-lookup <- wip-constraint
-    + Increase regression test coverage
-      - hello_proxy_nondet
-      - constrained_alarm
-      - ... need more tests!!!
-    + Document it!
-  - Fix and re-enable UNSTABLE_TESTS (rewrite or fix mCRL2)
-    + test/all/compliance_blocking_double_release
-  - Finish and merge wip-unreachable
-  - Finish and merge wip-integer
-  - Finish and merge wip-lookup
-  - Finish and merge wip-ast
-  - Finish and merge wip-async
-  - Finish and merge wip-defer
-  - Finish and merge wip-expressions
-  - Finish and merge wip-transform
-  - Finish and merge wip-warnings
-  - Paul's bugs
-    + compliance_provides_illegal => broken arrows!
-    + compliance_blocking_function  => broken arrows!
-    + compliance_sync_action  => broken arrows!
-    + deadlock_asynchronous_sync_reply
-  - Documentation
-    + Blocking, collateral-block.
-  - Release on savannah.nongnu.org
-    + In progress: https://savannah.nongnu.org/task/?16067
-    + create bug-dezyne@nongnu.org, dezyne-devel@nongnu.org
-  - Pass regression test:
-    +  queuefull_external: Skipped for simulator: no trace
-    + livelock_interface0: Simulator does not see the livelock: fixed
-    +  livelock_synchronous2: NOT a livelock, renamed to queuefull_component1
-  - Collateral blocking / full blocking support
-    + Finish and merge wip-blocking
-      - async traces / async_blocking_ranking_disorder
-  - Finish and merge paul/wip-wfc
-  - Finish and merge paul/wip-determinism
-  - Remove silent
-    + finish and merge wip-remove-silent
-    + goops: .silent?
-    + ast: mark-silence
-    + wfc: modeling-silent
-    + verify: remove --no-interface-determinism flag
-    + simulator
-    + tests: remove no-interface-determinism
-      - remove test/all/*silent*
-      - ? test/all/hello_nondet
-      - ? test/all/compliance_failures_inevitable
-      - ? test/all/failures_nondet_optional
-  - Release on savannah.nongnu.org
-   + Update all READMEs.
-  - Debian package
-    + Source build on Bullseye
-  - Documentation
-    + Finish and merge wip-doc
-    + Review/rewrite doc/dezyne.texi
-      - Rewrite "Introduction"
-      - Rewrite "Verifying Models" => "Formal Verification
-      - Language Reference
-        + Merge: "The Dezyne Modeling Language" and "Dezyne Syntax"
-      - Well-formedness-tests: rewrite and generate from snippets
-  - dezyne.org
-    + crreate download.verum.com
-      - move binary ide downloads here
-      - move propietary announcements here
-  - Debian package
-    + Source build on Bullseye
-  - component behavior diagram
-  - livelock: show loop: <loop>...<livelock>
-    + Finish and merge wip-loop
-  - implicit interface illegals
-    + Finish and merge wip-implicit-interface-illegals
-  - implicit temporary variables
-    + Finish and merge wip-implicit-temporaries
-  - messages in browser clickable to location
-  - deadlock check should prevail over <compliance>
-    + WONTFIX: shortest trace wins
-  - unobservable non-determinism check + deprecation
-    + Review and merge wip-state
-  - UX
-    + "client" shows in state of state-diagram
-    + interface trace: state shows in client
-    + range_declaration_expression.dzn: state scheme expression in diagram
-    + range_action.dzn: local variable as action in state (also in diagram):
-      (state ((p)) ((sut) (n . (action** "r" "e" (arguments-node*)))) ((r)))
-  -  Deprecate unobservable non-determinism in interfaces
-    + Add --no-interface-determinism option
-    + Report unbservable non-determinism in interfaces as error
-      unless --no-interface-determinism
-    + Add check in simulator
-  - Finish and merge wip-lazy
-    + Lazy import in lookup
-    + prototype in tree
-  - Remove command-line:get from trace library
-  - Simulator performance
-    + deadlock check should consider all toplevel traces
-    + Add simulate** entry point for resident simulator in daemon
-    + Optimize livelock check
-    + Optimize purge-data and annotate-otherwise
-  - Finish and merge wip-simulate
-    + BUG van robw
-      ./pre-inst-env dzn simulate -l --state -m MaterialHandler -I test/all/LegoBallSorter/c++ test/all/LegoBallSorter/MaterialHandler.dzn < L | ./pre-inst-env dzn trace --format=json | jq > data
-    + Generate correct JSON even if split-arrows are incorrect, add error message
-  - Regression test
-    + local.mk: move NON_REPRODUCIBLE_TESTS => REGRESSION_TESTS, add
-      META for verify
-  - UX
-    + performance of deadlock-check/eligible events
-  - Rename tests (these are not categorized as compliance errors)
-    + compliance_out_nondet: deadlock
-    + compliance_out_inevitable_illegal: deadlock
-    + livelock2: non-error model, no livelock
-    + livelock_component0: non-error model, no livelock
-    + livelock_component1: non-error model, no livelock
-  - Remove symlink trees in test/
-  - XFAIL: compliance_failures_choice
-  - Simulate
-    + failure trace (Alarm) still shows eligibles
-  - Explore: Instead of state as string, use json'y state like dzn
-    trace --format=json
-  - loose coupling of dzn verify and dzn simulate!
-  - provides silent / silent_provides
-  - dzn trace for interface
-  - Apropos 2.13
-    + Jan:
-      + P5 system diagram integration performance
-      + postpone lazy import
-      + verify | simulate (no json, structured output including meta information)
-      + display error message in simulator
-      + integratie vertaling naar json (silent, async)
-      + resurrect ide verify
-      + bring silent under test
-    + Paul:
-     + Activity bars
-     + System (preview)
-  - Pass regression test
-    + FAIL: livelock_async (dzn verify should report <livelock>) (add to local.mk!!!)
-    + FAIL: async_multiple_provides (dzn traces forgets pending r.world event at end)
-  - bring split-arrows + dzn trace under test
-  - loose coupling of dzn verify and dzn simulate!
-    + Drop --json output
-    + Drop "sometimes use verify error message" concept
-    + Drop component-trace/spectrace/interface-trace concept
-    + For compliance, output common + <compliance> + "interface-trace"
-    + Prepend trace with model:MODEL-NAME, or <model:MODEL-NAME>
-  - dzn code
-    + Resurrect C support
-    + initial/minimal C language pack
-  - Review dzn verify
-    + --format=STAGE: output intermediate stages (mcrl2, lts, asserts)
-  - dzn lts + states: simple but correct dot-based state charts
-  - Pass regression test
-    + FAIL: blocking_shell (cs)
-  - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.12.0.rc0,rc1,rc2,rc3
-  - Code cleanups
-    + replace normalize triples t-* functions with record
-    + move gash/pipe.scm to dzn/pipe; drop Guile-2.2 support.
-    + move gaiag/ to dzn/
-    + move scmcrl2/ to dzn/verify/
-  - Finish and merge wip-vm
-    - fix exponential livelock check
-    - skip lts tests
-      +FAIL: test/all/illegal_external_nonsynchronous2 (LTS)
-      +FAIL: test/all/livelock_synchronous (LTS)
-      +FAIL: test/all/queuefull_component0 (LTS)
-      +FAIL: test/all/queuefull_external_sync (LTS)
-    - mark XFAIL
-      +FAIL: test/all/livelock_synchronous
-      +FAIL: test/all/livelock_synchronous2
-      +FAIL: test/all/queuefull_component0
-      +FAIL: test/all/queuefull_external_sync
-    - memoize run-to-completion for explore
-  - Strip code -l json
-  - adopt guile-3.0 and guile-json-4
-    + rebase wip-mingw-guile-2.2 on https://github.com/spk121/guile master
-  - Find and fix parse performance regression v2.10 -> v2.11.
-  - wip-vm: Fix remaining tests
-    +FAIL: test/all/compliance_blocking_out (simulate)
-  - Finish and merge wip-thermo-fisher
-  - Deprecate cloud-based 2.9
-    + No new trial accounts
-  - Code cleanups
-    + Add "Generated by" header
-    + code entry point: ast-> #:locations (?), #:model, #:queue-size
-    + cleanup dzn/code.scm, dzn/templates/code.scm
-    + templates
-      - dead code removal: removed 50 dead templates
-      - sort template definitions into categories
-    + foreign_import_system: glue.cs=>Foreign.cs
-  - Rewrite underlapping tests from wip-test (old-regression)
-    + hello_injected: Resurrect Injected.
-    + data_full: Resurrect Dataparam.
-  - Language packs
-    + javascript
-    + scheme
-    + Resurrect cs
-    + Resurrect c support, at minimal, "hello" level
-  - Code cleanups
-    + Remove glue
-    + Remove c++03
-    + Refactor/remove "MORTAL SIN HERE"
-    + Remove model2file remnants, file2file procedures.
-  - Documentation
-    + merge wip-tutorial
-      - doc/dezyne-tutorial.texi
-  - Release 2.11.0
-  - code
-    + Review and merge wip-language
-  - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc7,8,9,10
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7,8,9,10
-      (experimental: c++ew, scheme, javascript)
-  - Eradicate remnants of cloud-based solution
-    - Document access to examples, runtime.
-    - Remove dzn ls, dzn cat and dependencies
-  - Fix parse_parameter_mismatch.
-  - Decide on dzn or ide
-    + PATCH: dzn: Add -c,--core option; support running ide commands.
-      - feedback: revert, keep dzn and ide commands separate.
-  - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc5,6
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc5,6
-      experimental: javascript
-  - Thermo Fisher
-    + new wip-thermo-fisher branch
-    + wip-c++ew to wip-thermo-fisher
-    - Add thread pool c++ runtime
-  - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc1,2,3,4
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc1,2,3
-      (experimental: c++ew, scheme, javascript)
-  - code
-    + merge wip-scheme
-    + merge wip-javascript
-  - Documentation
-    + merge wip-doc
-  - LSP
-    + Sort out emacs/dzn-mode.el,emacs/dzn-ide.el with, and without, LSP
-  - enable 'dzn' to run 'ide' commands
-    + Add -c,--core option; support running ide commands.
-  - Review and merge wip-documentation
-    + doc/dezyne.texi
-  - Support binary release
-    + Solicit and incorporate feedback on dezyne-2.11.0.rc7
-    + Solicit and incorporate feedback on dezyne-experimental-2.11.0.rc7
-      (experimental: c++ew, scheme, javascript)
-  - Regression test: Fixed test/all/shell
-  - Review and merge wip-release
-  - LSP
-    + Move wip-lsp into dezyne-ide
-    + Cleanup and split fallback into PEG patches, wip-language, wip-lsp
-    + Make parser more robust against out-of-range errors during typing
-    + Figure out why completion seems to have stopped working
-    + Bring completion under test
-    + Bring LSP under test
-  - c++ew, javascript, scheme preview release:
-    + dezyne-experimental-2.11.0.rc1
-  - Fix C++17 requires keyword conflict
-  - c++ew
-    - implement exception wrappers for TFS
-    - distribution: --enable-c++-exception-wrappers
-    - full test of client code
-  - Website
-    + Write release notes (see NEWS)
-      - First blog post dezyne.org.
-  - Pass customer models internally
-  - Support binary release
-    + Solicit and incorporate feedback on 2.10.0.rc14
-    + Fix parser bugs
-    + Performance fixes
-    + Verification debugging
-  - Naming
-    - dzn.git => dezyne.git
-  - Parser bugs/hardening/performance
-    + Finish and merge wip-memoize
-    + Use-before-define patch from `rutger/master'
-  - Finish and merge `rutger/fall-back' branch.
-    + Fix problematic draft patches
-      - DRAFT peg: Add fall-back parsing.
-      - DRAFT peg: Add whitespace and comment skip parsers.
-  - Finish and merge `janneke/wip' branch.
-    + DRAFT verify: Remove dependency on file-system and shell.
-  - Serve dezyen.org from the kluit
-    + Move nginx/haunt-based website setup from banaan to kluit.
-    + dezyne.org dns => kluit
-    + letsencrypt certs/certbot setup in the kluit
-    + Add binary downloads to download page
-  - Upstream PEG patches to Guile
-  - Upstream mCRL2 patches
-  - DRAFT test: Start unit test for makreel.
-  - Emacs: Implement get-models using regex parsing; drop dzn parse
-    --components, --interfaces.
-  - Parser bugs/hardening/performance
-    + Allow mixing of bindings and instances.
-    + WFC performance: locations, lookup, model-properties, cycles.
-  - Strip binary pack to ~60MiB (from ~130MB).
-  - Forward-port mcrl2 patches, submit upstream
-  - Support binary release
-    + Solicit and incorporate feedback on 2.10.0.rc8
-  - Move pack, guix and binary release to pack.git
-    + Finish and merge wip-pack
-    + Finish and merge wip-mingw
-  - Sort-out wip-convert branch into wip-memoize
-  - Sort-out wip-namespace branch into wip-memoize
-  - Support binary release
-    + Solicit and incorporate feedback on 2.10.0.rc7
-  - Move to wip-prodrive:
-    + DRAFT 7562: c++: provide hook to capture and display information on illegal.
-    + DRAFT 7562: c++03: add dzn_illegal macro hook.
-  - Install documentation
-     - Binary installation
-     - Install from source
-  - Support binary release
-    + Solicit and incorporate feedback on 2.10.0.rc6
-  - Link to "Installation" in the manual from download page.
-  - dzn-envh for EMACSLOADPATH, INFOPATH, MANPATH
-  - Resurrect simple dzn-mode for GNU Emacs.
-  - Review dzn <command>
-    - Add manual pages (generated by help2man).
-    - Rename weird flags.
-    - Update help texts.
-  - Website
-    + Documentation section on dezyne.org.
-    + DUMMY Download section on dezyne.org.
-  - Upstream start_process patch to Guile
-  - Document release process
-    + Release from source tarball.
-  - Remove NodeJS dependency
-    + Replace test framework with automake driver in Guile
-      - Review and integrate wip-test branch
-  - Finish and review wip-string branch
-  - Pluggable dzn commands, to support IDE.
-  - Binary, generic, relocatable GNU/Linux pack
-    + Tested on CentOS 6.8
-  - Use "dzn", remove mentions of "gdzn"
-  - Binary Windows pack (wip-pipe)
-  - Make GNU Guix dependency optional
-    + Generic autotools-based build
-    + Integrate external lts tool
-    + Work with vanilla mcrl2 upstream (201908.0)
-  - Remove Python dependency
-    + Rewrite traces.py in Scheme
-  - Remove C++ dependency
-    + Remove seqdiag dependency from verification testing
-    + Finish PEG parser
-      - Add Well-formedness checks
-    + Eradicate use of C++; generate, seqdiag
-  - Update Copyright and License headers
-    + Revert: 653983f82 Gaiag: remove headers.
-  - Remove proprietary code
-  - Merge and migrate cloud-based development into master
-    + 2.9: C# work
-    + development: assorted patches
-    + Filip's MISRA-C/C99
-    + peg: New parser in Scheme
-    + ide: Merge fall-back PEG parser with regular, code peg parser
-    + enterprise: AST changes and serialization, javascript code
-      generator changes
-    + step: AST/code fixes, runtime AST for Well-formedness tests
+    + Finish Python support
