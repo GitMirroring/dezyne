@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -1240,20 +1240,20 @@
           ,@(map (lambda (port)
                    (let ((shared (filter (compose (cute ast:eq? port <>) .port)
                                          shared)))
-                    (sm:sequence*
-                     `(,(%flush-action port)
-                       ,(sum-state-action port)
-                       ,(sm:goto (name (statement->process-name o))
-                                 (arguments
-                                  (map
-                                   (lambda (v)
-                                     (let* ((p (.port v))
-                                            (interface (.type p)))
-                                       (simple-format
-                                        #f "~a=~a (~a)"
-                                        (makreel:full-name v)
-                                        (model-prefix (ast:name v) interface)
-                                        (port-prefix "s" p))))
+                     (sm:sequence*
+                      `(,(%flush-action port)
+                        ,(sum-state-action port)
+                        ,(sm:goto (name (statement->process-name o))
+                                  (arguments
+                                   (map
+                                    (lambda (v)
+                                      (let* ((p (.port v))
+                                             (interface (.type p)))
+                                        (simple-format
+                                         #f "~a=~a (~a)"
+                                         (makreel:full-name v)
+                                         (model-prefix (ast:name v) interface)
+                                         (port-prefix "s" p))))
                                    shared)))))))
                  (lset-intersection ast:eq? (map .port shared) requires))
           ,@defers
