@@ -1,0 +1,22 @@
+(header ((h) iworld provides) ((sut) variant_out component) ((w) iworld requires))
+(state ((h) (busy . false)) ((sut) (b . true)) ((w) (busy . false)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (busy . true)) ((sut) (b . true)) ((w) (busy . true)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/variant_out/variant_out.dzn:45:5: error: invariant
+... <- <external>.w.cruel
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.cruel <- ...
+<invariant>
+(state ((h) (busy . true)) ((sut) (b . false)) ((w) (busy . true)))
+(trail "w.cruel" "<invariant>")
+(labels "h.hello" "w.world" "w.cruel")
+(eligible)

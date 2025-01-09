@@ -1,0 +1,7 @@
+model: variant_out
+h.hello
+w.hello
+w.return
+h.return
+w.cruel
+<invariant>

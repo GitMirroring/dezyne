@@ -681,6 +681,7 @@ REGRESSION_TESTS =				\
  %D%/variant_defer				\
  %D%/variant_immediately			\
  %D%/variant_interface				\
+ %D%/variant_out				\
  %D%/wostream
 
 PARSER_TESTS =					\

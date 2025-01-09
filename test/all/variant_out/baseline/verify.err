@@ -1,0 +1,11 @@
+verify: iworld: check: deadlock: ok
+verify: iworld: check: unreachable: ok
+verify: iworld: check: livelock: ok
+verify: iworld: check: deterministic: ok
+verify: variant_out: check: deterministic: ok
+verify: variant_out: check: illegal: ok
+verify: variant_out: check: deadlock: fail
+error: invariant violation in model variant_out
+verify: variant_out: check: unreachable: skip
+verify: variant_out: check: livelock: ok
+verify: variant_out: check: compliance: skip
