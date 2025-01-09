@@ -639,7 +639,7 @@ init for MODEL unless INIT."
               model-name assert))
     #f))
 
-(define (report assert skip? trace model)
+(define* (report model assert trace #:key skip?)
   (cond (skip? (report-skip model assert))
         (trace (report-fail model assert trace))
         (else  (report-ok   model assert))))
@@ -710,7 +710,7 @@ init for MODEL unless INIT."
                    ,@nondets))
          (deadlock? (get-trace 'deadlock result)))
     (define* (report-assert assert #:key skip?)
-      (report assert skip? (get-trace assert result) model))
+      (report model assert (get-trace assert result) #:skip? skip?))
     (reduce-or keep-going?
                `(,(cute report-assert 'deadlock)
                  ,@(if (%no-unreachable?) '()
@@ -731,7 +731,7 @@ init for MODEL unless INIT."
          (refinement-trace interface-accepts component-accepts
                            (mcrl2:verify-compliance root model)))
     (define* (report-assert assert #:key skip? trace)
-      (report assert skip? (or trace (get-trace assert result)) model))
+      (report model assert (or trace (get-trace assert result)) #:skip? skip?))
     (define (extend-trace trace accepts)
       (if accepts (string-append trace (car accepts) "\n")
           trace))
