@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,6 +34,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in bool world(int i, int j);
+
+  behavior
+  {
+    on world: reply(true);
+  }
+}
+
 component hello_data
 {
   provides ihello h;
@@ -47,15 +58,5 @@ component hello_data
       member = k;
       bool b = w.world(i, member);
     }
-  }
-}
-
-interface iworld
-{
-  in bool world(int i, int j);
-
-  behavior
-  {
-    on world: reply(true);
   }
 }

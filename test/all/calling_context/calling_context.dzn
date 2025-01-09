@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2017 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2017, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -34,6 +34,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void world(int i);
+
+  behavior
+  {
+    on world: {}
+  }
+}
+
 component calling_context
 {
   provides ihello h;
@@ -44,15 +54,5 @@ component calling_context
     void f(int i){ w.world(i); }
     void g(){ w.world($123$); }
     on h.hello(i): { f(i); g(); }
-  }
-}
-
-interface iworld
-{
-  in void world(int i);
-
-  behavior
-  {
-    on world: {}
   }
 }

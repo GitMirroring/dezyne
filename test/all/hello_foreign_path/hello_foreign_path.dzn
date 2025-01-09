@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,6 +32,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void world();
+
+  behavior
+  {
+    on world: {}
+  }
+}
+
 component Foreign
 {
   provides iworld w;
@@ -46,16 +57,6 @@ component hello
   behavior
   {
     on h.hello(): {left.world(); right.world();}
-  }
-}
-
-interface iworld
-{
-  in void world();
-
-  behavior
-  {
-    on world: {}
   }
 }
 

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,6 +24,17 @@
 
 namespace inner {} // the first namespace used defines scheme's module name
 
+namespace foo {
+  interface I {
+    enum Bool {F,T};
+    in Bool e();
+    out void a();
+    behavior {
+      on e: {a;reply (Bool.T);}
+    }
+  }
+}
+
 namespace inner {
   namespace foo {
     interface I {
@@ -41,22 +53,12 @@ namespace inner {
       on inner.e(): {inner.a();reply (inner_state);}
     }
   }
+
   component ranger {
     provides .foo.I fooi;
     behavior {
       .foo.I.Bool foo_state = .foo.I.Bool.T;
       on fooi.e(): {fooi.a();reply (foo_state);}
-    }
-  }
-}
-
-namespace foo {
-  interface I {
-    enum Bool {F,T};
-    in Bool e();
-    out void a();
-    behavior {
-      on e: {a;reply (Bool.T);}
     }
   }
 }

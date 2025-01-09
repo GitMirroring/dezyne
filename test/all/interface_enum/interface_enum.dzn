@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -33,6 +33,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in ihello.r world();
+
+  behavior
+  {
+    on world: reply (ihello.r.f);
+  }
+}
+
 component interface_enum
 {
   provides ihello h;
@@ -47,15 +57,5 @@ component interface_enum
         e = w.world();
         reply (e);
       }
-  }
-}
-
-interface iworld
-{
-  in ihello.r world();
-
-  behavior
-  {
-    on world: reply (ihello.r.f);
   }
 }

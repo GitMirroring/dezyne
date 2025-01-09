@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -68,9 +68,9 @@ component iteration
   provides ihello h;
   system
   {
-    h <=> hello_.h;
     hello hello_;
-    hello_.i <=> list_.i;
+    h <=> hello_.h;
     list list_;
+    hello_.i <=> list_.i;
   }
 }

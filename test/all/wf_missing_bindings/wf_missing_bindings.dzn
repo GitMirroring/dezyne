@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,8 +42,8 @@ component wfc_missing_bindings
   requires ihello r;
   system
   {
-    p <=> h1.p;
     hello h1;
+    p <=> h1.p;
     hello h2;
   }
 }

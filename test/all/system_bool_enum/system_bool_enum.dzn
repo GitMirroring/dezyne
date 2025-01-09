@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2024 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -52,20 +52,6 @@ component hello_enum
   }
 }
 
-component hello_bool
-{
-  provides ihello p2;
-  requires ihello_nondet r2;
-
-  behavior
-  {
-    bool b = true;
-    bool p2_b = true;
-    on p2.hello (): {p2_b=!p2_b; b = r2.hello ();}
-    on r2.world (): {b=!b; if (!p2_b) { p2_b=!p2_b; p2.world ();}}
-  }
-}
-
 interface ihello_nondet
 {
   in bool hello ();
@@ -77,6 +63,20 @@ interface ihello_nondet
     on hello: {b = true; reply (true);}
     on hello: {b = false; reply (false);}
     [!b] on inevitable: {b=!b; world;}
+  }
+}
+
+component hello_bool
+{
+  provides ihello p2;
+  requires ihello_nondet r2;
+
+  behavior
+  {
+    bool b = true;
+    bool p2_b = true;
+    on p2.hello (): {p2_b=!p2_b; b = r2.hello ();}
+    on r2.world (): {b=!b; if (!p2_b) { p2_b=!p2_b; p2.world ();}}
   }
 }
 

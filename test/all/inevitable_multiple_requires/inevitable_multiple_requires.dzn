@@ -2,6 +2,7 @@
 //
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -37,6 +38,20 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in int hello ();
+  out void world ();
+
+  behavior
+  {
+    int i = 0;
+    [i==0] on hello: {i=i+1;reply (i);}
+    [i==1] on hello: {i=0;reply (i);}
+    [i==0] on inevitable: {i=i+1;world;}
+  }
+}
+
 component inevitable_multiple_requires
 {
   provides ihello h;
@@ -51,19 +66,5 @@ component inevitable_multiple_requires
     [x==0] on wl.world (): x=wl.hello();
     [x==1] on wl.world (): illegal;
     on wr.world (): {}
-  }
-}
-
-interface iworld
-{
-  in int hello ();
-  out void world ();
-
-  behavior
-  {
-    int i = 0;
-    [i==0] on hello: {i=i+1;reply (i);}
-    [i==1] on hello: {i=0;reply (i);}
-    [i==0] on inevitable: {i=i+1;world;}
   }
 }

@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -31,6 +32,18 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void cruel();
+  in void world();
+
+  behavior
+  {
+    on cruel: {}
+    on world: {}
+  }
+}
+
 component hello_guard_two
 {
   provides ihello h;
@@ -47,17 +60,5 @@ component hello_guard_two
         b=!b;w.cruel ();
       }
     }
-  }
-}
-
-interface iworld
-{
-  in void cruel();
-  in void world();
-
-  behavior
-  {
-    on cruel: {}
-    on world: {}
   }
 }

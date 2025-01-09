@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -45,6 +46,27 @@ component hello_bool
   }
 }
 
+interface iworld
+{
+  in void goodbye();
+  in void cruel();
+  in void world();
+
+  in void whats();
+  in void up();
+  in void doc();
+
+  behavior
+  {
+    on goodbye: {}
+    on cruel: {}
+    on world: {}
+    on whats: {}
+    on up: {}
+    on doc: {}
+  }
+}
+
 component world_int
 {
   provides ihello h;
@@ -81,25 +103,4 @@ component step_state
       hi.w <=> wi.h;
       pw <=> wi.w;
     }
-}
-
-interface iworld
-{
-  in void goodbye();
-  in void cruel();
-  in void world();
-
-  in void whats();
-  in void up();
-  in void doc();
-
-  behavior
-  {
-    on goodbye: {}
-    on cruel: {}
-    on world: {}
-    on whats: {}
-    on up: {}
-    on doc: {}
-  }
 }

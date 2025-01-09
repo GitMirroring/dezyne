@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -60,10 +60,10 @@ component blocking_multiple_provides0
   provides blocking ihello right;
   system
   {
-    left <=> m.left;
     mux m;
-    right <=> p.p;
+    left <=> m.left;
     proxy p;
+    right <=> p.p;
     p.r <=> m.right;
   }
 }

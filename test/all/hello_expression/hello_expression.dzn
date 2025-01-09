@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -33,6 +33,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void world();
+
+  behavior
+  {
+    on world: {}
+  }
+}
+
 component hello_expression
 {
   provides ihello h;
@@ -46,15 +56,5 @@ component hello_expression
 
     [0 == - c + 1 + 0] on h.hello(): w.world();
     [0 == 1 - c + 1 + c] on h.hello(): illegal;
-  }
-}
-
-interface iworld
-{
-  in void world();
-
-  behavior
-  {
-    on world: {}
   }
 }

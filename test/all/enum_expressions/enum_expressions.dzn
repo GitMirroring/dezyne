@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
@@ -31,6 +31,22 @@ interface ihello
   behavior
   {
     on hello: {}
+  }
+}
+
+interface iworld
+{
+  in void cruel();
+  in void goodbye();
+  in void hello();
+  in void world();
+
+  behavior
+  {
+    on cruel: {}
+    on goodbye: {}
+    on hello: {}
+    on world: {}
   }
 }
 
@@ -72,21 +88,5 @@ component enum_expressions
     void assert_three() {
       if(!e.three) illegal;
     }
-  }
-}
-
-interface iworld
-{
-  in void cruel();
-  in void goodbye();
-  in void hello();
-  in void world();
-
-  behavior
-  {
-    on cruel: {}
-    on goodbye: {}
-    on hello: {}
-    on world: {}
   }
 }

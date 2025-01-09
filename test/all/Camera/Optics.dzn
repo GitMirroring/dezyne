@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2015, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -79,20 +79,6 @@ component Contrast
   provides IContrast port;
 }
 
-component Focus
-{
-  provides IFocus port;
-  system {
-    FocusControl focus;
-    Contrast sensor;
-    Lens lens;
-
-    port <=> focus.port;
-    focus.lens <=> lens.port;
-    focus.sensor <=> sensor.port;
-  }
-}
-
 component FocusControl
 {
   provides IFocus port;
@@ -113,6 +99,20 @@ component FocusControl
       else lens.backward();
       contrast_was = contrast_is;
     }
+  }
+}
+
+component Focus
+{
+  provides IFocus port;
+  system {
+    FocusControl focus;
+    Contrast sensor;
+    Lens lens;
+
+    port <=> focus.port;
+    focus.lens <=> lens.port;
+    focus.sensor <=> sensor.port;
   }
 }
 

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -96,9 +96,9 @@ component blocking_multiple_provides3
   requires external iworld r;
   system
   {
+    multiple_provides mp;
     left  <=> mp.left;
     right <=> mp.right;
-    multiple_provides mp;
     external_adapter adapt;
     mp.r <=> adapt.h;
     adapt.w <=> r;

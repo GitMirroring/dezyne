@@ -10,12 +10,12 @@ sut.w.return <- ...
 <external>.h.return <- ...
 (state ((h)) ((sut) (idle . false)) ((w)))
 (trail "h.hello" "w.hello" "w.return" "h.return")
-test/all/compliance_external/compliance_external.dzn:45:3: error: illegal
+test/all/compliance_external/compliance_external.dzn:56:3: error: illegal
 <external>.h.hello -> ...
 ... -> sut.h.hello
 <illegal>
 (state ((h)) ((sut) (idle . false)) ((w)))
-test/all/compliance_external/compliance_external.dzn:45:3: error: illegal
+test/all/compliance_external/compliance_external.dzn:56:3: error: illegal
 (trail "h.hello" "<illegal>")
 (labels "h.hello" "w.world")
 (eligible)

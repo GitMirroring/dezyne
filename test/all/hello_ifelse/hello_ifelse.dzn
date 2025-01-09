@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
 //
@@ -33,18 +33,6 @@ interface ihello
   }
 }
 
-component hello_ifelse
-{
-  provides ihello h;
-  requires iworld w;
-
-  behavior
-  {
-    bool b = false;
-    on h.hello(): { if (b) w.world (); else {w.cruel (); w.world ();} b=!b;}
-  }
-}
-
 interface iworld
 {
   in void cruel();
@@ -54,5 +42,17 @@ interface iworld
   {
     on cruel: {}
     on world: {}
+  }
+}
+
+component hello_ifelse
+{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  {
+    bool b = false;
+    on h.hello(): { if (b) w.world (); else {w.cruel (); w.world ();} b=!b;}
   }
 }

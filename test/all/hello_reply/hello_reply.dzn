@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,20 +32,6 @@ interface ihello
   }
 }
 
-component hello_reply
-{
-  provides ihello h;
-
-  requires iworld w;
-  requires itrivial t;
-
-  behavior
-  {
-    on h.hello(): {w.hello(); reply(true);}
-    on w.world(): t.add();
-  }
-}
-
 interface iworld
 {
   in void hello();
@@ -64,5 +50,19 @@ interface itrivial
   behavior
   {
     on add: {}
+  }
+}
+
+component hello_reply
+{
+  provides ihello h;
+
+  requires iworld w;
+  requires itrivial t;
+
+  behavior
+  {
+    on h.hello(): {w.hello(); reply(true);}
+    on w.world(): t.add();
   }
 }

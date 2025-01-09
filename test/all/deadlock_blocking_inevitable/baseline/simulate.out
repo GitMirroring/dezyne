@@ -12,10 +12,10 @@ sut.<q> <- ...
 sut.w.world <- ...
 (state ((h)) ((sut)) ((w) (idle . true)))
 (trail "h.hello" "w.hello" "w.return" "w.world")
-test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
+test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:53:3: error: deadlock
 <deadlock>
 (state ((h)) ((sut)) ((w) (idle . true)))
-test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:40:3: error: deadlock
+test/all/deadlock_blocking_inevitable/deadlock_blocking_inevitable.dzn:53:3: error: deadlock
 (trail "<deadlock>")
 (labels "h.hello" "w.world")
 (eligible)

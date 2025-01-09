@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -46,9 +46,9 @@ component system_foreign_only
   provides foreign_only port;
   system
   {
-    port <=> p.p;
     proxy p;
-    p.r <=> f.port;
+    port <=> p.p;
     foreign f;
+    p.r <=> f.port;
   }
 }

@@ -12,7 +12,7 @@ verify: unused_function: check: deterministic: ok
 verify: unused_function: check: illegal: ok
 verify: unused_function: check: deadlock: ok
 verify: unused_function: check: unreachable: fail
-test/all/unused_function/unused_function.dzn:44:14: error: code will never be executed
-test/all/unused_function/unused_function.dzn:45:14: error: code will never be executed
+test/all/unused_function/unused_function.dzn:54:14: error: code will never be executed
+test/all/unused_function/unused_function.dzn:55:14: error: code will never be executed
 verify: unused_function: check: livelock: ok
 verify: unused_function: check: compliance: ok

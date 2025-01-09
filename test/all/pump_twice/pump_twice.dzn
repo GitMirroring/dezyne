@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -61,9 +61,9 @@ component pump_twice
   provides ihello h;
   system
   {
-    h <=> top.h;
     hello top;
-    top.w <=> bottom.w;
+    h <=> top.h;
     world bottom;
+    top.w <=> bottom.w;
   }
 }

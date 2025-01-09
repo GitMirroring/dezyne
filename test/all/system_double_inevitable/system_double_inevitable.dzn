@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -61,10 +61,10 @@ component system_double_inevitable
 
   system
     {
-      h <=> top.h;
       hello top;
-      top.w <=> bottom.h;
+      h <=> top.h;
       hello bottom;
+      top.w <=> bottom.h;
       bottom.w <=> w;
     }
 }

@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,9 +33,9 @@ component system_import_foreign
 
   system
     {
-      h <=> c.h;
       hello c;
-      c.w <=> f1.w;
+      h <=> c.h;
       Hello1 f1;
+      c.w <=> f1.w;
     }
 }

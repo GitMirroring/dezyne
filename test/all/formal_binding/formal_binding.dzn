@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -29,8 +29,8 @@ component formal_binding
   requires iworld w;
   system
   {
-    h <=> hello_.h;
     hello hello_;
+    h <=> hello_.h;
     hello_.w <=> w;
   }
 }

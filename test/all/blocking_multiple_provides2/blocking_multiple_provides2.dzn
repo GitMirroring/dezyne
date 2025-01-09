@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
-// Copyright © 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -69,9 +69,9 @@ component blocking_multiple_provides2
 
   system
   {
+    double_hello_block dhb;
     h_left <=> dhb.h_left;
     h_right <=> dhb.h_right;
-    double_hello_block dhb;
     dhb.w_left <=> w_left;
     dhb.w_right <=> w_right;
   }

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2018, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2020, 2021, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2020, 2021, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -66,11 +66,11 @@ component foreign_requires
 
   system
     {
-      h <=> f.h;
       Foreign f;
+      h <=> f.h;
+      hello c;
       f.w0 <=> c.h0;
       f.w1 <=> c.h1;
-      hello c;
       c.w0 <=> w0;
       c.w1 <=> w1;
     }

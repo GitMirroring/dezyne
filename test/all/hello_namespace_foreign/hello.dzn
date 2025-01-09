@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,6 +34,16 @@ namespace library
       }
     }
 
+  interface iworld
+    {
+      in void world();
+
+      behavior
+        {
+          on world: {}
+        }
+    }
+
   component hello
     {
       provides ihello h;
@@ -49,15 +59,5 @@ namespace library
     {
       provides iworld w;
       // behavior {}
-    }
-
-  interface iworld
-    {
-      in void world();
-
-      behavior
-        {
-          on world: {}
-        }
     }
 }

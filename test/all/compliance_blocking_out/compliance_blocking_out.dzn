@@ -2,7 +2,7 @@
 //
 // Copyright © 2018, 2019, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
-// Copyright © 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -42,6 +42,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  out void world ();
+
+  behavior
+  {
+    on inevitable: world;
+  }
+}
+
 component compliance_blocking_out
 {
   provides blocking ihello h;
@@ -52,15 +62,5 @@ component compliance_blocking_out
     blocking on h.hello (): {blocked=true;h.cruel ();}
     [blocked] on w.world (): {blocked=false;h.reply ();}
     [!blocked] on w.world (): {}
-  }
-}
-
-interface iworld
-{
-  out void world ();
-
-  behavior
-  {
-    on inevitable: world;
   }
 }

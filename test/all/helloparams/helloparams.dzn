@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2017, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -33,6 +34,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void world(int i, int j);
+
+  behavior
+  {
+    on world: {}
+  }
+}
+
 component helloparams
 {
   provides ihello h;
@@ -41,15 +52,5 @@ component helloparams
   behavior
   {
     on h.hello(i, j): w.world(i, j);
-  }
-}
-
-interface iworld
-{
-  in void world(int i, int j);
-
-  behavior
-  {
-    on world: {}
   }
 }

@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -34,6 +34,24 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void hello();
+  out void world();
+  out void cruel();
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle]
+    {
+      on optional: {idle = true; cruel;}
+      on inevitable: {idle = true; world;}
+    }
+  }
+}
+
 component deadlock_blocking_replies
 {
   provides blocking ihello h;
@@ -56,23 +74,5 @@ component deadlock_blocking_replies
       }
     }
     on w.cruel(): s = S.A;
-  }
-}
-
-interface iworld
-{
-  in void hello();
-  out void world();
-  out void cruel();
-
-  behavior
-  {
-    bool idle = true;
-    [idle] on hello: idle = false;
-    [!idle]
-    {
-      on optional: {idle = true; cruel;}
-      on inevitable: {idle = true; world;}
-    }
   }
 }

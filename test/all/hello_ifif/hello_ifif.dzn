@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2018, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -32,6 +32,16 @@ interface ihello
   }
 }
 
+interface iworld
+{
+  in void world();
+
+  behavior
+  {
+    on world: {}
+  }
+}
+
 component hello_ifif
 {
   provides ihello h;
@@ -40,15 +50,5 @@ component hello_ifif
   behavior
   {
     on h.hello(): if (true) if (true) w.world ();
-  }
-}
-
-interface iworld
-{
-  in void world();
-
-  behavior
-  {
-    on world: {}
   }
 }

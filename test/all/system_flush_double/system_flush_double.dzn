@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -85,10 +85,10 @@ component system_flush_double
   requires ihello r;
   system
   {
-    h <=> top.h;
     hello top;
-    top.w <=> bottom.h;
+    h <=> top.h;
     world bottom;
+    top.w <=> bottom.h;
     bottom.w <=> w;
     bottom.r <=> r;
   }

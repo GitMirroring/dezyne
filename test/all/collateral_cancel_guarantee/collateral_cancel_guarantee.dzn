@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2022, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -97,8 +97,8 @@ component collateral_cancel_guarantee
     top.w <=> left.h;
     left.w <=> l;
 
-    top.b <=> b.b;
     block b;
+    top.b <=> b.b;
     b.w <=> right.h;
     right.w <=> r;
   }
