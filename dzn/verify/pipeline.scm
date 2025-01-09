@@ -653,9 +653,8 @@ init for MODEL unless INIT."
   (if keep-going? (fold (cut or <> <>) #f (map (cute <>) l))
       (fold (lambda (e res) (or res (e))) #f l)))
 
-(define (mcrl2:verify-compliance root model)
-  (let* ((output status (verify-pipeline "verify-compliance" root model))
-         (lines (and output (string-split output #\newline)))
+(define (mcrl2:compliance-output->trace output status)
+  (let* ((lines (and output (string-split output #\newline)))
          (stdout-status (and lines
                              (filter (cute string-prefix? "result: " <>) lines)))
          (stdout-status (and (pair? stdout-status) (car stdout-status)))
@@ -697,44 +696,37 @@ init for MODEL unless INIT."
       (throw 'programming-error (format #f "status: ~s, trace: ~s\n" status trace)))
     (values trace interface-accepts component-accepts)))
 
-(define* (mcrl2:verify-interface-asserts model root #:key keep-going?)
-  (let* ((model-name (makreel:unticked-dotted-name model))
-         (asserts (verify-pipeline "verify-interface" root model))
-         (asserts (result-split asserts))
-         (nondets (verify-pipeline "verify-interface-nondet" root model))
-         (nondets (result-split nondets))
-         (lts-tags (get-tags asserts))
+(define* (verify:interface-asserts model output #:key keep-going?)
+  (let* ((result (result-split output))
+         (lts-tags (get-tags result))
          (unreachable (assert-unreachable lts-tags (model-tags model)))
          (result `(,unreachable
-                   ,@asserts
-                   ,@nondets))
+                   ,@result))
          (deadlock? (get-trace 'deadlock result)))
-    (define* (report-assert assert #:key skip?)
-      (report model assert (get-trace assert result) #:skip? skip?))
+    (define* (report-assert assert #:key skip? (trace (get-trace assert result)))
+      (report model assert trace #:skip? skip?))
     (reduce-or keep-going?
                `(,(cute report-assert 'deadlock)
                  ,@(if (%no-unreachable?) '()
                        `(,(cut report-assert 'unreachable #:skip? deadlock?)))
-                 ,(cute report-assert 'livelock)
-                 ,(cute report-assert 'deterministic)))))
+                 ,(cute report-assert 'livelock)))))
 
-(define* (mcrl2:verify-component-asserts model root #:key keep-going?)
-  (let* ((model-name (makreel:unticked-dotted-name model))
-         (result status (verify-pipeline "verify-component" root model))
-         (result (result-split result))
+(define* (verify:interface-nondet-assert model output #:key keep-going?)
+  (let* ((result (result-split output))
+         (assert 'deterministic)
+         (trace (get-trace assert result)))
+    (report model assert trace)))
+
+(define* (verify:component-asserts model output #:key component keep-going?)
+  (let* ((result (result-split output))
          (lts-tags (get-tags result))
          (unreachable (assert-unreachable lts-tags (model-tags model)))
          (result `(,unreachable
                    ,@result))
          (illegal? (get-trace 'illegal result))
-         (deadlock? (get-trace 'deadlock result))
-         (refinement-trace interface-accepts component-accepts
-                           (mcrl2:verify-compliance root model)))
-    (define* (report-assert assert #:key skip? trace)
-      (report model assert (or trace (get-trace assert result)) #:skip? skip?))
-    (define (extend-trace trace accepts)
-      (if accepts (string-append trace (car accepts) "\n")
-          trace))
+         (deadlock? (get-trace 'deadlock result)))
+    (define* (report-assert assert #:key skip? (trace (get-trace assert result)))
+      (report model assert trace #:skip? skip?))
     (reduce-or keep-going?
                `(,(cute report-assert 'deterministic)
                  ,(cute report-assert 'illegal)
@@ -742,19 +734,52 @@ init for MODEL unless INIT."
                  ,@(if (%no-unreachable?) '()
                        `(,(cut report-assert 'unreachable
                                #:skip? (or illegal? deadlock?))))
-                 ,(cute report-assert 'livelock)
-                 ,(cut report-assert 'compliance
-                       #:skip? (or illegal? deadlock?)
-                       #:trace refinement-trace)))))
+                 ,(cute report-assert 'livelock)))))
+
+(define* (verify:compliance-assert model output #:key
+                                   compliance-output
+                                   compliance-status
+                                   keep-going?
+                                   status)
+  (let* ((result (result-split output))
+         (illegal? (get-trace 'illegal result))
+         (deadlock? (get-trace 'deadlock result))
+         (trace interface-accepts component-accepts
+                (mcrl2:compliance-output->trace compliance-output
+                                                compliance-status)))
+    (define* (report-assert assert #:key skip?)
+      (report model assert trace #:skip? skip?))
+    (reduce-or keep-going?
+               (list (cut report-assert 'compliance
+                          #:skip? (or illegal? deadlock?))))))
 
 (define* (mcrl2:verify-interface root model #:key keep-going?)
-  (mcrl2:verify-interface-asserts model root #:keep-going? keep-going?))
+  (reduce-or
+   keep-going?
+   (list
+    (lambda _
+      (let ((output status (verify-pipeline "verify-interface" root model)))
+        (verify:interface-asserts model output #:keep-going? keep-going?)))
+    (lambda _
+      (let ((output status (verify-pipeline "verify-interface-nondet" root model)))
+        (verify:interface-nondet-assert model output #:keep-going? keep-going?))))))
 
 (define* (mcrl2:verify-component root model #:key keep-going?)
-  (let ((component model))
-    (reduce-or keep-going?
-               (list (cut mcrl2:verify-component-asserts component root
-                          #:keep-going? keep-going?)))))
+  (let ((output status (verify-pipeline "verify-component" root model)))
+    (reduce-or
+     keep-going?
+     (list
+      (cut verify:component-asserts model output #:keep-going? keep-going?)
+      (lambda _
+        (let ((compliance-output
+               compliance-status
+               (verify-pipeline "verify-compliance" root model)))
+          (verify:compliance-assert model output
+                                    ;; XXX FIXME
+                                    #:compliance-output compliance-output
+                                    #:compliance-status compliance-status
+                                    #:keep-going? keep-going?
+                                    #:status status)))))))
 
 (define* (mcrl2:verify root model-name #:key keep-going?)
   (let ((model (makreel:get-model root model-name)))
