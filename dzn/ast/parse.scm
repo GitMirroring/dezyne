@@ -664,7 +664,7 @@ to the AST element."
                 (zero (make <literal-node> #:value 0))
                 (left (clone zero #:location (.location right))))
            (make <minus-node> #:left left #:right right)))
-        (('not expression) (make <not-node> #:expression (helper expression)))
+        (('negation expression) (make <not-node> #:expression (helper expression)))
 
         (('literal "true") (make <literal-node> #:value "true"))
         (('literal "false") (make <literal-node> #:value "false"))

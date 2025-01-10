@@ -307,11 +307,11 @@ plus-min-expression
   <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
 
 not-expression
-  <- minus / not / group / dollars / literal / !(is-port / var) enum-literal
+  <- minus / negation / group / dollars / literal / !(is-port / var) enum-literal
      / field-test / action / shared-field-test / shared-var / call / var
      / unknown-identifier
 
-not <-- NOT not-expression#
+negation <-- NOT not-expression#
 minus <-- UMINUS not-expression#
 enum-literal <-- global? scope name
 field-test <-- var DOT name#
