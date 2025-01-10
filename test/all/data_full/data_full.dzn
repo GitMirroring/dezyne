@@ -2,6 +2,7 @@
 //
 // Copyright © 2016, 2017, 2020, 2021, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016, 2018 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -43,6 +44,8 @@ interface Idata_full
   in Status eior (in xint i, out xint j);
   in Status eio2r (inout xint i);
 
+  in xint ei_ret ();
+
   out void a0 ();
   out void a (xint i);
   out void aa (in xint i, in xint j);
@@ -74,6 +77,8 @@ interface Idata_full
     on eio:{}
     on eio2:{}
 
+    on ei_ret:{}
+    on ei_ret: a;
     on eor: reply (Status.Yes);
     on eoor: reply (Status.Yes);
     on eior: reply (Status.Yes);
@@ -81,9 +86,34 @@ interface Idata_full
   }
 }
 
+interface Idata
+{
+  in Idata_full.xint e_ret();
+  in bool e_even();
+  in void e_i (Idata_full.xint v);
+
+  behavior
+  {
+    bool even = true;
+
+    on e_ret:
+    {
+      even = !even;
+    }
+
+    on e_even:
+    {
+      reply(even);
+    }
+
+    on e_i: {}
+  }
+}
+
 component data_full_
 {
   provides Idata_full port;
+  requires Idata data;
 
   behavior
   {
@@ -101,6 +131,10 @@ component data_full_
       return Idata_full.Status.Yes;
     }
 
+    Idata_full.xint identity_xint (Idata_full.xint xi)
+    {
+      return xi;
+    }
     // void fun (inout Idata_full.xint i) // TODO inout function
     // {
     //   i = $789$;
@@ -161,6 +195,119 @@ component data_full_
     // on port.eio2r (i): {Idata_full.xint t = i; i = $t + 123$; reply (Idata_full.Status.Yes);}
     // on port.eio2r (i): {Idata_full.xint t = i; i = $123 + 123$; reply (Idata_full.Status.Yes);}
     on port.eio2r (i): {Idata_full.xint t = i; i = $246$; reply (Idata_full.Status.Yes);}
+
+    Idata_full.xint ii = $0$;
+    Idata_full.xint jj = $0$;
+    Idata_full.xint kk = $0$;
+    int done0 = 0;
+    int done1 = 0;
+    int done2 = 0;
+    Idata_full.xint helper0 (Idata_full.xint a)
+    {
+      ii = a;
+      done0 = done0+1;
+      return $0$;
+    }
+    Idata_full.xint helper1 (Idata_full.xint a)
+    {
+      jj = a;
+      done1 = done1+1;
+      return a;
+    }
+    Idata_full.xint helper2 (Idata_full.xint a, Idata_full.xint b, Idata_full.xint c)
+    {
+      kk = b;
+      done2 = done2+1;
+      return b;
+    }
+
+    void assert_ (bool c)
+    {
+      if (!c) illegal;
+    }
+
+    subint int {0..10};
+    int p = 0;
+    [p==0] on port.ei_ret ():
+    {
+      Idata_full.xint j = $42$;
+      reply (j);
+      p=p+1;
+    }
+    [p==1] on port.ei_ret ():
+    {
+      reply ($43$);
+      p=p+1;
+    }
+
+    Idata_full.xint func44 ()
+    {
+      return $44$;
+    }
+    [p==2] on port.ei_ret ():
+    {
+      reply (func44 ());
+      p=p+1;
+    }
+    [p==3] on port.ei_ret ():
+    {
+      jj = $0$;
+      done0 = 0;
+      done1 = 0;
+      Idata_full.xint j = helper0 (helper1 ($45$));
+      assert_ (done0==1);
+      assert_ (done1==1);
+      reply (jj);
+      p=p+1;
+    }
+    [p==4] on port.ei_ret ():
+    {
+      ii = $0$;
+      done0 = 0;
+      done1 = 0;
+      Idata_full.xint j = helper0 (helper1 ($46$));
+      assert_ (done0==1);
+      assert_ (done1==1);
+      reply (ii);
+      p=p+1;
+    }
+    [p==5] on port.ei_ret ():
+    {
+      kk = $0$;
+      done0 = 0;
+      done1 = 0;
+      done2 = 0;
+      Idata_full.xint j = helper2 (helper0 ($0$), helper2 ($1$, helper1 ($47$), helper0 ($2$)), helper1 ($3$));
+      assert_ (done0==2);
+      assert_ (done1==2);
+      assert_ (done2==2);
+      reply (kk);
+      p=6;
+    }
+    [p==6] on port.ei_ret ():
+    {
+      done1 = 0;
+      p=7;
+      reply (helper1 ($48$));
+      assert_ (done1==1);
+    }
+    [p==7] on port.ei_ret ():
+    {
+      bool even = false;
+      p=0;
+      Idata_full.xint res = helper0 (data.e_ret ());
+      even = data.e_even ();
+      assert_ (!even);
+      data.e_i(data.e_ret ());
+      even = data.e_even ();
+      assert_ (even);
+      reply (data.e_ret ());
+      even = data.e_even ();
+      assert_ (!even);
+      port.a(data.e_ret ());
+      even = data.e_even ();
+      assert_ (even);
+    }
   }
 }
 
@@ -197,10 +344,32 @@ component proxy
     on top.eior (i,j): reply (bottom.eior (i,j));
     on top.eio2r (i): reply (bottom.eio2r (i));
 
+    on top.ei_ret (): reply (bottom.ei_ret ());
+
     on bottom.a0 (): top.a0 ();
     on bottom.a6 (A0,A1,A2,A3,A4,A5): top.a6 (A0,A1,A2,A3,A4,A5);
     on bottom.a (i): deferfunc (i);
     on bottom.aa (i,j): top.aa (i,j);
+  }
+}
+
+component stub
+{
+  provides Idata port;
+
+  behavior
+  {
+    bool even = true;
+    on port.e_ret ():
+    {
+      even = !even;
+      reply ($49$);
+    }
+    on port.e_even ():
+    {
+      reply (even);
+    }
+    on port.e_i(b): {}
   }
 }
 
@@ -211,8 +380,10 @@ component data_full
   {
     proxy p;
     data_full_ c;
+    stub s;
 
     p.top <=> port;
     c.port <=> p.bottom;
+    c.data <=> s.port;
   }
 }

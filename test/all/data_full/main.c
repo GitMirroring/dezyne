@@ -101,6 +101,29 @@ int main ()
   d.port->in.eio2 (d.port, &i);
   assert (i == 246);
 
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 42);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 43);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 44);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 45);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 46);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 47);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 48);
+
+  i = d.port->in.ei_ret (d.port);
+  assert (i == 49);
 
   assert (Idata_full_Status_Yes == d.port->in.eor (d.port, &i));
   assert (i == 234);

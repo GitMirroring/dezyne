@@ -3,6 +3,7 @@
 //
 // Copyright © 2016, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -93,6 +94,21 @@ function main() {
   sut.port.in.eio2(i);
   console.assert(i.value == 246);
 
+  console.assert (42 == sut.port.in.ei_ret ())
+
+  console.assert (43 == sut.port.in.ei_ret ())
+
+  console.assert (44 == sut.port.in.ei_ret ())
+
+  console.assert (45 == sut.port.in.ei_ret ())
+
+  console.assert (46 == sut.port.in.ei_ret ())
+
+  console.assert (47 == sut.port.in.ei_ret ())
+
+  console.assert (48 == sut.port.in.ei_ret ())
+
+  console.assert (49 == sut.port.in.ei_ret ())
 
   console.assert(new dzn.Idata_full().Status.Yes == sut.port.in.eor(i));
   console.assert(i.value == 234);

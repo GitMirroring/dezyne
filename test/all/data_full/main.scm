@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2016, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2016 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -94,6 +95,21 @@
     (action sut .port .in .eio2 i)
     (assert (= (cdr i) 246))
 
+    (assert (= (action sut .port .in .ei_ret) 42))
+
+    (assert (= (action sut .port .in .ei_ret) 43))
+
+    (assert (= (action sut .port .in .ei_ret) 44))
+
+    (assert (= (action sut .port .in .ei_ret) 45))
+
+    (assert (= (action sut .port .in .ei_ret) 46))
+
+    (assert (= (action sut .port .in .ei_ret) 47))
+
+    (assert (= (action sut .port .in .ei_ret) 48))
+
+    (assert (= (action sut .port .in .ei_ret) 49))
 
     (assert (eq? (assoc-ref Idata_full:Status:alist 'Yes) (action sut .port .in .eor i)))
     (assert (= (cdr i) 234))

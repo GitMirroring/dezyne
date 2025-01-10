@@ -2,6 +2,7 @@
 //
 // Copyright © 2016, 2017, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016, 2020, 2022, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -91,6 +92,29 @@ int main ()
   sut.port.in.eio2 (i);
   assert (i == 246);
 
+  i = sut.port.in.ei_ret ();
+  assert (i == 42);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 43);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 44);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 45);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 46);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 47);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 48);
+
+  i = sut.port.in.ei_ret ();
+  assert (i == 49);
 
   assert (Idata_full::Status::Yes == sut.port.in.eor (i));
   assert (i == 234);
