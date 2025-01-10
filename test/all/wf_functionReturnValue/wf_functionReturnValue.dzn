@@ -3,7 +3,7 @@
 // Copyright © 2018, 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
-// Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2022, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,8 +28,10 @@ extern int $int$;
 
 interface i {
   in void hello ();
+  in int cruel ();
   behavior {
     on hello: {}
+    on cruel: {}
   }
 }
 
@@ -39,9 +41,9 @@ component wf_functionReturnValue
 
   behavior
   {
-    int f ()
+    void f ()
     {
-      return $0$;
+      reply ($0$);
     }
 
     bool f2 ()
@@ -137,6 +139,7 @@ component wf_functionReturnValue
         }
     }
 
-    on p.hello(): {}
+    on p.hello (): {}
+    on p.cruel (): f ();
   }
 }
