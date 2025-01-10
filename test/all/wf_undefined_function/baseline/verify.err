@@ -1,3 +1,4 @@
-test/all/wf_undefined_function/wf_undefined_function.dzn:33:15: error: undefined function call: "world"
-test/all/wf_undefined_function/wf_undefined_function.dzn:43:31: error: undefined function call: "foo"
-test/all/wf_undefined_function/wf_undefined_function.dzn:43:31: error: call value discarded
+test/all/wf_undefined_function/wf_undefined_function.dzn:33:20: error
+    on hello: world();
+                   ^
+                   `;' expected

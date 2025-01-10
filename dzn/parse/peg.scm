@@ -258,16 +258,14 @@ compound
 
 imperative-statement
   <- variable / assign / if-statement / illegal / return / skip-statement
-     / compound / reply / defer / action-or-call / interface-action SEMICOLON#
+     / compound / reply / defer / action-or-call
 
   defer <-- DEFER defer-arguments? imperative-statement
   defer-arguments <-- PAREN-OPEN (defer-argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
   defer-argument <-- var / shared-var / unknown-identifier
 
-  interface-action <-- is-event
-
   action-or-call <- (action / call) SEMICOLON#
-    action <-- is-port DOT name# arguments
+    action <-- is-port DOT name# arguments / is-event
     call <-- name arguments
       arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
         argument <-- expression
@@ -311,7 +309,7 @@ plus-min-expression
 not-expression
   <- minus / not / group / dollars / literal / !(is-port / var) enum-literal
      / field-test / action / shared-field-test / shared-var / call / var
-     / interface-action / unknown-identifier
+     / unknown-identifier
 
 not <-- NOT not-expression#
 minus <-- UMINUS not-expression#

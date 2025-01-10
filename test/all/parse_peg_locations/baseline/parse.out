@@ -91,7 +91,7 @@
                   (name "hello" (location 926 931))
                   (location 926 931))
                 (location 926 931))
-              (interface-action
+              (action
                 (name "world" (location 933 938))
                 (location 933 938))
               (location 923 939))

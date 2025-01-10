@@ -1,1 +1,4 @@
-test/all/parse_interface_parens/parse_interface_parens.dzn:33:15: error: undefined function call: "world"
+test/all/parse_interface_parens/parse_interface_parens.dzn:33:20: error
+    on hello: world(); // parse error here
+                   ^
+                   `;' expected
