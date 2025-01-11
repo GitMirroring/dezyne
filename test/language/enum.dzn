@@ -1,5 +1,12 @@
 enum Bool {False,True};
 
+enum Tri_bool
+{
+  False,   /* #true */
+  True,    /* #false */
+  Whatever /* #unspecified */
+};
+
 interface ihello
 {
   in Bool hello();
@@ -10,10 +17,3 @@ interface ihello
     Tri_bool t = Tri_bool.Whatever;
   }
 }
-
-enum Tri_bool
-{
-  False,   /* #true */
-  True,    /* #false */
-  Whatever /* #unspecified */
-};

@@ -504,11 +504,11 @@
 
 (test-equal "field-test field"
   '("e.False" "e.True")
-  (test-complete #:file-name "enum.dzn" #:line 9 #:column 7))
+  (test-complete #:file-name "enum.dzn" #:line 16 #:column 7))
 
 (test-equal "enum-literal with comment"
   '("Tri_bool.False" "Tri_bool.True" "Tri_bool.Whatever")
-  (test-complete #:file-name "enum.dzn" #:line 10 #:column 17))
+  (test-complete #:file-name "enum.dzn" #:line 17 #:column 17))
 
 (test-equal "import requires"
   '("blocking" "external" "injected" "ihello" "ihello_enum" "ihello_int")
@@ -876,17 +876,17 @@
   "int.dzn:1:7"
   (test-lookup #:file-name "int.dzn" #:line 8 #:column 4))
 
-(test-equal "field-test->var"
-  "enum.dzn:8:9"
-  (test-lookup #:file-name "enum.dzn" #:line 9 #:column 5))
+(test-equal "field-test->reference"
+  "enum.dzn:15:9"
+  (test-lookup #:file-name "enum.dzn" #:line 16 #:column 5))
 
 (test-equal "field-test->enum-field"
   "enum.dzn:1:17"
-  (test-lookup #:file-name "enum.dzn" #:line 9 #:column 7))
+  (test-lookup #:file-name "enum.dzn" #:line 16 #:column 7))
 
 (test-equal "enum-literal->field with comment"
-  "enum.dzn:18:2"
-  (test-lookup #:file-name "enum.dzn" #:line 10 #:column 26))
+  "enum.dzn:7:2"
+  (test-lookup #:file-name "enum.dzn" #:line 17 #:column 26))
 
 (test-equal "variable-type->interface enum"
   "interface-enum.dzn:3:7"
