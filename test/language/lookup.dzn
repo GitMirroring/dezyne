@@ -40,20 +40,7 @@ component hello_enum
   }
 }
 
-component hello_bool
-{
-  provides ihello p2;
-  requires ihello_nondet r2;
-
-  behavior
-  {
-    bool b = true;
-    on p2.hello(): {b = r2.hello();}
-    [!b] on r2.world(): {b=!b; p2.world(); bool tmp = b;}
-  }
-}
-
-interface ihello_nondet
+interface ihello_nondet //line 56
 {
   in bool hello();
   out void world();
@@ -67,7 +54,20 @@ interface ihello_nondet
   }
 }
 
-component hello_system
+component hello_bool //line 43
+{
+  provides ihello p2;
+  requires ihello_nondet r2;
+
+  behavior
+  {
+    bool b = true;
+    on p2.hello(): {b = r2.hello();}
+    [!b] on r2.world(): {b=!b; p2.world(); bool tmp = b;}
+  }
+}
+
+component hello_system //line 70
 {
   provides ihello p;
   requires ihello_nondet r;

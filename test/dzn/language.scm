@@ -771,8 +771,8 @@
 (test-begin "lookup")
 
 (test-equal "port->interface"
-  "lookup.dzn:56:10"
-  (test-lookup #:file-name "lookup.dzn" #:line 46 #:column 11))
+  "lookup.dzn:43:10"
+  (test-lookup #:file-name "lookup.dzn" #:line 60 #:column 11))
 
 (test-equal "instance->component"
   "lookup.dzn:26:10"
@@ -796,8 +796,8 @@
   (test-lookup #:file-name "lookup.dzn" #:line 34 #:column 4))
 
 (test-equal "variable-expression->variable"
-  "lookup.dzn:50:9"
-  (test-lookup #:file-name "lookup.dzn" #:line 52 #:column 54))
+  "lookup.dzn:64:9"
+  (test-lookup #:file-name "lookup.dzn" #:line 66 #:column 54))
 
 (test-equal "enum-literal->type"
   "lookup.dzn:33:9"
@@ -812,16 +812,16 @@
   (test-lookup #:file-name "ilookup.dzn" #:line 32 #:column 7))
 
 (test-equal "trigger->port"
-  "lookup.dzn:46:25"
-  (test-lookup #:file-name "lookup.dzn" #:line 52 #:column 12))
+  "lookup.dzn:60:25"
+  (test-lookup #:file-name "lookup.dzn" #:line 66 #:column 12))
 
 (test-equal "action->port"
-  "lookup.dzn:46:25"
-  (test-lookup #:file-name "lookup.dzn" #:line 51 #:column 24))
+  "lookup.dzn:60:25"
+  (test-lookup #:file-name "lookup.dzn" #:line 65 #:column 24))
 
 (test-equal "action->event"
-  "lookup.dzn:58:10"
-  (test-lookup #:file-name "lookup.dzn" #:line 51 #:column 27))
+  "lookup.dzn:45:10"
+  (test-lookup #:file-name "lookup.dzn" #:line 65 #:column 27))
 
 (test-equal "end-point->port"
   "lookup.dzn:72:18"
