@@ -32,6 +32,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn command-line)
+  #:use-module (dzn misc)
   #:use-module (dzn parse)
   #:use-module (dzn parse complete)
   #:use-module (dzn parse location)
