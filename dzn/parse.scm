@@ -120,7 +120,8 @@
       `(("-" . ,string))))
 
 (define* (parse:file->content-alist file-name #:key (imports '())
-                                    (content-alist '()))
+                                    (content-alist '())
+                                    ignore-import-error?)
   "Recursively resolve imports starting with FILE-NAME and return an alist
 of form:
 
@@ -142,13 +143,13 @@ specified in IMPORTS."
       (cons file-name content)))
 
   (define (resolve from imports imported content-alist)
-    (map (lambda (import)
-           (let* ((paths (cons (dirname from) imports))
-                  (file-name (search-path paths import)))
-             (unless file-name
-               (throw 'import-error import paths content-alist))
-             file-name))
-         imported))
+    (filter-map (lambda (import)
+                  (let* ((paths (cons (dirname from) imports))
+                         (file-name (search-path paths import)))
+                    (unless (or file-name ignore-import-error?)
+                      (throw 'import-error import paths content-alist))
+                    file-name))
+                imported))
 
   (define (canonical-file-name=? a b)
     (string=? (canonicalize-path-memoized a)
@@ -268,10 +269,14 @@ and return two values, the @var{tree-alist}, and the
          (tree-alist (parse:content-alist->tree-alist content-alist)))
     (values tree-alist content-alist)))
 
-(define* (parse:file->tree-alist file-name #:key (imports '()))
+(define* (parse:file->tree-alist file-name #:key (imports '())
+                                 ignore-import-error?)
   "Parse @var{file-name} using @var{imports} to resolve import files,
 and the @var{tree-alist}."
-  (let ((content-alist (parse:file->content-alist file-name #:imports imports)))
+  (let ((content-alist (parse:file->content-alist
+                        file-name
+                        #:imports imports
+                        #:ignore-import-error? ignore-import-error?)))
     (parse:content-alist->tree-alist content-alist)))
 
 
