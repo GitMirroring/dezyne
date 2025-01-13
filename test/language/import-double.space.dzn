@@ -1,9 +1,9 @@
 import double.space.dzn;
 
 namespace bar {
-  subint int {0..1};
+  subint iint {0..1};
   namespace double {
-    interface i {
+    interface ii {
       in Bool foo();
       in .bar.double.Bool bar();
       in int baz();
