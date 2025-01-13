@@ -609,11 +609,11 @@
 
 (test-equal "system binding instance provides"
   '("d.ww" "h")
-  (test-complete #:file-name "system-binding.dzn" #:line 52 #:column 12))
+  (test-complete #:file-name "system-binding.dzn" #:line 52 #:column 14))
 
 (test-equal "system binding instance requires"
   '("d.hh" "w")
-  (test-complete #:file-name "system-binding.dzn" #:line 53 #:column 12))
+  (test-complete #:file-name "system-binding.dzn" #:line 53 #:column 14))
 
 (test-equal "system end-point provides instance."
   '("c.hh" "d.hh")
