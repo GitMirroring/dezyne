@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -379,21 +379,17 @@
   '("blocking" "external" "injected" "ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 14 #:column 11))
 
-(test-equal "component-requires external"
-  '("blocking" "injected" "ihello")
+(test-equal "component-requires blocking"
+  '("ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 15 #:column 20))
 
-(test-equal "component-requires injected"
-  '("blocking" "external" "ihello")
+(test-equal "component-requires external"
+  '("ihello")
   (test-complete #:file-name "component-requires.dzn" #:line 16 #:column 20))
 
-(test-equal "component-requires external injected"
-  '("blocking" "ihello")
-  (test-complete #:file-name "component-requires.dzn" #:line 17 #:column 29))
-
-(test-equal "component-requires injected external"
-  '("blocking" "ihello")
-  (test-complete #:file-name "component-requires.dzn" #:line 18 #:column 29))
+(test-equal "component-requires injected"
+  '("ihello")
+  (test-complete #:file-name "component-requires.dzn" #:line 17 #:column 20))
 
 (test-equal "component-empty"
   '("provides" "requires")

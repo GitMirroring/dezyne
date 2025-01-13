@@ -12,10 +12,9 @@ component hello
 {
   provides  ;
   requires  ;
+  requires blocking  ;
   requires external  ;
   requires injected  ;
-  requires external injected  ;
-  requires injected external  ;
 
   behavior {}
 }
