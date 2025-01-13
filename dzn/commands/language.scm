@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -144,7 +144,7 @@ Dezyne language tool for completion and lookup information
           (pretty-print context (current-error-port)))
         (when debug?
           (format (current-error-port) "offset:~a\n" offset)
-          (format (current-error-port) "tree:~a\n" (.tree context)))
+          (format (current-error-port) "tree:~s\n" (.tree context)))
         (cond
          (stress?
           (stress file-name #:debug? debug?))
