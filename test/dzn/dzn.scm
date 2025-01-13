@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>
 ;;;
@@ -122,7 +122,7 @@ output, and standard error as three values."
            (close-port stderr-output)
            (close-port ex-output)
            (display input stdin-output)
-           (close stdin-output)
+           (false-if-exception (close-port stdin-output))
            (match (get-strings-all stdout-input stderr-input ex-input)
              ((stdout stderr "")
               (match-let (((pid . status) (waitpid pid)))
