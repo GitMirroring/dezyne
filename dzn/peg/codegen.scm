@@ -228,8 +228,12 @@ and collects it using procedure (%peg:error)."
                       (else
                        (let ((res (false-if-exception (kernel str strlen (1+ at)))))
                          (if res
-                             (begin
-                               (format-error (or (string-index str (char-set-complement char-set:whitespace) start at) start) at)
+                             (let ((start (or (string-index
+                                               str
+                                               (char-set-complement char-set:whitespace)
+                                               start at)
+                                              start)))
+                               (format-error start at)
                                res)
                              (loop (1+ at)))))))))))))
 
