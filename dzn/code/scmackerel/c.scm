@@ -303,7 +303,7 @@
 (define-method (ast->code (o <call>))
   (let* ((model (ast:parent o <model>))
          (model-name (c:type-name model))
-         (name (string-append model-name "_" (.function.name o)))
+         (name (string-append model-name "_" (ast:name (.function.name o))))
          (arguments (map ast->expression (ast:argument* o)))
          (arguments (cons "self" arguments)))
     (sm:call

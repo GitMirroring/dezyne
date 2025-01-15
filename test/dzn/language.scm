@@ -667,7 +667,6 @@
   '("provides" "requires")
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 18))
 
-(test-expect-fail 1)
 (test-equal "component-incomplete-port after behavior"
   '()
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 30))
@@ -676,7 +675,6 @@
   %completion-behavior
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 21))
 
-(test-expect-fail 1)
 (test-equal "component-incomplete-port behavior end"
   %completion-behavior
   (test-complete #:file-name "component-incomplete-port.dzn" #:line 28))
