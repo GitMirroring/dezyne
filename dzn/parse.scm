@@ -299,8 +299,8 @@ optionally using CONTENT-ALIST of form
     `((FILE-NAME . CONTENT) ...)
 "
   (define (expand-imports ast-alist)
-    (let* ((file (car ast-alist))
-           (imports (cdr ast-alist)))
+    (let ((file imports (match ast-alist
+                          ((file imports ...) (values file imports)))))
       (match file
         ((file-name . root)
          (let* ((imports (append-map (match-lambda
@@ -312,11 +312,11 @@ optionally using CONTENT-ALIST of form
   (define file+tree->ast
     (match-lambda
       ((file-name . tree)
-       (let ((content (assoc-ref content-alist file-name)))
-         (cons file-name
-               (parse:tree->ast tree
-                                #:string content
-                                #:file-name file-name))))))
+       (let* ((content (assoc-ref content-alist file-name))
+              (ast (parse:tree->ast tree
+                                    #:string content
+                                    #:file-name file-name)))
+         `(,file-name . ,ast)))))
 
   (let* ((ast-alist (map file+tree->ast tree-alist))
          (ast (expand-imports ast-alist)))
