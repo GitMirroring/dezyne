@@ -1,2 +1,1 @@
 test/all/parse_function_shadow_event/parse_function_shadow_event.dzn:31:5: error: duplicate identifier `world'
-test/all/parse_function_shadow_event/parse_function_shadow_event.dzn:32:15: error: undefined function call: "world"

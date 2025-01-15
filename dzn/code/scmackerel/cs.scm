@@ -160,7 +160,7 @@
          (arguments (ast:argument* o))
          (arguments (map ast->expression arguments formals)))
     (sm:call-method
-     (name (.function.name o))
+     (name (ast:name (.function.name o)))
      (arguments arguments))))
 
 (define-method (ast->code (o <reply>))

@@ -213,7 +213,7 @@
 
 (define-method (ast->code (o <call>))
   (sm:call-method
-   (name (.function.name o))
+   (name (ast:name (.function.name o)))
    (arguments (map ast->expression (ast:argument* o)))))
 
 (define-method (ast->code (o <reply>))

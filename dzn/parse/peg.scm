@@ -275,7 +275,7 @@ imperative-statement
 
   action-or-call <- (action / call) SEMICOLON#
     action <-- is-port DOT name# arguments / is-event !arguments
-    call <-- name arguments
+    call <-- compound-name arguments
       arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
         argument <-- expression
 
