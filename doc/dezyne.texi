@@ -3882,14 +3882,20 @@ In Dezyne all variables and constants are typed.  A number of type
 constructs are available.
 
 @example
-type      ::= bool / enum / subint / void
-data-type ::= extern
+state-type      ::= bool / enum / subint / void
+data-type       ::= extern
+type            ::= state-type | data-type
 @end example
 
 @code{type}s are used for event reply types, variables,
 function parameters, function, function return types, and function call
-arguments.  @code{data-types} are used for event parameters, action
-arguments, and variables.
+arguments.  @code{data-type}s are used for event and action parameters.
+Currently, events cannot have @code{state-type}s parameters;
+only @code{data-type}s.
+
+Before Dezyne 2.19.0, the event reply type, and function return type,
+where restricted to state-types. As of Dezyne 2.19.0, data-types
+are also allowed.
 
 @menu
 * Void::                        Definitions without type.
@@ -4300,7 +4306,6 @@ They are sometime referred to as @emph{state variables}.
 
 @example
 variable ::= (type identifier = expression
-                | data-type identifier "=" data-expression
                 | data-type identifier) ";"
 @end example
 
