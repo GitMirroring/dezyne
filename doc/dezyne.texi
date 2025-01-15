@@ -218,6 +218,7 @@ Declarative Statements
 
 * On::                          Defining what happens upon a trigger.
 * Guard::                       Declarative trigger condition.
+* Invariant::                   Specifying invariants.
 * Using inevitable and optional::  Nitty gritty details on using modeling events.
 
 Imperative Statements
@@ -3676,10 +3677,10 @@ behavior        blocking        bool            component
 defer           else            extern          external
 enum            false           if              illegal
 import          inevitable      injected        inout
-interface       in              namespace       on
-optional        otherwise       out             provides
-reply           requires        return          subint
-system          true
+interface       in              invariant       namespace
+on              optional        otherwise       out
+provides        reply           requires        return
+subint          system          true
 @end example
 
 @node Operators
@@ -4323,29 +4324,21 @@ be a constant expression, i.e.: no @code{action}, @code{call} or
 A trigger is prescribed by an interface to be handled by an
 implementation as is the condition under which it occurs.  Collectively
 this is referred to as a declarative statement.  The condition is
-expressed as a @code{guard}, the trigger in an @code{on}.  The code that
+expressed as a @code{guard}, the trigger as an @code{on}.  The code that
 is executed when both the guard expression evaluates to @code{true} and
 the trigger occurs, is called the @emph{imperative statement}
 (@xref{Imperative Statements}).
 
 @example
-declarative-statement ::= guard | on | "@{" (declarative-statement ";")* "@}"
+declarative-statement ::= guard | on | invariant | declarative-compound
+declarative-compound  ::= "@{" (declarative-statement ";")* "@}"
 @end example
 
-The combination of all declarative statements leading up to a
-@code{imperative statement} is also called the declarative
-@emph{prefix}.  The combination of all @code{guard}s, the @code{on} and
-the @code{imperative statement} is sometimes referred to as a
-@emph{transition}.
-
-@example
-transition   ::= prefix imperative-statement
-prefix       ::= <guards> <on>
-@end example
 
 @menu
 * On::                          Defining what happens upon a trigger.
 * Guard::                       Declarative trigger condition.
+* Invariant::                   Specifying invariants.
 * Using inevitable and optional::  Nitty gritty details on using modeling events.
 @end menu
 
@@ -4419,6 +4412,53 @@ For example:
   on hello: idle = true;
   on inevitable: @{world; idle = true;@}
 @}
+@end example
+
+@node Invariant
+@subsubsection @code{invariant}
+@cindex invariant
+
+Invariants are part of Dezyne language since version 2.19.0.
+The invariant statement expresses a property on states variable and/or shared
+state from ports that should hold. It resembles an @code{assert} statement known
+for other languages: whenever the expression of the invariant does not
+hold, i.e. evaluates to false, an "invariant" error is reported. Invariant
+statements only have an effect during simulation and verification.
+
+@example
+invariant   ::= "invariant" bool-expression
+@end example
+
+Invariants can be used in the behavior of an interface or component.
+All invariants are evaluated before processing a trigger, and for a component
+we have the additional condition that the queue must be empty. For a component, when the queue
+is not empty, evaluating invariants is skipped; the trigger is processed first.
+
+Note that an invariant statement can be guarded, for example:
+
+@example
+[state.Enabled] invariant device.state.On;
+@end example
+
+Above invariant example for a component expresses that whenever the component
+is in its @code{Enabled} state, the device should be in the @code{On} state.
+
+Note that invariants and on statements can be combined:
+@example
+[state.Enabled]
+@{
+  invariant device.state.On;
+  on ctrl.disable (): @{device.switch_off; state = state.Disabled;@}
+@}
+@end example
+
+
+Note that a guarded invariant can be rewritten to an unguarded invariant
+using the boolean "implies" (@code{=>}) operator. So, for instance, the example could
+equally well expressed by:
+
+@example
+invariant state.Enabled => device.state.On;
 @end example
 
 @node Using inevitable and optional
@@ -5032,14 +5072,6 @@ with @code{blocking} (@xref{Blocking}).  So we get:
 
 @example
 component-declarative-statement ::= declarative-statement | blocking
-@end example
-
-Thus, in a component, the ``declarative prefix'' includes blocking such
-that the prefix consists of three elements.
-
-@example
-transition  ::= prefix imperative-statement
-prefix      ::= <blocking?> <guards> <on>
 @end example
 
 @menu
