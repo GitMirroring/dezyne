@@ -176,7 +176,7 @@
 
 (define-method (is-called? (o <function>))
   (let ((calls (reachable-calls (ast:parent o <behavior>))))
-    (find (compose (cut equal? <> (.name o)) .function.name) calls)))
+    (find (compose (cute ast:name-equal? <> o) .function.name) calls)))
 
 (define-method (makreel:called-function* (o <behavior>))
   (filter is-called? (ast:function* o)))
@@ -431,7 +431,7 @@
               #:statement ((compose (tick-names- names) .statement) o))))
     (($ <call>)
      (clone o
-            #:function.name ((compose (append-tick names) .function.name) o)
+            #:function.name ((compose (tick-names- names) .function.name) o)
             #:arguments ((compose (tick-names- names) .arguments) o)))
     (($ <assign>)
      (clone o

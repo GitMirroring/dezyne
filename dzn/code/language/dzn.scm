@@ -361,7 +361,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <function>) port)
   (print-type (ast:type o) (ast:parent o <model>) port)
-  (simple-format port " ~a (" (.name o))
+  (simple-format port " ~a (" (ast:name o))
   (print-ast-join (ast:formal* o) port ", ")
   (display ")" port)
   (print-ast (.statement o) port))
@@ -461,7 +461,7 @@ and \"POST\" 'post in GRAMMAR."
       (display ";\n" port))))
 
 (define-method (print-ast (o <call>) port)
-  (simple-format port "~a (" (.function.name o))
+  (simple-format port "~a (" (ast:name (.function.name o)))
   (print-ast-join (ast:argument* o) port ", ")
   (display ")" port)
   (when (dzn:statement? o)
