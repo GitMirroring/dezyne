@@ -23,7 +23,7 @@
 
 @copying
 Copyright @copyright{} 2014 Ard-Jan Moerdijk@*
-Copyright @copyright{} 2014, 2020, 2021, 2022, 2023 Rutger van Beusekom@*
+Copyright @copyright{} 2014, 2020, 2021, 2022, 2023, 2025 Rutger van Beusekom@*
 Copyright @copyright{} 2014 Henk Katerberg@*
 Copyright @copyright{} 2014 Ladislau Posta@*
 Copyright @copyright{} 2014, 2016, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen@*
@@ -426,8 +426,8 @@ If you find Dezyne useful, please let us know.  We are always interested
 to find out how Dezyne is being used.
 
 You are also encouraged to help make Dezyne more useful by writing and
-contributing additional functions for it, and by reporting any problems
-you may have, (@xref{Contributing}).
+contributing new functionality by submitting patches, and by reporting
+problems you may encounter, (@xref{Contributing}).
 
 @menu
 * Purpose::                     Why are we creating Dezyne?
