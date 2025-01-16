@@ -1,6 +1,7 @@
 ;;; dzn-runtime -- Dezyne runtime library
 ;;;
 ;;; Copyright © 2017, 2019, 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of dzn-runtime.
 ;;;
@@ -238,7 +239,7 @@
       (dzn:trace-out log (car m) (dzn:return-value r))
       (dzn:prune-deferred o)
       (set! (.handling? o) #f)
-      r)))
+      (if (pair? r) (second r) r))))
 
 (define-method (call-out (o <dzn:component>) f m)
   (let ((log (dzn:get (.locator o) <procedure> "trace")))

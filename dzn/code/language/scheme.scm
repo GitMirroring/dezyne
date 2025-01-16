@@ -3,6 +3,7 @@
 ;;; Copyright © 2014, 2015, 2017, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
+;;; Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -174,6 +175,9 @@
 
 (define-method (scheme:reply-name (o <bool>))
   '("reply-bool"))
+
+(define-method (scheme:reply-name (o <extern>))
+  '("reply-extern"))
 
 (define-method (scheme:reply-name (o <reply>))
   (scheme:reply-name (ast:type (.expression o))))
