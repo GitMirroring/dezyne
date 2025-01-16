@@ -3688,7 +3688,8 @@ system          true
 Dezyne uses infix notation for expressions.  The following are operators
 in Dezyne:
 @example
-+       -       !
+||      &&      =>      !
++       -
 <       >       <=      >=      ==      !=      <=>
 @end example
 
@@ -3937,6 +3938,8 @@ Logical and of two boolean expressions,
 @item b1 || b2
 Logical or of two boolean expressions,
 @item b1 == b2
+Logical implies of two boolean expressions,
+@item b1 => b2
 Equality of two boolean expressions,
 @item b1 != b2
 Inequality of two boolean expressions,
@@ -3963,6 +3966,15 @@ bool negate (bool input)
   return !input;
 @}
 @end example
+
+The implies operator (@code{=>}) is available as of Dezyne 2.19.0.
+The expression @code{b1 => b2} expresses that if condition @code{b1} hold
+than also condition @code{b2} should hold. Note that we have the equivalence
+
+@example
+b1 => b2   ==  !b1 || b2
+@end example
+
 
 @node Enum
 @subsection @code{enum}
@@ -4116,7 +4128,7 @@ bool-expression ::= bool-literal
 bool-variable   ::= identifier | port "." identifier
 bool-literal    ::= "false" | "true"
 field-test      ::= enum-variable "." enum-field
-bool-operator   ::= "==" | "!=" | "&&" | "||"
+bool-operator   ::= "==" | "!=" | "&&" | "||" | "=>"
 comparison-operator
                 ::= "==" | "!=" | "<" | "<=" | ">" | ">="
 @end example
