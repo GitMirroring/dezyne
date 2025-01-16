@@ -3874,13 +3874,13 @@ The toplevel Dezyne program text is defined as follows:
 @example
 text ::= root
 root ::= (import | data-expression
-           | namespace | type | interface | component)*
+           | namespace | type | function | interface | component)*
 @end example
 
-An interface can refer to a global type definition.  A component can
-refer to types, interfaces and other components.  An explicit
-@code{import} clause is needed when the referred information is defined
-in another file.
+An interface can refer to global types and functions (since 2.20), a
+component can refer to global types, functions (since 2.20), interfaces
+and other components.  An explicit @code{import} clause is needed when
+the referred information is defined in another file.
 
 @subsection Import
 
@@ -4837,7 +4837,9 @@ bool c = negate (idle);
 @subsection Functions
 
 A function can be used to name and reuse a sequence of imperative
-statements.
+statements.  As of version 2.20, a function is not required to be scoped
+to an interface or component behavior, but may be defined in the same
+scope as interfaces and components, see also @xref{Dezyne Files}.
 
 @example
 function ::= type identifier "(" parameter-list ")"
@@ -4868,6 +4870,12 @@ recursive functions (function @code{f} calling function @code{g} and
 vice versa).  However only as long as every function involved in the
 recursion is @emph{tail recursive}; which means that a recursive call is
 the last statement in the function.
+
+Previous versions of the language restricted functions to the scope of
+behaviors.  Starting with version 2.20 functions may be declared
+independent from interface and component behaviors.  This obviously
+results in the ability allow functions to be reused across behaviors and
+thereby prevent duplication of data related functions.
 
 @subsection Expression Functions
 @cindex expression-function
@@ -5862,7 +5870,7 @@ prefix when referring to the name from another scope.
 
 @example
 namespace      ::= "namespace" compound-identifier "@{" namespace-root "@}"
-namespace-root ::= (namespace | type | interface | component)*
+namespace-root ::= (namespace | type | function | interface | component)*
 compound-identifier
                ::= scope* identifier
 scope          ::= identifier "."
