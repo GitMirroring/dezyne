@@ -464,10 +464,12 @@ and collects it using procedure (%peg:error)."
             ;; what data to propagate upward.
             (let* ((body (cadr res))
                    (loc `(location ,at ,(car res)))
-                   (annotate (if (not (%peg:locations?)) '()
-                                 (if (null? (cadr comment-res)) `(,loc)
-                                     `((comment ,(cdr comment-res) ,comment-loc)
-                                       ,loc))))
+                   (annotate (cond
+                              ((not (%peg:locations?)) '())
+                              ((null? (cadr comment-res)) `(,loc))
+                              (else
+                               `((comment ,(cdr comment-res) ,comment-loc)
+                                 ,loc))))
                    (at (car res)))
               #,(cond
                  ((eq? accumsym 'name)
