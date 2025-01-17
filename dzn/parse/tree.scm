@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2020, 2021, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -560,6 +560,7 @@ procedure)."
      illegal-trigger
      illegal-triggers
      injected
+     invariant
      import
      instance
      instances-and-bindings

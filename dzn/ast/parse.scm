@@ -3,7 +3,7 @@
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2023, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -513,6 +513,9 @@ to the AST element."
              #:variables variables
              #:functions functions
              #:statement statement)))
+
+        (('invariant expression)
+         (make <invariant-node> #:expression (helper expression)))
 
         (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 

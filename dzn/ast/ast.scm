@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2020, 2021, 2024 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
@@ -96,6 +96,7 @@
  .ids
  .injected?
  .instances
+ .invariant
  .last?
  .left
  .length
@@ -549,6 +550,9 @@
   (bindings #:init-form (make <bindings-node>)))
 
 (define-ast <shell-system> (<system>))
+
+(define-ast <invariant> (<declarative>)
+  (expression))
 
 (define-ast <behavior> (<scope> <declaration>)
   (types #:init-form (make <types-node>))

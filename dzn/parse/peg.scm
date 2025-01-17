@@ -3,7 +3,7 @@
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021, 2024 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -236,7 +236,7 @@ behavior <-- BEHAVIOR behavior-compound
          <-- type-name (!is-event name / duplicate-identifier)
              &PAREN-OPEN formals ASSIGN expression# SEMICOLON#
 
-declarative-statement <- on / blocking / guard / compound
+declarative-statement <- on / blocking / guard / compound / invariant
 
   on <-- ON (illegal-triggers COLON illegal
              / enter-frame triggers# COLON# (statement / !unknown-identifier)#
@@ -261,6 +261,9 @@ compound
 
   statement
      <- (declarative-statement / imperative-statement / !unknown-identifier)#
+
+invariant
+   <-- INVARIANT expression# SEMICOLON#
 
 imperative-statement
   <- variable / assign / if-statement / illegal / return / skip-statement
@@ -402,6 +405,7 @@ INEVITABLE          <- 'inevitable' ![a-zA-Z_0-9]
 INJECTED            <  'injected' ![a-zA-Z_0-9]
 INOUT               <- 'inout' ![a-zA-Z_0-9]
 INTERFACE           <  'interface' ![a-zA-Z_0-9]
+INVARIANT           <  'invariant' ![a-zA-Z_0-9]
 NAMESPACE           <  'namespace' ![a-zA-Z_0-9]
 ON                  <  'on' ![a-zA-Z_0-9]
 OPTIONAL            <- 'optional' ![a-zA-Z_0-9]
@@ -436,6 +440,7 @@ KEYWORD <
   / 'injected' ![a-zA-Z_0-9]
   / 'inout' ![a-zA-Z_0-9]
   / 'interface' ![a-zA-Z_0-9]
+  / 'invariant' ![a-zA-Z_0-9]
   / 'namespace' ![a-zA-Z_0-9]
   / 'on' ![a-zA-Z_0-9]
   / 'optional' ![a-zA-Z_0-9]

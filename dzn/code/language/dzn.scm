@@ -6,6 +6,7 @@
 ;;; Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
+;;; Copyright © 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -385,6 +386,11 @@ and \"POST\" 'post in GRAMMAR."
               (null? (ast:statement* statement)))
       (display " " port))
     (print-ast (.statement o) port)))
+
+(define-method (print-ast (o <invariant>) port)
+  (display "invariant " port)
+  (print-ast (.expression o) port)
+  (display ";\n" port))
 
 (define-method (print-ast (o <on>) port)
   (let ((statement (.statement o)))
