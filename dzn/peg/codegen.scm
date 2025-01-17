@@ -465,11 +465,16 @@ and collects it using procedure (%peg:error)."
             (let* ((body (cadr res))
                    (loc `(location ,at ,(car res)))
                    (annotate (cond
-                              ((not (%peg:locations?)) '())
-                              ((null? (cadr comment-res)) `(,loc))
-                              (else
+                              ((and (%peg:locations?)
+                                    (null? (cadr comment-res)))
+                               `(,loc))
+                              ((%peg:locations?)
                                `((comment ,(cdr comment-res) ,comment-loc)
-                                 ,loc))))
+                                 ,loc))
+                              ((null? (cadr comment-res))
+                               '())
+                              (else
+                               `((comment ,(cdr comment-res))))))
                    (at (car res)))
               #,(cond
                  ((eq? accumsym 'name)
