@@ -443,9 +443,13 @@ procedure)."
     ((? (is? 'trigger)) (slot o 'trigger-formals))))
 
 (define (.type-name o)
-  (assert-type o 'compound-name 'enum-literal 'event 'formal 'function 'instance 'port 'variable)
+  (assert-type o 'compound-name 'enum-literal 'event 'formal 'function 'instance 'port 'provides 'requires 'variable)
   (match o
-    ((? (is? 'port))    ;; Hmm: .compound-name??
+    ((? (is? 'port))
+     (or (and=> (slot o 'provides) .type-name)
+         (and=> (slot o 'requires) .type-name)
+         (slot o 'compound-name)))
+    ((or (? (is? 'provides)) (? (is? 'requires)))
      (slot o 'compound-name))
     ((? (is? 'instance))
      (slot o 'compound-name))
