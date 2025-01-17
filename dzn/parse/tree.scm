@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -115,6 +115,7 @@
 
             tree:add-file-name
             tree:collect
+            tree:filter
             tree:debug-context
             tree:direction
             tree:dotted-name
@@ -789,8 +790,8 @@ procedure)."
       (if (predicate o) (cons o (append-map (cute tree:collect <> predicate) o))
           (append-map (cute tree:collect <> predicate) o))))
 
-(define (tree:collect o predicate)
-  (if (predicate o) (cons o (append-map (cute tree:collect <> predicate) o))
+(define (tree:filter o predicate)
+  (if (predicate o) (cons o (append-map (cute tree:filter <> predicate) o))
       '()))
 
 (define* (context:collect predicate tree #:optional (context '()))

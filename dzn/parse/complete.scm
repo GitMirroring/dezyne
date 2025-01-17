@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2022, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -859,7 +859,7 @@
 
 (define (complete:context o at)
   (let ((narrow (conjoin incomplete? (negate symbol?) (negate tree:location?)))
-        (context (reverse (tree:collect o (cute tree:at-location-incomplete? <> at)))))
+        (context (reverse (tree:filter o (cute tree:at-location-incomplete? <> at)))))
     (if (null? context) `(,o)
         (let ((narrow (find narrow (cdar context))))
           (if narrow (cons narrow context)
