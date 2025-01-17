@@ -28,12 +28,16 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 rdelim)
 
   #:use-module (test dzn automake)
 
   #:use-module (dzn misc)
   #:use-module (dzn parse peg)
-  #:use-module (dzn parse))
+  #:use-module (dzn parse)
+  #:use-module (dzn parse lookup)
+  #:use-module (dzn parse peg)
+  #:use-module (dzn parse tree))
 
 (test-begin "parse")
 
@@ -77,6 +81,15 @@
                                 tree)))
              (match comment
                (('comment comment)
-                (string-prefix? marker comment))))))))))
+                (string-prefix? marker comment))))))))
+
+    (test-equal "string->tree"
+      "ihello"
+      (let* ((text (with-input-from-file hello-import read-string))
+             (tree (parse:string->tree text))
+             (port (and=> (context:collect tree (is? 'port)) car))
+             (type-name (.type-name (.tree port)))
+             (interface-name (and=> type-name tree:dotted-name)))
+        interface-name))))
 
 (test-end)
