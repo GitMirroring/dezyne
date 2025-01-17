@@ -261,21 +261,25 @@ parse CONTENT and return a TREE-ALIST of form
          (cons file-name tree)))))
   (map file+content->file+tree content-alist))
 
-(define* (parse:file->tree-alist+content-alist file-name #:key (imports '()))
+(define* (parse:file->tree-alist+content-alist file-name #:key (imports '())
+                                               (content-alist '()))
   "Parse @var{file-name} using @var{imports} to resolve import files,
 and return two values, the @var{tree-alist}, and the
 @var{content-alist}."
-  (let* ((content-alist (parse:file->content-alist file-name #:imports imports))
+  (let* ((content-alist (parse:file->content-alist file-name #:imports imports
+                                                   #:content-alist content-alist))
          (tree-alist (parse:content-alist->tree-alist content-alist)))
     (values tree-alist content-alist)))
 
 (define* (parse:file->tree-alist file-name #:key (imports '())
+                                 (content-alist '())
                                  ignore-import-error?)
   "Parse @var{file-name} using @var{imports} to resolve import files,
 and the @var{tree-alist}."
   (let ((content-alist (parse:file->content-alist
                         file-name
                         #:imports imports
+                        #:content-alist content-alist
                         #:ignore-import-error? ignore-import-error?)))
     (parse:content-alist->tree-alist content-alist)))
 
