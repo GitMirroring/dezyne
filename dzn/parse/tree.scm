@@ -783,7 +783,7 @@ procedure)."
 
 (define (tree:list-model* tree)
   (if (not (tree? tree)) '()
-      (context:collect tree:model? tree)))
+      (context:collect tree tree:model?)))
 
 (define (tree:collect o predicate)
   (if (not (tree? o)) '()
@@ -793,13 +793,6 @@ procedure)."
 (define (tree:filter o predicate)
   (if (predicate o) (cons o (append-map (cute tree:filter <> predicate) o))
       '()))
-
-(define* (context:collect predicate tree #:optional (context '()))
-  (if (not (tree? tree)) '()
-      (let* ((context (tree->context tree context))
-             (rest (append-map (cute context:collect predicate <> context) tree)))
-        (if (not (predicate tree)) rest
-            (cons context rest)))))
 
 (define (tree:direction o)
   (match o
@@ -1084,10 +1077,10 @@ procedure)."
 ;;; Context accessors.
 ;;;
 
-(define* (context:collect predicate tree #:optional (context '()))
+(define* (context:collect tree predicate #:optional (context '()))
   (if (not (tree? tree)) '()
       (let* ((context (tree->context tree context))
-             (rest (append-map (cute context:collect predicate <> context) tree)))
+             (rest (append-map (cute context:collect <> predicate context) tree)))
         (if (not (predicate tree)) rest
             (cons context rest)))))
 
