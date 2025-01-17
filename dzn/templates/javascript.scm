@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2021, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -36,3 +37,5 @@
 ;;; Component
 ;;;
 (define-templates class-name javascript:class-name type-infix)
+(define-templates wrap-value-prefix javascript:wrap-value-prefix)
+(define-templates wrap-value-suffix javascript:wrap-value-suffix)

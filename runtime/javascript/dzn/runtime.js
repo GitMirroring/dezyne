@@ -3,6 +3,7 @@
 // Copyright © 2016, 2017, 2019, 2020, 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2017 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2016, 2017 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -185,8 +186,9 @@ function runtime(illegal) {
     this.trace(m, m[1], trace);
     c._dzn.handling = true;
     var r = f ();
-    this.trace_out(m, (r === undefined ? 'return' : r), trace);
+    this.trace_out(m, (['undefined','object'].includes(typeof r)? 'return' : r), trace);
     c._dzn.handling = false;
+    r = (typeof r === 'object'? r.value : r)
     return r;
   }
 

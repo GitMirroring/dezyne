@@ -3,6 +3,7 @@
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2015, 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -97,6 +98,12 @@
            (append (list x " = " x " || {};\n" )
                    (loop (cdr todo) namespace)))))
    ""))
+
+(define-method (javascript:wrap-value-prefix (o <reply>))
+  (if (is-a? (ast:type o) <extern>) o ""))
+
+(define-method (javascript:wrap-value-suffix (o <reply>))
+  (if (is-a? (ast:type o) <extern>) o ""))
 
 (define-templates-macro define-templates javascript)
 (include-from-path "dzn/templates/dzn.scm")
