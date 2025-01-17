@@ -1055,8 +1055,8 @@ procedure)."
 
 (define (tree:scoped-name->compound-name o)
   (match o
-    (('scoped-name name location)
-     `(compound-name (name ,name ,location) ,location))
+    (('scoped-name name location ...)
+     `(compound-name (name ,name ,@location) ,@location))
     (((and type (or 'root 'namespace 'namespace-root)) slots ...)
      (let ((slots (map tree:scoped-name->compound-name slots)))
        `(,type ,@slots)))
