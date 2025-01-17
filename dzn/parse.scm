@@ -241,7 +241,7 @@ files."
   (let ((string (parse:file->string file-name)))
     (parse:string->tree string #:file-name file-name)))
 
-(define* (parse:content-alist->tree-alist content-alist)
+(define (parse:content-alist->tree-alist content-alist)
   "From CONTENT-ALIST of form
 
    '((FILE-NAME . CONTENT)
