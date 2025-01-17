@@ -596,7 +596,7 @@ procedure)."
      o)
     (((? symbol?) slot ...)
      (format (current-error-port)
-             "programming-warning: tree?: missing-type: ~a\n" o))
+             "programming-warning: tree?: missing-type: ~s\n" o))
     (_
      #f)))
 
