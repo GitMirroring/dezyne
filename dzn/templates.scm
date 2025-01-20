@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018, 2019 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -37,6 +37,7 @@
 
   #:use-module (dzn ast ast)
   #:use-module (dzn ast util)
+  #:use-module (dzn config)
   #:use-module (dzn misc)
 
   #:export (define-templates-base
@@ -153,7 +154,10 @@
       ((_ name class language)
        (let* ((tname (datum->syntax x (symbol-append 't: (syntax->datum #'name))))
               (class-name (drop-<> (syntax->datum #'class)))
-              (template (symbol->string (symbol-append 'dzn/templates/ (syntax->datum #'language) '/ (syntax->datum #'name) '@ class-name)))
+              (template (symbol->string
+                         (symbol-append (string->symbol %template-dir)
+                                        '/ (syntax->datum #'language)
+                                        '/ (syntax->datum #'name) '@ class-name)))
               (tree (template->tree (syntax->datum template)))
               (body (datum->syntax x (tree->body tree (syntax->datum template))))
               (o (datum->syntax x 'o)))
@@ -162,7 +166,7 @@
 (define-syntax define-templates-base
   (lambda (x)
     (define (body language name xname tname func sep)
-      (let ((dir (string-append "dzn/templates/" (symbol->string (syntax->datum language)) "/")))
+      (let ((dir (string-append %template-dir "/" (symbol->string (syntax->datum language)) "/")))
         (define (read-sep file-name)
           (with-input-from-file (string-append dir file-name) read))
         (let* ((o (datum->syntax x 'o))

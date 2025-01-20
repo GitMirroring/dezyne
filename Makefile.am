@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 # Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -108,6 +108,9 @@ include dzn/verify/local.mk
 include dzn/templates/local.mk
 include dzn/timing/local.mk
 include emacs/local.mk
+
+export DZN_UNINSTALLED=t
+export DZN_PREFIX=@abs_top_srcdir@
 
 GUILEC_FLAGS =					\
  -Warity-mismatch				\
