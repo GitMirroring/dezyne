@@ -177,7 +177,8 @@
                (makreel:locals p))))))
 
 (define-method (makreel:member* (o <ast>))
-  (ast:member* (ast:parent o <model>)))
+  (let ((model (ast:parent o <model>)))
+    (if model (ast:member* model) '())))
 
 (define-method (makreel:variables-in-scope (o <model>))
   (ast:member* o))
