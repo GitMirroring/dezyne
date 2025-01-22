@@ -451,6 +451,7 @@ REGRESSION_TESTS =				\
  %D%/function_early_return			\
  %D%/function_if				\
  %D%/function_reply_early_return		\
+ %D%/global_function_chain			\
  %D%/guard_expressions				\
  %D%/guard_predicates				\
  %D%/generalized_integer			\
