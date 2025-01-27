@@ -38,6 +38,7 @@
   #:use-module (dzn ast display)
   #:use-module (dzn ast serialize)
   #:use-module (dzn ast wfc)
+  #:use-module (dzn code)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn parse)
@@ -195,7 +196,8 @@ Parse a Dezyne file and produce an AST
         (if tree (display tree)
             (exit EXIT_FAILURE))))
      (else
-      (parameterize ((%context (%context)))
+      (parameterize ((%context (%context))
+                     (%language "dzn"))
         (let ((ast (parse options file-name #:exit? #f)))
           (if (and ast output?)
               (let* ((file-name (option-ref options 'output "-"))
