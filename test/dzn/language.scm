@@ -30,7 +30,6 @@
 ;;; Code:
 
 (define-module (test dzn language)
-  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64)
   #:use-module (srfi srfi-71)
@@ -49,62 +48,49 @@
   #:use-module (dzn shell-util)
   #:use-module (test dzn automake))
 
-(define* (resolve-file file-name #:key (imports '("" "test/language")))
-  (search-path imports file-name))
+(define (resolve-file file-name)
+  (let ((dir "test/language"))
+    (if (or (file-exists? file-name) (string-prefix? dir file-name)) file-name
+        (string-append dir "/" file-name))))
 
 (define (file-name->text file-name)
   (let ((file-name (resolve-file file-name)))
     (with-input-from-file file-name read-string)))
 
-(define* (test-context #:key file-name text line (column 0) offset
-                       (imports '()))
+(define (file-name->parse-tree file-name)
+  (let ((text (file-name->text file-name)))
+    (parse:string->tree* text #:file-name file-name)))
+
+(define* (test-context #:key file-name text line (column 0) offset)
   (let* ((text   (or text (file-name->text file-name)))
-         (alist  (parameterize ((%peg:fall-back? #t))
-                   (catch #t
-                     (lambda _
-                       (parse:file->tree-alist file-name #:imports imports
-                                               #: ignore-import-error? #t))
-                     (const `((,file-name . (root)))))))
-         (root   (cdr (car alist)))
+         (root   (parse:string->tree* text #:file-name file-name))
          (offset (or offset
                      (and line (line-column->offset line column text))
                      (string-length text))))
-    (define file-name->parse-tree
-      (compose (cute assoc-ref alist <>) resolve-file))
-    (values (complete:context root offset) offset file-name->parse-tree)))
+    (values (complete:context root offset) offset)))
 
 (define* (test-complete #:key file-name text line (column 0) offset
                         (imports '())
                         (file-name->parse-tree (const '())))
-  (let* ((file-name (resolve-file file-name))
-         (ctx offset
-              file-name->parse-tree
-              (test-context #:file-name file-name #:text text
-                            #:line line #:column column
-                            #:offset offset
-                            #:imports imports))
+  (let* ((ctx offset (test-context #:file-name file-name #:text text
+                                   #:line line #:column column
+                                   #:offset offset))
          (token      (.tree ctx)))
     (complete token ctx offset #:file-name->parse-tree file-name->parse-tree
               #:imports imports)))
 
 (define* (test-lookup #:key file-name text line (column 0) offset
-                      (file-name->parse-tree (const '()))
-                      (imports '()))
-  (let* ((file-name (resolve-file file-name))
-         (ctx offset
-              file-name->parse-tree
-              (test-context #:file-name file-name #:text text
-                            #:line line #:column column
-                            #:offset offset
-                            #:imports imports))
+                      (file-name->parse-tree (const '())))
+  (let* ((ctx   (test-context #:file-name file-name #:text text
+                              #:line line #:column column
+                              #:offset offset))
          (token (.tree ctx))
          (loc   (lookup-location token ctx
                                  #:file-name file-name
                                  #:file-name->text file-name->text
                                  #:file-name->parse-tree file-name->parse-tree
                                  #:resolve-file resolve-file)))
-    (and=> (and=> loc location->string)
-           basename)))
+    (and=> loc location->string)))
 
 (test-begin "language")
 
@@ -522,23 +508,28 @@
 
 (test-equal "import requires"
   '("blocking" "external" "injected" "ihello" "ihello_enum" "ihello_int")
-  (test-complete #:file-name "import.dzn" #:line 8 #:column 10))
+  (test-complete #:file-name "import.dzn" #:line 8 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "import statemement"
   '("Bool" "bool" "defer" "if" "int" "m" "p.world()" "r.hello()" "s.hello()" "void")
-  (test-complete #:file-name "import.dzn" #:line 27 #:column 18))
+  (test-complete #:file-name "import.dzn" #:line 27 #:column 18
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "import event assign expression"
   '("Bool.False" "Bool.True" "b" "fun(_)" "m" "s.hello()")
-  (test-complete #:file-name "import.dzn" #:line 23 #:column 10))
+  (test-complete #:file-name "import.dzn" #:line 23 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "import event variable expression"
   '("r.hello()")
-  (test-complete #:file-name "import.dzn" #:line 27 #:column 27))
+  (test-complete #:file-name "import.dzn" #:line 27 #:column 27
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "on imported triggers"
   '("p.hello()" "r.world()" "s.world()")
-  (test-complete #:file-name "import.dzn" #:line 20 #:column 9))
+  (test-complete #:file-name "import.dzn" #:line 20 #:column 9
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "space-ihello space nest types"
   '("Bool" "bool" "data_t" "enum" "extern" "ihello.Bool" "int" "on" "subint" "void")
@@ -562,19 +553,23 @@
 
 (test-equal "space-hello space interfaces"
   '("ihello" "iworld" "nest.iworld")
-  (test-complete #:file-name "space-hello.dzn" #:line 27 #:column 12))
+  (test-complete #:file-name "space-hello.dzn" #:line 27 #:column 12
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "space-hello interfaces"
   '("iworld" "space.ihello" "space.iworld" "space.nest.iworld")
-  (test-complete #:file-name "space-hello.dzn" #:line 38 #:column 10))
+  (test-complete #:file-name "space-hello.dzn" #:line 38 #:column 10
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "space-hello space types"
   '("Bool" "bool" "data_t" "enum" "extern" "ihello.Bool" "int" "nest.iworld.Bool" "on" "subint" "void")
-  (test-complete #:file-name "space-hello.dzn" #:line 31))
+  (test-complete #:file-name "space-hello.dzn" #:line 31
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "space-hello types"
   '("bool" "enum" "extern" "on" "space.Bool" "space.data_t" "space.ihello.Bool" "space.int" "space.nest.iworld.Bool" "subint" "void")
-  (test-complete #:file-name "space-hello.dzn" #:line 42))
+  (test-complete #:file-name "space-hello.dzn" #:line 42
+                 #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "system before ports"
   '("provides" "requires")
@@ -753,7 +748,7 @@
 (test-equal "imports path"
   '("import.dzn" "lib.dzn" "lib/")
   (with-directory-excursion "test/language/import"
-    (test-complete #:file-name "./import.dzn" #:imports '("lib"))))
+    (test-complete #:file-name "import.dzn" #:imports '("lib"))))
 
 (test-equal "imports lib/"
   '("import.dzn" "lib/")
@@ -781,7 +776,8 @@
 
 (test-equal "port->imported-interface, with fallback"
   "ilookup.dzn:24:10"
-  (test-lookup #:file-name "lookup.dzn" #:line 28 #:column 13))
+  (test-lookup #:file-name "lookup.dzn" #:line 28 #:column 13
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "trigger->event"
   "ilookup.dzn:26:10"
@@ -906,27 +902,33 @@
 
 (test-equal "on->imported trigger-port"
   "import.dzn:7:23"
-  (test-lookup #:file-name "import.dzn" #:line 20 #:column 7))
+  (test-lookup #:file-name "import.dzn" #:line 20 #:column 7
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "port->imported-interface"
   "ihello-int.dzn:3:10"
-  (test-lookup #:file-name "import.dzn" #:line 8 #:column 11))
+  (test-lookup #:file-name "import.dzn" #:line 8 #:column 11
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "type->imported enum"
   "ienum.dzn:1:5"
-  (test-lookup #:file-name "import.dzn" #:line 13 #:column 4))
+  (test-lookup #:file-name "import.dzn" #:line 13 #:column 4
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "type->imported enum"
   "ienum.dzn:1:5"
-  (test-lookup #:file-name "ihello-enum.dzn" #:line 10 #:column 4))
+  (test-lookup #:file-name "ihello-enum.dzn" #:line 10 #:column 4
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "enum-literal->imported enum field"
   "ienum.dzn:1:11"
-  (test-lookup #:file-name "ihello-enum.dzn" #:line 13 #:column 20))
+  (test-lookup #:file-name "ihello-enum.dzn" #:line 13 #:column 20
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "port->namespace-interface"
   "space-ihello.dzn:7:12"
-  (test-lookup #:file-name "space-hello.dzn" #:line 27 #:column 13))
+  (test-lookup #:file-name "space-hello.dzn" #:line 27 #:column 13
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "illegal interface trigger->event"
   "illegal.dzn:3:10"
@@ -941,7 +943,7 @@
   (test-lookup #:file-name "illegal.dzn" #:line 17 #:column 9))
 
 (test-equal "import"
-  "ihello.dzn:1:0"
+  "test/language/ihello.dzn:1:0"
   (test-lookup #:file-name "import.dzn" #:line 1))
 
 (test-equal "import nonexistent"
@@ -966,11 +968,13 @@
 
 (test-equal "import-double.space"
   "double.space.dzn:3:9"
-  (test-lookup #:file-name "import-double.space.dzn" #:line 7 #:column 9))
+  (test-lookup #:file-name "import-double.space.dzn" #:line 7 #:column 9
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "import-double.space prefix"
   "double.space.dzn:3:9"
-  (test-lookup #:file-name "import-double.space.dzn" #:line 8 #:column 9))
+  (test-lookup #:file-name "import-double.space.dzn" #:line 8 #:column 9
+               #:file-name->parse-tree file-name->parse-tree))
 
 (test-equal "reply-port->port"
   "blocking.dzn:16:18"
