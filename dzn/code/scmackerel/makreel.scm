@@ -126,10 +126,15 @@
   (model-prefix "behavior"))
 
 (define-method (statement->process-name (o <ast>))
-  (model-prefix (makreel:process-identifier o)))
+  (let* ((function (as (.parent o) <function>))
+         (name (or (and=> function .name) "")))
+    (model-prefix (string-append name (makreel:process-identifier o)))))
 
 (define-method (statement->process-name (o <ast>) (model <model>))
-  (model-prefix (makreel:process-identifier o #:model model)))
+  (let* ((function (as (.parent o) <function>))
+         (name (or (and=> function .name) ""))
+         (identifier (makreel:process-identifier o #:model model)))
+    (model-prefix (string-append name identifier))))
 
 (define-method (makreel:type->string (o <type>))
   (match o
