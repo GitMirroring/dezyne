@@ -100,7 +100,7 @@ such unnamed lists."
                 (peg:imports content))))
     (match tree
       (('import file-name) (list file-name))
-      ((('import file-name) ...) file-name))))
+      ((('import file-name rest ...) ...) file-name))))
 
 (define (peg:imported-from alist)
   "Return an alist of imported file names"
