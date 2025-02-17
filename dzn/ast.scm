@@ -357,6 +357,9 @@
 (define-method (ast:wildcard? (o <boolean>))
   #f)
 
+(define-method (ast:wildcard? (o <ast>))
+  #f)
+
 (define-method (ast:typed? (o <event>))
   (let ((type ((compose .type .signature) o)))
     (not (as type <void>))))
