@@ -772,7 +772,7 @@ no handwritten code is needed.
 
 The examples used in this chapter can be found in the Dezyne source tree
 at @file{doc/examples/} or downloaded from
-@url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/doc/examples,
+@url{https://git.savannah.nongnu.org/cgit/dezyne.git/tree/doc/examples,
 doc/examples/ in git}.
 
 @menu
@@ -1170,7 +1170,7 @@ implementation elsewhere, and in a foreign language (in this case
 
 The full example is contained in the source tree at
 @file{test/all/Camera/Camera.dzn} or
-@url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/test/all/Camera/Camera.dzn,
+@url{https://git.savannah.nongnu.org/cgit/dezyne.git/tree/test/all/Camera/Camera.dzn,
 Camera.dzn}.
 
 The simplified@footnote{A simplified state diagram shows only triggers
@@ -1197,7 +1197,7 @@ the @code{MaterialHandler}:
 
 The full example is contained in the source tree at@*
 @file{test/all/LegoBallSorter/LegoBallSorter.dzn} or@*
-@url{https://savannah.nongnu.org/cgit/dezyne.git/dezyne/tree/test/all/LegoBallSorter/LegoBallSorter.dzn,
+@url{https://git.savannah.nongnu.org/cgit/dezyne.git/tree/test/all/LegoBallSorter/LegoBallSorter.dzn,
 LegoBallSorter.dzn}.
 
 @c *********************************************************************
