@@ -364,6 +364,7 @@ REGRESSION_TESTS =				\
  %D%/formal_binding				\
  %D%/function_early_return			\
  %D%/function_reply_early_return		\
+ %D%/function_shadow_event			\
  %D%/guard_expressions				\
  %D%/generalized_integer			\
  %D%/generalized_integer_temporaries		\
