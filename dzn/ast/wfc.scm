@@ -590,7 +590,7 @@
      (if (feature-supported? "defer") '()
          `(,(wfc-error
              o
-             (format #f "use of `blocking' with language ~s is not supported"
+             (format #f "use of `defer' with language ~s is not supported"
                      (%language)))))
      (if (not arguments) '()
          (append-map wfc-defer-argument arguments))
