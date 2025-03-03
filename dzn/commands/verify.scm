@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -33,6 +33,7 @@
   #:use-module (ice-9 getopt-long)
 
   #:use-module (dzn ast)
+  #:use-module (dzn ast ast)
   #:use-module (dzn code)
   #:use-module (dzn code language makreel)
   #:use-module (dzn command-line)
@@ -112,7 +113,8 @@ Check FILEs and DIRECTORYs for verification errors in Dezyne models
                       (lambda _ (ast:get-model ast model-name))
                       #:backtrace? backtrace?
                       #:file-name file-name))))
-    (when (and=> model ast:imported?)
+    (when (and (and=> model ast:imported?)
+               (is-a? model <component>))
       (let ((name (ast:dotted-name model)))
         (format (current-error-port)
                 "~a:error: cannot verify imported model: ~a\n"
