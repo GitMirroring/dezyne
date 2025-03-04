@@ -83,7 +83,8 @@
 (define* (dzn:command-line:get option #:optional default)
   (and (> (length (command-line)) 1)
        (let ((options (parse-opts (command-line))))
-         (option-ref options option default))))
+         (if (not (member option multi-options)) (option-ref options option default)
+             (multi-opt options option)))))
 
 (define (multi-opt options name)
   (let ((opt? (lambda (o) (and (eq? (car o) name) (cdr o)))))
