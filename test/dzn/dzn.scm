@@ -239,6 +239,11 @@ output, and standard error as three values."
     (or (get-meta-option file-name 'simulate-flags)
         '())))
 
+(define (dzn-flags file-name)
+  (let ((alist (get-meta file-name)))
+    (or (get-meta-option file-name 'dzn-flags)
+        '())))
+
 
 ;;;
 ;;; Utility.
@@ -335,6 +340,7 @@ output, and standard error as three values."
   (format #t "** stage: verify\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (dzn-flags (dzn-flags file-name))
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
                                     (cute string-split <> #\:))
@@ -349,10 +355,10 @@ output, and standard error as three values."
          (queue-size-external (queue-size-external file-name))
          (command
           (if fall-back?
-              `("dzn" "--verbose" "parse" "--fall-back"
+              `("dzn" ,@dzn-flags"--verbose" "parse" "--fall-back"
                 ,@includes
                 ,dzn-name)
-              `("dzn" "--verbose" "verify"
+              `("dzn" ,@dzn-flags "--verbose" "verify"
                 ,@includes
                 "--keep-going"
                 ,@(if (not no-unreachable?) '()
@@ -376,6 +382,7 @@ output, and standard error as three values."
   (and (let* ((base-name (basename file-name))
               (dzn-name (string-append file-name "/" base-name ".dzn"))
               (input "")
+              (dzn-flags (dzn-flags file-name))
               (in-lang (string-append file-name "/" language))
               (includes (cons in-lang
                               (or (and=> (getenv "DZN_INCLUDE_PATH")
@@ -387,7 +394,7 @@ output, and standard error as three values."
               (out-lang (string-append out "/" language))
               (model (or (model? file-name) (file->model base-name)))
               (command
-               `("dzn" "code"
+               `("dzn" ,@dzn-flags "code"
                  ,@includes
                  "--language" ,language
                  "--output" ,out-lang
@@ -435,6 +442,7 @@ output, and standard error as three values."
   (format #t "** stage: traces\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (dzn-flags (dzn-flags file-name))
          (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
@@ -455,7 +463,7 @@ output, and standard error as three values."
         (skip? file-name "traces")
         (receive (status stdout stderr)
             (observe
-             `("dzn" "traces"
+             `("dzn" ,@dzn-flags "traces"
                ,@includes
                "--model" ,model
                "--output" ,out-lang
@@ -479,6 +487,7 @@ are weak-bisim equivalent"
   (format #t "** stage: constrained-component\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (dzn-flags (dzn-flags file-name))
          (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
@@ -498,7 +507,7 @@ are weak-bisim equivalent"
       (let ((stdout
              status
              (pipeline->string
-              `(("dzn" "parse"
+              `(("dzn" @dzn-flags "parse"
                  ,@includes
                  "--model" ,model
                  "--list-models"
@@ -513,7 +522,7 @@ are weak-bisim equivalent"
                stdout-constrained
                stderr-constrained
                (observe
-                `("dzn" "traces"
+                `("dzn" ,@dzn-flags "traces"
                   "--lts"
                   ,@includes
                   "--model" ,model
@@ -561,6 +570,7 @@ are weak-bisim equivalent"
   (format #t "** stage: constrained-no-compliance\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (dzn-flags (dzn-flags file-name))
          (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
@@ -607,7 +617,7 @@ are weak-bisim equivalent"
                stdout-no-compliance
                stderr-no-compliance
                (observe
-                `("dzn" "traces"
+                `("dzn" ,@dzn-flags "traces"
                   "--lts"
                   "--no-non-compliance"
                   ,@includes
@@ -709,6 +719,7 @@ are weak-bisim equivalent"
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
          (baseline (string-append file-name "/baseline/simulate"))
+         (dzn-flags (dzn-flags file-name))
          (input (with-input-from-file trace read-string))
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
@@ -729,7 +740,7 @@ are weak-bisim equivalent"
                              (baseline? "trace")
                              (else "event"))))
     (receive (status stdout stderr)
-        (observe `("dzn" "simulate"
+        (observe `("dzn" ,@dzn-flags "simulate"
                    ,@includes
                    ,@(if (not queue-size) '()
                          `("--queue-size" ,(number->string queue-size)))
@@ -788,6 +799,7 @@ are weak-bisim equivalent"
   (format #t "** stage: lts\n")
   (let* ((base-name (basename file-name))
          (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (dzn-flags (dzn-flags file-name))
          (input "")
          (includes (cons (string-append file-name "/dzn")
                          (or (and=> (getenv "DZN_INCLUDE_PATH")
@@ -809,7 +821,7 @@ are weak-bisim equivalent"
                "lts")
         (receive (status stdout stderr)
             (observe
-             `("dzn" "graph" "--backend=lts"
+             `("dzn" ,@dzn-flags "graph" "--backend=lts"
                ,@includes
                ,@(if (not queue-size) '()
                      `("--queue-size" ,(number->string queue-size)))
