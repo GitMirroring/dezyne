@@ -2698,7 +2698,7 @@ Invoke @code{lps2lts} with @option{--threads}=@var{n}.
 Show detailed Scheme and mCRL2 timing information.
 
 @item --transform=@var{trans}
-@itemx -c @var{trans}
+@itemx -t @var{trans}
 Apply transformation @var{trans} after parsing.  Use @command{dzn --help
 --verbose} to show all transformations.  This option can be used more
 than once.  For example,
