@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((skip ("build"))
+ (comment "error interface model: cannot build"))
