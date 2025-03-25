@@ -1,0 +1,106 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// This model is a minimal example that reproduces the bug, reported
+// by joran.jesserun@thermofisher.com, that the state of ports on a
+// nested system without explicit boundary interaction is not updated
+// when the interface is guarded by said state.  Removing the guard
+// side steps the bug, see comments below
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  in void bye ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on bye: idle = true;
+  }
+}
+
+interface ihellobye
+{
+  in void hello ();
+  in void bye ();
+  out void world ();
+
+  behavior
+  {
+    enum State {Idle, Busy};
+    State state = State.Idle;
+
+    // fails to update w.state in (sut o) and h.state in (sut i i)
+    [state.Idle] on hello: {state = State.Busy; world;}
+
+    // succesfully updates w.state in (sut o) and h.state in (sut i i)
+    // on hello: {state = State.Busy; world;}
+    on bye: state = State.Idle;
+  }
+}
+
+component hellobye
+{
+  provides ihellobye h;
+    behavior
+    {
+      on h.hello (): h.world();
+      on h.bye(): {}
+    }
+}
+
+component inner
+{
+  provides ihellobye h;
+
+  system
+  {
+    hellobye i;
+    i.h <=> h;
+  }
+}
+
+component hello
+{
+  provides ihello h;
+  requires ihellobye w;
+  behavior
+  {
+    on h.hello (): w.hello ();
+    on w.world (): {}
+    on h.bye (): w.bye ();
+  }
+}
+
+component shared_nested
+{
+  provides ihello h;
+  system
+  {
+    hello o;
+    o.h <=> h;
+
+    inner i;
+    i.h <=> o.w;
+  }
+}

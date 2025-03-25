@@ -1,0 +1,19 @@
+(header ((h) ihello provides) ((sut) shared_nested system) ((sut o) hello component) ((sut i) inner system) ((sut i i) hellobye component))
+(state ((h) (idle . true)) ((sut o) (h.idle . true) (w.state . State:Idle)) ((sut i i) (h.state . State:Idle)))
+<external>.h.hello -> ...
+... -> sut.o.h.hello
+sut.o.w.hello -> ...
+... -> sut.i.i.h.hello
+... <- sut.i.i.h.world
+sut.o.<q> <- ...
+... <- sut.i.i.h.return
+sut.o.w.return <- ...
+... <- sut.o.<q>
+sut.o.w.world <- ...
+... <- sut.o.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut o) (h.idle . false) (w.state . State:Busy)) ((sut i i) (h.state . State:Busy)))
+(trail "h.hello" "h.return")
+(state ((h) (idle . false)) ((sut o) (h.idle . false) (w.state . State:Busy)) ((sut i i) (h.state . State:Busy)))
+(labels "h.hello" "h.bye")
+(eligible "h.bye")
