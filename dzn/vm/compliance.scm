@@ -825,7 +825,8 @@ update TRACES."
             (trace-name r:port) (trigger->string trigger) internal-compliance?)
     (if (not internal-compliance?) traces
         (let* ((sut-trace (list-head trace (1+ start-index)))
-               (cpc (reset-replies pc))
+               (cpc (last sut-trace))
+               (cpc (reset-replies cpc))
                (cpc (clone cpc #:instance #f))
                (event (trigger->string trigger))
                (compliance-traces
