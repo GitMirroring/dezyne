@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2022, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -20,6 +20,8 @@
 // Commentary:
 //
 // Code:
+
+namespace compound {} // the first namespace used defines scheme's module name
 
 namespace compound.name.space
 {

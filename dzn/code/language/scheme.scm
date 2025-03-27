@@ -77,11 +77,13 @@
    (string-join (ast:full-name o) " ")))
 
 (define-method (scheme:module-name (o <namespace>))
-  (let* ((dzn-file (ast:source-file o))
-         (base-name (basename dzn-file ".dzn"))
-         (namespace (ast:full-name o)))
-    (scheme:sanitize-module-name
-     (string-join (append namespace (list base-name)) " "))))
+  (let ((namespaces (ast:namespace* o)))
+    (if (pair? namespaces) (scheme:module-name (car namespaces))
+        (let* ((dzn-file (ast:source-file o))
+               (base-name (basename dzn-file ".dzn"))
+               (namespace (ast:full-name o)))
+          (scheme:sanitize-module-name
+           (string-join (append namespace (list base-name)) " "))))))
 
 (define-method (scheme:module-name (o <model>))
   (let* ((dzn-file (ast:source-file o))
