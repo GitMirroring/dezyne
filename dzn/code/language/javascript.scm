@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2015, 2017, 2018 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
@@ -62,10 +62,12 @@
   (string-join (ast:full-name o) "/"))
 
 (define-method (javascript:module-name (o <namespace>))
-  (let* ((dzn-file (ast:source-file o))
-         (base-name (basename dzn-file ".dzn"))
-         (namespace (ast:full-name o)))
-    (string-join (append namespace (list base-name)) "/")))
+  (let ((namespaces (ast:namespace* o)))
+    (if  (pair? namespaces) (javascript:module-name (car namespaces))
+         (let* ((dzn-file (ast:source-file o))
+                (base-name (basename dzn-file ".dzn"))
+                (namespace (ast:full-name o)))
+           (string-join (append namespace (list base-name)) "/")))))
 
 (define-method (javascript:module-name (o <model>))
   (let* ((dzn-file (ast:source-file o))
