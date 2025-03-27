@@ -543,6 +543,7 @@ REGRESSION_TESTS =				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
+ %D%/nested.space.system_hello			\
  %D%/no_return					\
  %D%/no_unreachable				\
  %D%/param_shadow				\
