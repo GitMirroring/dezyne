@@ -30,11 +30,13 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 regex)
 
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
   #:use-module (dzn parse peg)
+  #:use-module (dzn shell-util)
 
   #:export (peg:column-number
             peg:error-message
@@ -93,7 +95,7 @@ such unnamed lists."
      (if (string-null? hanging) ""
          (string-append hanging "\n")))))
 
-(define (peg:imported-file-names content)
+(define (peg:imported-file-names-unmemoized content)
   "Return the list of file names used in import statements in content."
   (let ((tree (parameterize ((%peg:locations? #f)
                              (%peg:skip? peg:import-skip-parse)
@@ -102,6 +104,17 @@ such unnamed lists."
     (match tree
       (('import file-name) (list file-name))
       ((('import file-name rest ...) ...) file-name))))
+
+(define (peg:imported-file-names-helper content file-name)
+  (peg:imported-file-names-unmemoized content))
+
+(define peg:imported-file-names-helper
+  (pure-funcq peg:imported-file-names-helper))
+
+(define* (peg:imported-file-names content #:key file-name)
+  (peg:imported-file-names-helper
+   content
+   (string->symbol (canonicalize-file file-name))))
 
 (define (peg:imported-from alist)
   "Return an alist of imported file names"

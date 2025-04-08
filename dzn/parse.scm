@@ -45,6 +45,7 @@
   #:use-module (dzn misc)
   #:use-module (dzn parse peg)
   #:use-module (dzn peg util)
+  #:use-module (dzn shell-util)
   #:use-module ((dzn parse tree) #:select (tree:normalize))
   #:use-module (dzn shell-util)
 

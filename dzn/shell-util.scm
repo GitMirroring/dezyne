@@ -261,7 +261,7 @@ also be included.  If FAIL-ON-ERROR? is true, raise an exception upon error."
   (canonicalize-path (symbol->string file-name-symbol)))
 
 (define (canonicalize-file file-name)
-  (if (equal? file-name "-" ) "-"
+  (if (or (equal? file-name "-" ) (not file-name)) "-"
       ((pure-funcq canonicalize-file-unmemoized)
        (string->symbol file-name))))
 
