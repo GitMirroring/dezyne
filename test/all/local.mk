@@ -193,6 +193,7 @@ DOC_SEMANTICS_TESTS =				\
  %D%/indirect_blocking_multiple_external_out
 
 REGRESSION_TESTS =				\
+ %D%/Camera					\
  %D%/alpha_event				\
  %D%/alpha_field_test				\
  %D%/alpha_local				\
