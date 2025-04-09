@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -1057,6 +1057,16 @@ procedure)."
        `(,type ,@slots)))
     (_ o)))
 
+(define (tree:flatten-imports-definitions o)
+  (match o
+    (('root elements ...)
+     `(root ,@(append-map tree:flatten-imports-definitions elements)))
+    (('imports imports ...)
+     (filter (compose not (cute eq? 'location <>) car) imports))
+    (('definitions definitions ...)
+     (filter (compose not (cute eq? 'location <>) car) definitions))
+    (_ (list o))))
+
 (define (tree:scoped-name->compound-name o)
   (match o
     (('scoped-name name location ...)
@@ -1074,7 +1084,9 @@ procedure)."
     (_ o)))
 
 (define (tree:normalize o)
-  (tree:scoped-name->compound-name o))
+  ((compose tree:scoped-name->compound-name
+            tree:flatten-imports-definitions)
+   o))
 
 
 ;;;

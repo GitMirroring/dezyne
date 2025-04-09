@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -63,14 +63,12 @@
 (define (peg:imports string)
   ;; . 'import'? eagerly SKIP anything with import in it
   (define-peg-string-patterns
-    "root <- (dollars / import / SKIP)*
-dollars < DOLLAR (!DOLLAR .)* DOLLAR#
+    "root <- import*
 file-name <- (!SEMICOLON !DOLLAR .)+
 import <-- IMPORT file-name SEMICOLON
 DOLLAR < '$'
 IMPORT < 'import' ![a-zA-Z_0-9]
-SEMICOLON < ';'
-SKIP < . 'import'?")
+SEMICOLON < ';'")
   (peg:tree (match-pattern root string)))
 
 (define peg:skip-parse peg-skip)
@@ -165,9 +163,14 @@ SKIP < . 'import'?")
   (define-peg-pattern dollars all dollars-no-skip)
 
   (define-peg-string-patterns
-    "root <-- (import / dollars / type
-               / namespace / interface / component
-               / EOF)#*
+    "root <-- (EOF
+            / imports EOF
+            / imports definitions
+            / definitions)#
+
+imports <-- import+
+
+definitions <-- (dollars / type / namespace / interface / component / EOF)#+
 
 import <-- IMPORT file-name SEMICOLON#
   file-name <- (!SEMICOLON .)+

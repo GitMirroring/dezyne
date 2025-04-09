@@ -33,6 +33,7 @@
   #:use-module (ice-9 regex)
 
   #:use-module (dzn command-line)
+  #:use-module (dzn misc)
   #:use-module (dzn parse peg)
 
   #:export (peg:column-number
@@ -139,6 +140,13 @@ such unnamed lists."
 
   (define (error->string e)
     (match e
+      (('or 'dollars 'type 'namespace 'interface 'component 'EOF)
+       "import, dollars, type, namespace, interface, component, EOF")
+      (('or 'EOF
+            ('and 'imports 'EOF)
+            ('and 'definitions)
+            ('and 'imports 'definitions))
+       "import, dollars, type, namespace, interface, component, EOF")
       ('port-trigger "trigger")
       ('is-event "event")
       ('OPTIONAL "optional")
