@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022, 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
@@ -630,13 +630,14 @@
                (make <shared-state> #:state from #:assign compound)))))
     (let* ((debugity (dzn:debugity))
            (lts (code:shared-lts o))
+           (initial (initial lts))
            (nodes (vector->list lts))
            (edges (append-map node-edges nodes))
            (assign (filter-map edge->assign edges)))
       (when (> debugity 2)
         (display "code:\n" (current-error-port))
         (display assign (current-error-port)))
-      assign)))
+      (values assign initial))))
 
 (define-method (code:shared-value (o <shared-value>))
   (string-replace-substring (.value o) "'" (%type-infix)))

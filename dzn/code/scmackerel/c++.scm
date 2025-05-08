@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -445,7 +445,8 @@ std::basic_ostream<Char, Traits> &")
               (sm:statement*
                (format #f "throw dzn::binding_error (this->dzn_meta, ~s)"
                        event-name)))))
-  (let* ((public-enums (code:public-enum* o))
+  (let* ((shared initial (code:shared-state o))
+         (public-enums (code:public-enum* o))
          (enums (append public-enums (code:enum* o)))
          (interface
           (sm:struct
@@ -466,7 +467,7 @@ std::basic_ostream<Char, Traits> &")
                              (name "out"))
                ,(sm:variable (type "bool") (name "dzn_share_p") (expression "true"))
                ,(sm:variable (type "char const*") (name "dzn_label") (expression "\"\""))
-               ,(sm:variable (type "int") (name "dzn_state") (expression ""))
+               ,(sm:variable (type "int") (name "dzn_state") (expression initial))
                ,@(map code:member->variable (ast:member* o))))))
          (interface& (string-append
                       (string-join (cons "" (ast:full-name o)) "::")
@@ -682,8 +683,7 @@ std::basic_ostream<Char, Traits> &")
                                            (name "locator"))))
                            (statement
                             (sm:compound*))))
-                       (let* ((shared (code:shared-state o))
-                              (events (ast:event* o))
+                       (let* ((events (ast:event* o))
                               (transitions (append-map event->transitions
                                                        events))
                               (transitions (sort transitions transition<))
