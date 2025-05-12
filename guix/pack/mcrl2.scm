@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019,2020,2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019,2020,2023,2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -32,7 +32,7 @@
 (define-public mcrl2-next
   (package
     (inherit mcrl2)
-    (version "202307.1")
+    (version "202407.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -40,7 +40,7 @@
                     version ".tar.gz"))
               (sha256
                (base32
-                "147002dl3gq2jsk5gcmvw7hj3mfxrpgxwcfda5mfrj26rcxw48fc"))))
+                "1ay7zf5g9zpqz37is2118pcqfa7blkzfhvh5f461d3xfah2gs4sn"))))
     (name "mcrl2-next")))
 
 (define-public mcrl2-next-minimal
