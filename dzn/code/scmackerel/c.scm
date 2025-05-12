@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -435,7 +436,7 @@
         (enums (c:enum* o)))
     (append
      (map c:file-name->include imports)
-     (map .value (ast:data* o))
+     (map (compose (cute string-append <> "\n") .value) (ast:data* o))
      (append-map c:enum->header-statements enums))))
 
 (define-method (root->statements (o <root>))
