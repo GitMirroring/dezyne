@@ -53,6 +53,7 @@
 
   #:export (parse:call-with-handle-exceptions
             parse:file->ast
+            parse:file->string
             parse:file->content-alist
             parse:file->stream
             parse:file->tree

@@ -43,6 +43,7 @@ Documentation License''.
 @direntry
 * Dezyne: (dezyne).                     Dezyne Reference Manual.
 * dzn: (dezyne)Invoking dzn.            Running Dezyne commands.
+* dzn anonymize: (dezyne)Invoking dzn anonymize.  Anonymizing a Dezyne file.
 * dzn code: (dezyne)Invoking dzn code.       Generating code from a Dezyne file.
 * dzn graph: (dezyne)Invoking dzn graph.      Generating graphs of Dezyne models.
 * dzn language: (dezyne)Invoking dzn language.   Lookup and completion.
@@ -160,6 +161,7 @@ Integrating Scheme Code
 The Dezyne command-line tools
 
 * Invoking dzn::                Running Dezyne commands.
+* Invoking dzn anonymize::      Anonymizing a Dezyne file.
 * Invoking dzn code::           Generating code from a Dezyne file.
 * Invoking dzn exec::           Running an arbitrary command-line.
 * Invoking dzn graph::          Generating graphs of Dezyne models.
@@ -2636,6 +2638,7 @@ foreigns that use the same interfaces need to form a chain of
 
 @menu
 * Invoking dzn::                Running Dezyne commands.
+* Invoking dzn anonymize::      Anonymizing a Dezyne file.
 * Invoking dzn code::           Generating code from a Dezyne file.
 * Invoking dzn exec::           Running an arbitrary command-line.
 * Invoking dzn graph::          Generating graphs of Dezyne models.
@@ -2732,6 +2735,44 @@ e.g. to increase verbosity when using @command{dzn verify}, use
 dzn -v verify file.dzn
 @end example
 @end quotation
+
+@node Invoking dzn anonymize
+@section Invoking @command{dzn anonymize}
+
+The @command{dzn anonymize} command can be used to write an
+anonymized version of a Dezyne file to standard output.
+
+@example
+dzn @var{dzn-option}@dots{} anonymize ihello.dzn
+@end example
+
+Apart from excluding Dezyne keywords, the anonymizer also excludes
+dzn-command specific flags and words, such as @code{-m,--model} and
+@code{-t,--trail} etc.  So if you need to convey anonymized,
+model-specific information with the anonymized Dezyne code, you may do
+so by adding these as a comment:
+
+@example
+// dzn verify -m hello
+// dzn simulate -m hello --trail=h.hello,h.return
+@end example
+
+As the names of include files will also be anonymized, it is recommended
+to anonymize a preprocessed stream instead (@ref{Invoking dzn parse}):
+
+@example
+dzn parse -E hello.dzn | dzn anonymize - > anon.dzn
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item --help
+@itemx -h
+Display help on invoking @code{dzn anonymize}, and then exit.
+
+@end table
 
 @node Invoking dzn code
 @section Invoking @command{dzn code}
