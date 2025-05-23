@@ -544,6 +544,7 @@ REGRESSION_TESTS =				\
  %D%/missing_reply				\
  %D%/multiple_provides				\
  %D%/name.space					\
+ %D%/nested.space.interface_function		\
  %D%/nested.space.system_hello			\
  %D%/no_return					\
  %D%/no_unreachable				\
