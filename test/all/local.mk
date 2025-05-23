@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -607,6 +607,7 @@ REGRESSION_TESTS =				\
  %D%/simplify_guards				\
  %D%/space.foreign				\
  %D%/space.import_interface_shadow		\
+ %D%/space.interface_function			\
  %D%/space.interface_shadow			\
  %D%/space.space				\
  %D%/space.wostream				\
