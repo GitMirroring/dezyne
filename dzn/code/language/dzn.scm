@@ -520,10 +520,7 @@ and \"POST\" 'post in GRAMMAR."
   (display (.field o) port))
 
 (define-method (print-ast (o <shared-field-test>) port)
-  (let ((lst (ast:full-name o)))
-    (display (string-join lst ".") port))
-  (display "." port)
-  (display (.field o) port))
+  (simple-format port "~a.~a.~a" (.name (.port o)) (.name o) (.field o)))
 
 (define-method (print-ast (o <enum-literal>) port)
   (print-type (.type o) port)
