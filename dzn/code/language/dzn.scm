@@ -498,8 +498,7 @@ and \"POST\" 'post in GRAMMAR."
   (display (.name o) port))
 
 (define-method (print-ast (o <shared-var>) port)
-  (let ((lst (ast:full-name o)))
-    (display (string-join lst ".") port)))
+  (simple-format port "~a.~a" (.name (.port o)) (.name o)))
 
 (define-method (print-ast (o <binary>) port)
   (print-ast (.left o) port)
