@@ -460,9 +460,12 @@ and \"POST\" 'post in GRAMMAR."
       (display ");\n" port)))))
 
 (define-method (print-ast (o <return>) port)
-  (display "return " port)
-  (print-ast (.expression o) port)
-  (display ";\n" port))
+  (let ((expression (.expression o)))
+    (display "return" port)
+    (when (ast:typed? expression)
+      (display " ")
+      (print-ast expression port))
+    (display ";\n" port)))
 
 (define-method (print-ast (o <if>) port)
   (let ((else (.else o)))
