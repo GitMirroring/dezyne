@@ -203,7 +203,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <namespace>) port)
   (display "namespace " port)
-  (display (ast:dotted-name o) port)
+  (display (ast:name o) port)
   (print-newline port)
   (print-brace-open port)
   (print-ast-join (dzn:top* o) port "\n")
@@ -225,7 +225,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <enum>) port)
   (simple-format port "enum ")
-  (print-type o port)
+  (display (ast:name o) port)
   (display " {" port)
   (print-ast-join (ast:field* o) port ", ")
   (display "};\n" port))
