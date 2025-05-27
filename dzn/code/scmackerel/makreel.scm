@@ -3967,8 +3967,21 @@
                          (sm:invoke (%out-action p) #:keep-constructor? #t)
                          (sm:union* (sm:sequence* (%compliant-action p)
                                                   (sm:goto (name name)))
+                                    (sm:sequence* %queue-empty-action
+                                                  (%compliant-action p)
+                                                  (sm:goto (name name)))
                                     (sm:goto (name "Non_Compliance")))))))
                     provides)
+               (list (sm:sum
+                      (type (%locals o))
+                      (statement
+                       (sm:sequence*
+                        (sm:invoke (%defer-qout-action o))
+                        (sm:goto (name name))))))
+               (list (sm:sequence*
+                      %queue-empty-action
+                      (sm:goto (name name))))
+               ;; for synchronous provides out events
                (map (lambda (p)
                       (sm:sum
                        (type (%replies (.type p)))
@@ -3999,7 +4012,13 @@
              (sm:comm
               (process component-compliant-parallel)
               (events
-               `(,@(map
+               `(,(sm:comm-event (from (sm:multi-event
+                                        (events
+                                         (list %queue-empty-action)))))
+                 ,(sm:comm-event (from (sm:multi-event
+                                        (events
+                                         (list (%defer-qout-action o))))))
+                 ,@(map
                     (lambda (p)
                       (sm:comm-event (from (sm:multi-event
                                             (events
@@ -4042,11 +4061,9 @@
               (events (cons* %constrained-legal-action
                              %declarative-illegal-action
                              %defer-end-action
-                             (%defer-qout-action o)
                              (%defer-skip-action o)
                              %illegal-action
                              %missing-reply-action
-                             %queue-empty-action
                              %queue-full-action
                              %queue-not-empty-action
                              %range-error-action
