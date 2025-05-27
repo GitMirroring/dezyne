@@ -51,6 +51,8 @@
   #:export (root->scmackerel
             scmackerel:display))
 
+(define %shared (make-parameter #f))
+
 (define-record-type* <sm:tag>
   sm:tag make-sm:tag
   sm:tag?
@@ -215,9 +217,8 @@
 
 (define-method (makreel:shared-process-arguments (o <action>))
   (let* ((port (.port o))
-         (behavior (ast:parent o <behavior>))
          (shared (filter (compose (cute ast:eq? <> port) .port)
-                         (ast:shared* behavior)))
+                         (%shared)))
          (interface (.type port)))
     (map (lambda (s)
            (simple-format #f "~a=~a (~a)"
@@ -1175,7 +1176,7 @@
                   (arguments (makreel:process-parens o)))))))))
 
 (define-method (ast->process (model <component>) (o <behavior>) (next <ast>))
-  (let* ((shared (ast:shared* o))
+  (let* ((shared (%shared))
          (ports (filter (negate ast:external?) (ast:port* model)))
          (requires (ast:requires-port* model))
          (defers (makreel:defer* o))
@@ -1345,7 +1346,7 @@
                           (arguments (makreel:process-parens next))))
                 (sm:goto (name "Constrained_Illegal")))
                (if (not (find (compose (cute ast:eq? port <>) .port)
-                              (ast:shared* model)))
+                              (%shared)))
                    (sm:goto (name (statement->process-name next))
                             (arguments (makreel:process-parens next)))
                    (sum-state-action
@@ -1362,7 +1363,7 @@
                                     (model-prefix (ast:name v) interface)
                                     (port-prefix "s" p))))
                                (filter (compose (cute ast:eq? port <>) .port)
-                                       (ast:shared* model))))))))))))))
+                                       (%shared))))))))))))))
 
 (define-method (ast->process (model <model>) (o <declarative-illegal>) (next <ast>))
   (sm:process
@@ -1405,7 +1406,7 @@
   (let* ((port (.port o))
          (action-type (ast:type o))
          (variable-type (ast:type variable))
-         (shared (ast:shared* model))
+         (shared (%shared))
          (shared? (find (compose (cute ast:eq? <> port) .port) shared)))
     (sm:sum (type (makreel:reply-type o))
             (statement
@@ -1424,7 +1425,7 @@
                              variable-type "i"))))
                   ,@(if (or (ast:external? port)
                             (not (find (compose (cute ast:eq? port <>) .port)
-                                       (ast:shared* model)))) '()
+                                       (%shared)))) '()
                                        `(,(sum-state-action port))))))))))
 
 (define-method (assign->sum (model <model>) (o <action>) (variable <formal>))
@@ -1472,13 +1473,13 @@
                           (sm:goto (name (statement->process-name next))
                                    (arguments (makreel:process-parens next))))
                          ((find (compose (cute ast:eq? port <>) .port)
-                                (ast:shared* model))
+                                (%shared))
                           (sum-state-action
                            port
                            (sm:goto
                             (name (statement->process-name next))
                             (arguments
-                             (cond ((null? (ast:shared* model))
+                             (cond ((null? (%shared))
                                     (makreel:process-parens next))
                                    (else
                                     (makreel:shared-process-arguments o)))))))
@@ -1489,6 +1490,7 @@
 
 (define-method (ast->process (model <component>) (o <action-reply>) (next <ast>))
   (let* ((port (.port o))
+         (shared (%shared))
          (requires (filter (negate (cute ast:eq? port <>))
                            (ast:requires-port* model)))
          (interface (and=> port .type))
@@ -1508,7 +1510,7 @@
                            (reply (clone reply #:parent (.parent o))))
                       `(,(ast->action reply)
                         ,@(if (not (find (compose (cute ast:eq? port <>) .port)
-                                         (ast:shared* model))) '()
+                                         shared)) '()
                                          `(,(sum-state-action port))))))
               ,(if (or (not (and (is-a? model <component>) (ast:in? o)))
                        (ast:external? port))
@@ -1531,8 +1533,7 @@
                                             ((and ($ <stack>) stack)
                                              "s"))
                                           variables))
-                                    (assign? (member variable variables))
-                                    (shared (ast:shared* model)))
+                                    (assign? (member variable variables)))
                                (cond ((and (not (.variable o))
                                            (null? shared))
                                       (makreel:process-parens next))
@@ -1545,14 +1546,14 @@
                                                 "i"))))))))))))
           ,@(if (not (and (ast:requires? port)
                           (find (compose (cute ast:eq? port <>) .port)
-                                (ast:shared* model))))
+                                shared)))
                 '()
                 `(,(sum-state-action
                     port
                     (sm:goto (name name)
                              (arguments
                               (cond ((or (ast:out? o)
-                                         (null? (ast:shared* model)))
+                                         (null? shared))
                                      (makreel:process-parens next))
                                     (else
                                      (makreel:shared-process-arguments o))))))))
@@ -1623,7 +1624,8 @@
 
 ;;; FIXME: split into interface / component?
 (define-method (ast->process (model <model>) (o <assign>) (next <ast>))
-  (let* ((expression (.expression o))
+  (let* ((shared (%shared))
+         (expression (.expression o))
          (action? (as expression <action>))
          (port (and=> action? .port))
          (expression (makreel:ast->expression expression))
@@ -1657,8 +1659,7 @@
                                         ((and ($ <stack>) stack)
                                          "s"))
                                       variables))
-                                (assign? (member variable variables))
-                                (shared (ast:shared* model)))
+                                (assign? (member variable variables)))
                            (cond ((and (or (not assign?)
                                            (and action?
                                                 (ast:out? action?)))
@@ -1676,7 +1677,8 @@
 
 ;;; FIXME: split into interface / component?
 (define-method (ast->process (model <model>) (o <variable>) (next <ast>))
-  (let* ((expression (.expression o))
+  (let* ((shared (%shared))
+         (expression (.expression o))
          (action? (as expression <action>))
          (port (and=> action? .port))
          (expression (makreel:ast->expression expression))
@@ -1710,8 +1712,7 @@
                                               ((and ($ <stack>) stack)
                                                "s"))
                                             variables))
-                                (assign? (member variable variables))
-                                (shared (ast:shared* model)))
+                                (assign? (member variable variables)))
                            (cond ((and (or (not assign?)
                                            (and action?
                                                 (ast:out? action?)))
@@ -2290,27 +2291,34 @@
   (parameterize ((%model-name (makreel:full-name (.type o)))
                  (%port-name (.name o)))
     (let* ((interface (.type o))
-           (rename
-            (sm:process
-              (name (port-prefix "port"))
-              (statement
-               (sm:rename
-                (process (model-prefix "interface_internal"))
-                (events (list
-                         (sm:rename-event (from (%in-action interface))
-                                          (to (%in-action o)))
-                         (sm:rename-event (from (%out-action interface))
-                                          (to (%out-action o)))
-                         (sm:rename-event (from (%reply-action interface))
-                                          (to (%reply-action o)))
-                         (sm:rename-event (from (%internal-action interface))
-                                          (to (%internal-action o)))
-                         (sm:rename-event (from (%end-action interface))
-                                          (to (%end-action o)))
-                         (sm:rename-event (from (%state-action interface))
-                                          (to (%state-action o)))
-                         (sm:rename-event (from (%flush-action interface))
-                                          (to (%flush-action o))))))))))
+           (proc (sm:rename
+                  (process (model-prefix "interface_internal"))
+                  (events (list
+                           (sm:rename-event (from (%in-action interface))
+                                            (to (%in-action o)))
+                           (sm:rename-event (from (%out-action interface))
+                                            (to (%out-action o)))
+                           (sm:rename-event (from (%reply-action interface))
+                                            (to (%reply-action o)))
+                           (sm:rename-event (from (%internal-action interface))
+                                            (to (%internal-action o)))
+                           (sm:rename-event (from (%end-action interface))
+                                            (to (%end-action o)))
+                           (sm:rename-event (from (%state-action interface))
+                                            (to (%state-action o)))
+                           (sm:rename-event (from (%flush-action interface))
+                                            (to (%flush-action o)))))))
+           (rename (sm:process
+                     (name (port-prefix "port"))
+                     (statement
+                      (cond ((find (compose (cute ast:eq? <> o) .port)
+                                   (%shared))
+                             proc)
+                            (else
+                             (sm:block (process
+                                        proc)
+                                       (events
+                                        (list (%state-action o))))))))))
       (list rename))))
 
 (define-method (provides-processes (o <component>))
@@ -2616,9 +2624,18 @@
              (sm:hide
               (process component-defer-rename)
               (events (list %defer-qin-action))))))
+         (shared (filter (negate (compose (cute member <> ports ast:eq?) .port))
+                         (%shared)))
          (component-behavior
-          (sm:process (name "component_behavior")
-                      (statement (sm:goto (name "component_defer"))))))
+          (sm:process
+            (name "component_behavior")
+            (statement
+             (if (null? shared) (sm:goto (name "component_defer"))
+                 (sm:block
+                  (process
+                   (sm:goto (name "component_defer")))
+                  (events
+                   (map %state-action shared))))))))
     (list component-defer-parallel
           component-defer-comm
           component-defer-allow
@@ -2964,7 +2981,7 @@
   (let* ((provides (ast:provides-port* o))
          (provides-interfaces (map .type provides))
          (requires (ast:requires-port* o))
-         (shared (map .port (ast:shared* o)))
+         (shared (map .port (%shared)))
          (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (semantics-provides p name)
       (let ((interface (.type p)))
@@ -3019,7 +3036,8 @@
           ,@(map (cute semantics-requires <> name) requires)))))))
 
 (define-method (semantics-unblocked (o  <component>))
-  (let* ((provides (ast:provides-port* o))
+  (let* ((shared (%shared))
+         (provides (ast:provides-port* o))
          (provides-interfaces (map .type provides))
          (provides-interface (.type (ast:provides-port o)))
          (requires (ast:requires-port* o)))
@@ -3083,7 +3101,7 @@
                                (port-prefix "port (reply)" p))
                    ,@(let ((port p))
                        (if (not (find (compose (cute ast:eq? port <>) .port)
-                                      (ast:shared* o)))
+                                      shared))
                            '()
                            `(,(sum-state-action port))))
                    ,(sm:union*
@@ -3174,7 +3192,8 @@
              requires)))))))
 
 (define-method (semantics-blocking (o <component>))
-  (let ((provides (ast:provides-port* o))
+  (let ((shared (%shared))
+        (provides (ast:provides-port* o))
         (requires (ast:requires-port* o)))
     (define (blocking-switch-context-actions+switch=p p name)
       (sm:sequence*
@@ -3194,7 +3213,7 @@
                                (port-prefix "port (reply)" p)))
            ,@(let ((port p))
                (if (not (find (compose (cute ast:eq? port <>) .port)
-                              (ast:shared* o)))
+                              shared))
                    '()
                    `(,(sum-state-action port))))
            ,(sm:union*
@@ -3266,7 +3285,8 @@
           ,@(map (cute blocking-switch-context-actions+switch=p <> name) requires)))))))
 
 (define-method (semantics-skip-blocking (o <component>))
-  (let ((provides (ast:provides-port* o))
+  (let ((shared (%shared))
+        (provides (ast:provides-port* o))
         (requires (ast:requires-port* o)))
     (define (handle-provides-replies p name)
       (let ((interface (.type p)))
@@ -3309,7 +3329,7 @@
                                                    "reply"))
                          ,@(let ((port p))
                              (if (not (find (compose (cute ast:eq? port <>) .port)
-                                            (ast:shared* o)))
+                                            shared))
                                  '()
                                  `(,(sum-state-action port))))
                          ,(sm:union*
@@ -3369,7 +3389,7 @@
 (define-method (semantics-blocked (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (shared (map .port (ast:shared* o)))
+         (shared (map .port (%shared)))
          (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (handle-queue-empty name)
       (sm:sequence*
@@ -3457,7 +3477,8 @@
                          (sm:goto (name name) (arguments '())))))))))
 
 (define-method (semantics-reply (o <component>))
-  (let ((provides (ast:provides-port* o)))
+  (let ((shared (%shared))
+        (provides (ast:provides-port* o)))
     (define (semantics-reply p name)
       (let ((interface (.type p)))
         (sm:if* (sm:or*
@@ -3481,7 +3502,7 @@
                                              "reply"))
                    ,@(let ((port p))
                        (if (not (find (compose (cute ast:eq? port <>) .port)
-                                      (ast:shared* o)))
+                                      shared))
                            '()
                            `(,(sum-state-action port))))
                    ,(let ((arguments
@@ -3529,7 +3550,7 @@
 (define-method (semantics-blocked-main (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (shared (map .port (ast:shared* o)))
+         (shared (map .port (%shared)))
          (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (blocked-main-provides p name)
       (let ((interface (.type p)))
@@ -3596,7 +3617,7 @@
 (define-method (semantics-async (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (shared (map .port (ast:shared* o)))
+         (shared (map .port (%shared)))
          (shared-provides (lset-intersection ast:eq? provides shared)))
     (define (requires-flush p name)
       (let ((interface (.type p)))
@@ -3614,8 +3635,8 @@
                 (statement
                  (sm:sequence*
                   (sm:invoke (%out-action p) #:keep-constructor? #t)
-                  (if (not (find (compose (cute ast:eq? p <>) .port)
-                                 (ast:shared* o)))
+                  (if (not (find (cute ast:eq? p <>)
+                                 shared))
                       (sm:goto (name name)
                                (arguments
                                 (list
@@ -3634,41 +3655,38 @@
        (sm:goto (name "semantics_async_switch_context")
                 (arguments
                  (list (sm:is* "switch" (port-prefix "port" p)))))))
-    (let* ((provides (ast:provides-port* o))
-           (shared (map .port (ast:shared* o)))
-           (shared-provides (lset-intersection ast:eq? provides shared)))
-      (sm:process
-        (name "semantics_async")
-        (formals `(,@%blocking-formals
-                   "port: provides_ports"))
-        (statement
-         (sm:union*
-          `(,(sm:sequence*
-              (%end-action o)
+    (sm:process
+      (name "semantics_async")
+      (formals `(,@%blocking-formals
+                 "port: provides_ports"))
+      (statement
+       (sm:union*
+        `(,(sm:sequence*
+            (%end-action o)
 
-              (sm:union*
-               (sm:sequence*
-                `(,%queue-empty-action
-                  ,@(map sum-state-action shared-provides)
-                  ,(sm:union*
-                    `(,(sm:if* (sm:invoke %no-port-predicate "port")
-                               (sm:union* (sm:goto (name "semantics_main"))
-                                          (sm:sequence*
-                                           (defer-qout-actions o name))))
-                      ,@(map (cute requires-flush <> name) provides)))))
-               (sm:sequence* %queue-not-empty-action
-                             (sm:goto (name name) (arguments '())))))
-            ,(sm:sequence* %defer-end-action
-                           (sm:goto (name name) (arguments '())))
-            ,@(map (cute out-actions+port=p <> name) provides)
-            ,@(append-map (seq (cute switch-context-actions+switch=p <> name)
-                               (cute qout-actions <> name))
-                          requires))))))))
+            (sm:union*
+             (sm:sequence*
+              `(,%queue-empty-action
+                ,@(map sum-state-action shared-provides)
+                ,(sm:union*
+                  `(,(sm:if* (sm:invoke %no-port-predicate "port")
+                             (sm:union* (sm:goto (name "semantics_main"))
+                                        (sm:sequence*
+                                         (defer-qout-actions o name))))
+                    ,@(map (cute requires-flush <> name) provides)))))
+             (sm:sequence* %queue-not-empty-action
+                           (sm:goto (name name) (arguments '())))))
+          ,(sm:sequence* %defer-end-action
+                         (sm:goto (name name) (arguments '())))
+          ,@(map (cute out-actions+port=p <> name) provides)
+          ,@(append-map (seq (cute switch-context-actions+switch=p <> name)
+                             (cute qout-actions <> name))
+                        requires)))))))
 
 (define-method (component-semantics-processes (o <component>))
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
-         (shared (map .port (ast:shared* o)))
+         (shared (map .port (%shared)))
          (shared-requires (lset-intersection ast:eq? requires shared))
          (component-semantics-parallel
           (sm:process (name "component_semantics_parallel")
@@ -3965,11 +3983,9 @@
                        (statement
                         (sm:sequence*
                          (sm:invoke (%out-action p) #:keep-constructor? #t)
-                         (sm:union* (sm:sequence* (%compliant-action p)
-                                                  (sm:goto (name name)))
-                                    (sm:sequence* %queue-empty-action
-                                                  (%compliant-action p)
-                                                  (sm:goto (name name)))
+                         (sm:union* (sm:sequence*
+                                     (%compliant-action p)
+                                     (sm:goto (name name)))
                                     (sm:goto (name "Non_Compliance")))))))
                     provides)
                (list (sm:sum
@@ -4480,56 +4496,57 @@
 ;;;
 (define (root->scmackerel root)
   (let* ((models (ast:model** root))
-         (component (find (is? <component>) models))
-         (model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
-         (act-processes (list (dummy-tag-process)))
-         (interfaces (if component (filter (is? <interface>) models)
-                         (filter (conjoin
-                                  (is? <interface>)
-                                  (compose (cute equal? <> model-name)
-                                           ast:dotted-name))
-                                 models)))
-         (types-mcrl2
-          (map
-           interface-types->scmackerel
-           (filter (conjoin (is? <interface>)
-                            (compose not (cute equal? (%model-name) <>)
-                                     ast:dotted-name))
-                   models)))
-         (interface-mcrl2 (map model->scmackerel interfaces))
-         (mcrl2 (reduce merge-scmackerels
-                        (sm:mcrl2)
-                        (append types-mcrl2 interface-mcrl2)))
-         (component-mcrl2 (and=> component model->scmackerel))
-         (mcrl2 (if (not component-mcrl2) mcrl2
-                    (merge-scmackerels component-mcrl2 mcrl2)))
-         (mcrl2 (if (not component-mcrl2) mcrl2
-                    (sm:mcrl2
-                      (inherit mcrl2)
-                      (processes
-                       (cons (makreel:caption "INTERFACE")
-                             (sm:mcrl2-processes mcrl2))))))
-         (enums (filter (is? <enum>) (ast:type** root)))
-         (enums (map enum->scmackerel enums))
-         (illegal-processes (illegal-processes))
-         (static-equations
-          `(,(makreel:generated-comment root)
-            ,@(if (not component) '()
-                  (file-comments "component.mcrl2")))))
-    (sm:mcrl2
-      (inherit mcrl2)
-      (equations
-       (append static-equations
-               (sm:mcrl2-equations mcrl2)
-               enums))
-      (types
-       (append (sm:mcrl2-types mcrl2)
-               enums))
-      (processes
-       (append act-processes
-               illegal-processes
-               (sm:mcrl2-processes mcrl2)
-               (list (makreel:version-comment)))))))
+         (component (find (is? <component>) models)))
+    (parameterize ((%shared (if component (ast:shared* component) '())))
+      (let* ((model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
+             (act-processes (list (dummy-tag-process)))
+             (interfaces (if component (filter (is? <interface>) models)
+                             (filter (conjoin
+                                      (is? <interface>)
+                                      (compose (cute equal? <> model-name)
+                                               ast:dotted-name))
+                                     models)))
+             (types-mcrl2
+              (map
+               interface-types->scmackerel
+               (filter (conjoin (is? <interface>)
+                                (compose not (cute equal? (%model-name) <>)
+                                         ast:dotted-name))
+                       models)))
+             (interface-mcrl2 (map model->scmackerel interfaces))
+             (mcrl2 (reduce merge-scmackerels
+                            (sm:mcrl2)
+                            (append types-mcrl2 interface-mcrl2)))
+             (component-mcrl2 (and=> component model->scmackerel))
+             (mcrl2 (if (not component-mcrl2) mcrl2
+                        (merge-scmackerels component-mcrl2 mcrl2)))
+             (mcrl2 (if (not component-mcrl2) mcrl2
+                        (sm:mcrl2
+                          (inherit mcrl2)
+                          (processes
+                           (cons (makreel:caption "INTERFACE")
+                                 (sm:mcrl2-processes mcrl2))))))
+             (enums (filter (is? <enum>) (ast:type** root)))
+             (enums (map enum->scmackerel enums))
+             (illegal-processes (illegal-processes))
+             (static-equations
+              `(,(makreel:generated-comment root)
+                ,@(if (not component) '()
+                      (file-comments "component.mcrl2")))))
+        (sm:mcrl2
+          (inherit mcrl2)
+          (equations
+           (append static-equations
+                   (sm:mcrl2-equations mcrl2)
+                   enums))
+          (types
+           (append (sm:mcrl2-types mcrl2)
+                   enums))
+          (processes
+           (append act-processes
+                   illegal-processes
+                   (sm:mcrl2-processes mcrl2)
+                   (list (makreel:version-comment)))))))))
 
 (define (scmackerel:display mcrl2)
   (display mcrl2))
