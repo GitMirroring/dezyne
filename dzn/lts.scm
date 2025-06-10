@@ -46,13 +46,13 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 peg)
   #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
-  #:use-module (dzn peg)
   #:export (%<declarative-illegal>
             %<illegal>
             add-failures
@@ -833,25 +833,24 @@ from LABELS."
      rpar               <   [)]
      comma              <   [,][ ]*
      identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
-  (parameterize ((%peg:debug? (< 2 (dzn:debugity))))
-    (let* ((match? (match-pattern tree label))
-           (end (peg:end match?))
-           (tree (peg:tree match?))
-           (equal-length? (eq? (string-length label) end)))
-      (cond
-       ((and equal-length?
-             (symbol? tree))
-        '())
-       (equal-length?
-        (cdr tree))
-       (match?
-        (simple-format (current-error-port)
-                       "input: ~a\nparse error: at offset: ~a\n~s\n"
-                       label end tree)
-        #f)
-       (else
-        (simple-format (current-error-port) "parse error: no match\n")
-        #f)))))
+  (let* ((match? (match-pattern tree label))
+         (end (peg:end match?))
+         (tree (peg:tree match?))
+         (equal-length? (eq? (string-length label) end)))
+    (cond
+     ((and equal-length?
+           (symbol? tree))
+      '())
+     (equal-length?
+      (cdr tree))
+     (match?
+      (simple-format (current-error-port)
+                     "input: ~a\nparse error: at offset: ~a\n~s\n"
+                     label end tree)
+      #f)
+     (else
+      (simple-format (current-error-port) "parse error: no match\n")
+      #f))))
 
 (define (cleanup-error e)
   (string-append "<" (string-map (lambda (c) (if (eq? c #\_) #\- c)) e) ">"))
