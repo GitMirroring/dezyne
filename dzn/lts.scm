@@ -776,29 +776,41 @@ from LABELS."
 ;;;
 (define (parse-label label)
   (define-peg-string-patterns
-    "tree               <-- event / modeling / defer-qout / tag / reply / state / tau-void / tau-reply / return / queue / tau-literal / illegal / error / end / flush / blocking / parse-error
+    "tree               <-- event / modeling / illegal / defer-qout / tag / reply
+                          / state / return / queue / error / end / flush / blocking
+                          / tau-void / tau-reply / tau-literal / parse-error
      parse-error        <-- [a-zA-Z_0-9'()]*
-     event              <-- port-name tick direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
-     modeling           <-- port-name tick internal-literal lpar scope* ('inevitable' / 'optional') rpar
-     queue              <-- port-name tick queue-direction lpar scope* action-literal lpar scope* direction tick event-name rpar rpar
+     event              <-- port-name tick direction event-argument
+     event-argument     <-  lpar scope* action-literal
+                            lpar scope* direction tick event-name rpar rpar
+     modeling           <-- port-name tick internal-literal
+                            lpar scope* ('inevitable' / 'optional') rpar
+     queue              <-- port-name tick queue-direction event-argument
      end                <   scope* ('end' / 'silent_end')
      return             <-- 'return'
      flush              <-- port-scope* identifier tick flush-literal
      blocking           <-- port-scope* identifier tick port- 'blocking'
      reply              <-- port-name tick reply-literal lpar scope* reply-value rpar
      tau-reply          <-- port-name tick tau-reply-literal lpar scope* reply-value rpar
-     state              <-- port-name tick state-literal lpar port-name tick state-arguments rpar
-     state-arguments    <-- void-literal / variables-literal (lpar state-argument (comma state-argument)* rpar)
+     state              <-- port-name tick state-literal
+                            lpar port-name tick state-arguments rpar
+     state-arguments    <-- void-literal / variables-literal
+                            (lpar state-argument (comma state-argument)* rpar)
      state-argument     <-- bool / int / enum-literal
      scope              <   identifier tick
      tag                <   tag-literal lpar int comma int rpar
      port-              <   'port_'
      port-name          <-  port-scope* identifier
-     port-scope         <   scope !(void / void-literal / internal-literal / queue-direction / direction / reply-literal / tau-reply-literal / state-literal / variables-literal / port-? 'queue_full' / port-? 'flush' / port- 'blocking')
+     port-scope         <   scope !(void / void-literal / internal-literal
+                          / queue-direction / direction
+                          / reply-literal / tau-reply-literal / state-literal
+                          / variables-literal / port-? 'queue_full' / port-? 'flush'
+                          / port- 'blocking')
      event-name         <-  identifier
-     reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar / int-literal lpar int rpar / void-literal lpar void rpar
+     reply-value        <-  bool-literal lpar bool rpar / lpar enum-literal rpar
+                          / int-literal lpar int rpar / void-literal lpar void rpar
      bool-literal       <   'Bool'
-     bool               <-- ('true' / 'false' )
+     bool               <-- ('true' / 'false')
      flush-literal      <   port-? 'flush'
      int-literal        <   'Int'
      int                <-- '-'?[0-9]+
@@ -821,8 +833,10 @@ from LABELS."
      tag-literal        <   'tag'
      tau-literal        <   'tau'
      tau-void           <   'tau_void'
-     illegal            <-- 'illegal' / 'declarative_illegal' / 'constrained_illegal' / 'non_compliance'
-     error              <--  queue-full / range-error / reply-error / missing-reply / second-reply
+     illegal            <-- ('illegal' / 'declarative_illegal' / 'constrained_illegal'
+                          / 'non_compliance') EOF
+     error              <-- queue-full / range-error / reply-error / missing-reply
+                          / second-reply
      queue-full         <-  'queue_full' / port-name tick port- 'queue_full'
      range-error        <-  'range_error'
      reply-error        <-  'double_reply_error' / 'no_reply_error'
@@ -832,7 +846,10 @@ from LABELS."
      lpar               <   [(]
      rpar               <   [)]
      comma              <   [,][ ]*
-     identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+ / !direction [a-zA-Z_][a-zA-Z0-9_]*")
+     identifier         <-- &(direction [a-zA-Z0-9_]+) [a-zA-Z0-9_]+
+                          / !direction [a-zA-Z_][a-zA-Z0-9_]*
+     EOF                <  !.
+")
   (let* ((match? (match-pattern tree label))
          (end (peg:end match?))
          (tree (peg:tree match?))
