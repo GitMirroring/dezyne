@@ -1,5 +1,4 @@
 model: determinism_interface
 hello
 world
-return
 <non-deterministic>

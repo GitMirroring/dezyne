@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2025 Rutger van Beusekom <ruger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,12 +25,19 @@
 interface ihello
 {
   in void hello ();
+  in void bye ();
   out void world ();
 
   behavior
   {
-    on hello: {}
-    on hello: world;
+    bool idle = true;
+    on hello: {
+      if (!idle) world;
+      idle = !idle;
+    }
+    on bye:
+      if (!idle) {idle = true; world;}
+      else idle = false;
   }
 }
 
@@ -40,8 +48,10 @@ component hello_guard_if
   behavior
   {
     bool idle = true;
-    bool bb = true;
-    [idle] on h.hello (): if (idle) idle=!idle;
-    [!idle] on h.hello (): if (!idle) {idle=!idle; h.world ();}
+    on h.hello (), h.bye ():
+    {
+      if (!idle) h.world ();
+      idle = !idle;
+    }
   }
 }
