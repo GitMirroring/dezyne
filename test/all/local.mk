@@ -665,6 +665,7 @@ REGRESSION_TESTS =				\
  %D%/system_out_internal			\
  %D%/system_out_two				\
  %D%/system_reply_bool				\
+ %D%/system_reply_data				\
  %D%/system_reply_enum				\
  %D%/system_shared_choice2			\
  %D%/system_shared_defer			\
