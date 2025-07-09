@@ -210,7 +210,8 @@ actions."
                  (loop (get-input in-out.pipeline format))))))))
 
 (define root+model->makreel
-  (perfect-funcq 1024
+  (perfect-funcq
+   1024
    (lambda (root model)
      (with-output-to-string (cute makreel:model->makreel root model)))))
 

@@ -168,11 +168,11 @@
 
 (define-method (%debug (location <pair>) (fmt <string>) . args)
   (when (%debug?)
-   (format (current-error-port) "~a:~a:~a: ~a\n"
-           (assoc-ref location 'filename)
-           (1+ (assoc-ref location 'line))
-           (assoc-ref location 'column)
-           (apply format #f fmt args))))
+    (format (current-error-port) "~a:~a:~a: ~a\n"
+            (assoc-ref location 'filename)
+            (1+ (assoc-ref location 'line))
+            (assoc-ref location 'column)
+            (apply format #f fmt args))))
 
 (define-method (%debug (location <pair>) (pc <program-counter>) (fmt <string>) . args)
   (apply %debug location fmt args)
@@ -854,12 +854,12 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
        (if (is-a? instance <runtime:component>) pc
            (begin
              (%debug (current-source-location)
-              "  ~s ~s <switch-context blocked-on-boundary> ~a [~a] => [~a]"
-              (name instance)
-              (and=> (.trigger blocked-pc) trigger->string)
-              (runtime:instance->string port)
-              (.id pc)
-              (.id blocked-pc))
+                     "  ~s ~s <switch-context blocked-on-boundary> ~a [~a] => [~a]"
+                     (name instance)
+                     (and=> (.trigger blocked-pc) trigger->string)
+                     (runtime:instance->string port)
+                     (.id pc)
+                     (.id blocked-pc))
              (clone pc
                     #:id (.id blocked-pc)
                     #:instance (.instance blocked-pc)

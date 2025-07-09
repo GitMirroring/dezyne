@@ -1059,9 +1059,9 @@
     (if (not duplicate?) '()
         (let ((name (if (ast:parent (.parent o) <model>) (ast:name o)
                         (ast:dotted-name o))))
-         `(,(wfc-error o (format #f "identifier `~a' defined before" name))
-           ,(wfc-info previous (format #f "previous `~a' definition here"
-                                       name)))))))
+          `(,(wfc-error o (format #f "identifier `~a' defined before" name))
+            ,(wfc-info previous (format #f "previous `~a' definition here"
+                                        name)))))))
 
 (define-method (assign (o <ast>))
   (or (as (wfc (.expression o)) <pair>)

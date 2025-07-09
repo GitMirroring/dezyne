@@ -114,12 +114,12 @@ PREDICATE is a string, filter files using string-match using PREDICATE."
   "Run BODY with DIR as the process's current directory."
   (let ((init (getcwd)))
     (dynamic-wind
-        (lambda ()
-          (chdir dir))
-        (lambda ()
-          body ...)
-        (lambda ()
-          (chdir init)))))
+      (lambda ()
+        (chdir dir))
+      (lambda ()
+        body ...)
+      (lambda ()
+        (chdir init)))))
 
 (define* (delete-file-recursively dir
                                   #:key follow-mounts?)

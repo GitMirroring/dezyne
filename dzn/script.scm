@@ -98,15 +98,15 @@
       (let* ((uninstalled? (getenv "DZN_UNINSTALLED"))
              (ext path (if uninstalled? (values ".scm" %load-path)
                            (values ".go" %load-compiled-path))))
-       (map (cut basename <> ext)
-            (filter
-             (cute string-contains <> dir)
-             (append-map
-              (cute list-directory <>
-                    (cute string-suffix? ext <>))
-              (filter directory-exists?
-                      (map (cute string-append <> "/dzn/commands/")
-                           path)))))))
+        (map (cut basename <> ext)
+             (filter
+              (cute string-contains <> dir)
+              (append-map
+               (cute list-directory <>
+                     (cute string-suffix? ext <>))
+               (filter directory-exists?
+                       (map (cute string-append <> "/dzn/commands/")
+                            path)))))))
 
     (when version?
       (show-version-and-exit))

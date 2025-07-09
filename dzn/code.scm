@@ -556,7 +556,7 @@
        o)))
   (define (event->prefix event) ;; XXX vouw in trigger?, action?, reply?
     (or (and (regexp-exec flush-regexp event)
-               "<flush>")
+             "<flush>")
         (and=> (regexp-exec in-regexp event)
                (cute match:substring <> 1))
         (and=> (regexp-exec out-regexp event)

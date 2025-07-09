@@ -1255,7 +1255,7 @@
                                          (makreel:full-name v)
                                          (model-prefix (ast:name v) interface)
                                          (port-prefix "s" p))))
-                                   shared)))))))
+                                    shared)))))))
                  (lset-intersection ast:eq? (map .port shared) requires))
           ,@defers
           ,(sm:goto (name (statement->process-name next))
