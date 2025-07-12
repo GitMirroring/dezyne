@@ -30,7 +30,7 @@ interface ihello
   in void bye ();
   out void world ();
 
-  behaviour
+  behavior
   {
     bool idle = true;
     [idle] on hello: idle = false;

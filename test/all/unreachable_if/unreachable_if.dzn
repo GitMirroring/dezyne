@@ -25,7 +25,7 @@ interface ihello
 {
   in void hello ();
 
-  behaviour
+  behavior
   {
     on hello: {}
   }
@@ -36,7 +36,7 @@ component unreachable_if
   provides ihello h;
   requires ihello w;
 
-  behaviour
+  behavior
   {
     bool always = true;
     bool never = false;

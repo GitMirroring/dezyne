@@ -34,7 +34,7 @@ component defer_after_call
 {
   provides ihello h;
 
-  behaviour
+  behavior
   {
     bool idle = true;
     on h.hello (): f ();
