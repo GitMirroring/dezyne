@@ -1,7 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-// Copyright © 2021, 2022 janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2025 janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -49,7 +49,7 @@ int main ()
   blocking_shell sut (locator.set (runtime));
 
   int output = 0;
-  std::map<std::string, std::function<void ()>> provides =
+  std::map<std::string, std::function<void ()>> provide =
   {
     {"p.hello_void", sut.p.in.hello_void},
     {"p.hello_bool", sut.p.in.hello_bool},
@@ -57,7 +57,7 @@ int main ()
     {"p.hello_enum", std::bind (sut.p.in.hello_enum, 123, std::ref (output))},
   };
 
-  std::map<std::string, std::function<void ()>> requires =
+  std::map<std::string, std::function<void ()>> require =
   {
     {"r.world", std::bind (sut.r.out.world, 0)},
   };
@@ -121,8 +121,8 @@ int main ()
   std::unique_lock<std::mutex> lock (mutex);
   while (event < trace.size ())
     {
-      auto pit = provides.find (trace[event]);
-      if (pit != provides.end ())
+      auto pit = provide.find (trace[event]);
+      if (pit != provide.end ())
         {
           ++event;
           sync.push (std::async (std::launch::async, [&, pit]
@@ -133,8 +133,8 @@ int main ()
         }
       else
         {
-          auto rit = requires.find (trace[event]);
-          if (rit != requires.end ())
+          auto rit = require.find (trace[event]);
+          if (rit != require.end ())
             {
               ++event;
               rit->second ();
