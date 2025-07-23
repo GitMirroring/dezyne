@@ -2,6 +2,7 @@
 ;;;
 ;;; Copyright © 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2025 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -364,6 +365,9 @@
       (ast->code (code:wrap-compound o)))
      (else
       (let* ((type (ast:type o))
+             (type (if (not (is-a? (.expression o) <data>)) type
+                       ((compose .type .signature .event car ast:trigger*)
+                        (ast:parent o <on>))))
              (reply-port (.port o))
              (port-name (.name reply-port))
              (out-binding (string-append (%member-prefix)
@@ -647,7 +651,7 @@
                 (name "dzn_runtime_trace_out")
                 (arguments
                  (list "&port->meta"
-                       (if (not typed?)
+                       (if (or (not typed?) (is-a? (ast:type trigger) <extern>))
                            (simple-format #f "~s" "return")
                            (sm:call
                             (name (string-append "dzn_" reply-type
