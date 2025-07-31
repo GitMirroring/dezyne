@@ -1116,7 +1116,9 @@ value of the trail."
       (serialize (.state pc) (current-output-port))
       (newline))
 
-    (when (and (equal? trace-format "trace") initial-message)
+    (when (and (equal? trace-format "trace")
+               initial-message
+               (not (is-a? status <invariant-error>)))
       (display initial-message))
     (when (pair? traces)
       (let ((final-messages (final-error-messages traces)))

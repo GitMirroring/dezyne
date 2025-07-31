@@ -26,6 +26,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast util)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)
@@ -193,11 +194,17 @@
        (let ((pc (clone pc #:status (make <end-of-trail>))))
          (list pc))))
 
+(define-method (step (pc <program-counter>) (o <invariant>))
+  '())
+
 (define-method (step (pc <program-counter>) (o <guard>))
   (let* ((statement (.statement o))
          (continuation (continuation pc (list statement)))
          (statement (.statement continuation)))
     (cond ((not (true? (eval-expression pc (.expression o))))
+           '())
+          ((and (not (ast:parent o <on>))
+                (null? (tree-collect (is? <on>) o)))
            '())
           ((mark-liveness? pc statement))
           (else
@@ -617,7 +624,7 @@
                (statement-continuation pc p)))))
       (($ <if>)
        (statement-continuation pc p))
-      (($ <function>)
+      ((? (is? <function>))
        (pop-pc pc))
       (($ <defer>)
        (clone pc #:statement #f))
@@ -650,7 +657,7 @@
        (let* ((statements (member o (reverse (ast:statement* parent)) ast:eq?))
               (pc (pop-locals pc (filter (is? <variable>) statements))))
          (function-return pc parent)))
-      (($ <function>)
+      ((? (is? <function>))
        (let* ((formals (ast:formal* parent))
               (pc (pop-locals pc formals)))
          (pop-pc pc)))

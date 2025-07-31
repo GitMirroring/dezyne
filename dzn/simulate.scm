@@ -39,6 +39,7 @@
   #:use-module (dzn shell-util)
   #:use-module (dzn vm compliance)
   #:use-module (dzn vm goops)
+  #:use-module (dzn vm invariant)
   #:use-module (dzn vm normalize)
   #:use-module (dzn vm report)
   #:use-module (dzn vm run)
@@ -365,18 +366,24 @@ or false."
                                           #:input event)))
                             (%debug (current-source-location) "<match-error>: ~a" event)
                             (list (list (clone pc #:status error))))))
-              (traces (map (cute append <> pc+blocked-trace) traces)))
-         (if (is-a? (%sut) <runtime:port>) traces
-             (let* ((cpc (if (requires-trigger? event) pc
-                             (last pc+blocked-trace)))
-                    (cpc (reset-replies cpc))
-                    (cpc (clone cpc #:instance #f)))
-               (check-provides-compliance* cpc event traces)))))
+              (traces (map (cute append <> pc+blocked-trace) traces))
+              (traces (if (is-a? (%sut) <runtime:port>) traces
+                          (let* ((cpc (if (requires-trigger? event) pc
+                                          (last pc+blocked-trace)))
+                                 (cpc (reset-replies cpc))
+                                 (cpc (clone cpc #:instance #f)))
+                            (check-provides-compliance* cpc event traces))))
+              (invariants (append-map check-invariants traces)))
+         (if (pair? invariants) invariants
+             traces)))
       ((? (const (and (pair? (.defer pc)) (not (%strict?)))))
        (let* ((traces (flush-defer pc))
               (traces (if (null? blocked-trace) traces
-                          (extend-trace blocked-trace (const traces)))))
-         (check-provides-compliance* pc event traces)))
+                          (extend-trace blocked-trace (const traces))))
+              (traces (check-provides-compliance* pc event traces))
+              (invariants (append-map check-invariants traces)))
+         (if (pair? invariants) invariants
+             traces)))
       (_
        (when (not (eq? (switch-context pc) pc))
          (%debug (current-source-location) "<eot> with switchable, non-rtc pc"))
@@ -745,6 +752,9 @@ status."
       (serialize-header (.state pc) (current-output-port))
       (newline))
     (or (report (list (list pc)) #:trace trace)
+        (match (check-invariants (list pc))
+          ((traces ..1) (report traces #:trace trace))
+          (_ #f))
         (parameterize ((%next-input (if (or (not (isatty? (current-input-port))) (pair? trail)) trail-input read-input)))
           (let loop ((traces (list (list pc))))
             (%debug (current-source-location) "run-trail #traces ~a" (length traces))

@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -34,6 +34,7 @@
   #:use-module (dzn ast)
   #:use-module (dzn misc)
   #:use-module (dzn vm goops)
+  #:use-module (dzn vm invariant)
   #:export (vm:normalize
             normalize:compounds))
 
@@ -187,6 +188,25 @@
     ((? (is? <ast>)) (tree-map transform-end-of-on o))
     (_ o)))
 
+(define (lift-invariants o)
+  (match o
+    (($ <behavior>)
+     (let* ((compound (.statement o))
+            (invariants (tree-collect (is? <invariant>) compound))
+            (invariants (map invariant:include-guard-expressions invariants))
+            (compound (remove-invariant compound))
+            (elements (append invariants
+                              (.elements compound))))
+       (clone o #:statement (clone compound #:elements elements))))
+    (($ <interface>)
+     (clone o #:behavior (lift-invariants (.behavior o))))
+    (($ <component>)
+     (clone o #:behavior (lift-invariants (.behavior o))))
+    (($ <system>)
+     o)
+    ((? (is? <ast>)) (tree-map lift-invariants o))
+    (_ o)))
+
 
 ;;;
 ;;; Entry point: normalize.
@@ -201,5 +221,7 @@
     transform-end-of-on
     (annotate-otherwise)
     (add-explicit-temporaries)
+    lift-invariants
+    inline-expression-functions
     purge-data)
    root))
