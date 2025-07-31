@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2020, 2021, 2022, 2023, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -587,6 +587,7 @@ init for MODEL unless INIT."
                    (let ((keep-error?
                           (member last '(<missing-reply>
                                          <second-reply>
+                                         <invariant>
                                          <range-error>
                                          <type-error>))))
                      (if keep-error? last
@@ -614,6 +615,7 @@ init for MODEL unless INIT."
                     ((<type-error>) (format #f "type error in model ~a" model-name))
                     ((<missing-reply>) (format #f "reply missing from model ~a" model-name))
                     ((<second-reply>) (format #f "double reply in model ~a" model-name))
+                    ((<invariant>) (format #f "invariant violation in model ~a" model-name))
                     ((<queue-full>) (format #f "queue full in model ~a" model-name))
                     (else (format #f "~a in model ~a" error model-name))))
          (trace (remove-flushes trace))

@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2020, 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2023, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -175,7 +175,8 @@
                           (is? <functions>)
                           (is? <function>)
                           (is? <statement>))
-                 (is? <call>) o))
+                 (conjoin (is? <call>) ast:imperative?)
+                 o))
          (calls (reachable calls)))
     calls))
 
@@ -267,7 +268,7 @@
 
 (define-method (makreel:call-continuation*-unmemoized (o <behavior>))
   (let* ((calls (tree-collect (disjoin
-                               (is? <call>)
+                               (conjoin (is? <call>) ast:imperative?)
                                (conjoin
                                 (disjoin (is? <variable>)
                                          (is? <assign>))

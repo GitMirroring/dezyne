@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2023, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -323,7 +323,7 @@
 
 (define %declarative-illegal-action (sm:action (prefix "declarative_illegal")))
 (define %illegal-action (sm:action (prefix "illegal")))
-
+(define %invariant-action (sm:action (prefix "invariant")))
 (define (%compliant-action o)
   (sm:action (prefix (if o (port-prefix "compliance" o) "compliance"))))
 (define %constrained-legal-action (sm:action (prefix "constrained_legal")))
@@ -1241,8 +1241,13 @@
     (name (statement->process-name o))
     (formals (makreel:process-formals o))
     (statement
-     (sm:goto (name (statement->process-name next))
-              (arguments (makreel:process-parens next))))))
+     (sm:union*
+      (sm:if*
+       (sm:not* (makreel:ast->expression
+                 (.expression (.invariant (.behavior model)))))
+       (sm:sequence* %invariant-action %sm:delta))
+      (sm:goto (name (statement->process-name next))
+               (arguments (makreel:process-parens next)))))))
 
 (define-method (ast->process (model <model>) (o <declarative-compound>) (next <list>))
   (sm:process
@@ -1250,10 +1255,14 @@
     (formals (makreel:process-formals o))
     (statement
      (sm:union*
-      (map (lambda (next)
-             (sm:goto (name (statement->process-name next))
-                      (arguments (makreel:process-parens next))))
-           next)))))
+      `(,(sm:if*
+          (sm:not* (makreel:ast->expression
+                    (.expression (.invariant (.behavior model)))))
+          (sm:sequence* %invariant-action %sm:delta))
+        ,@(map (lambda (next)
+                 (sm:goto (name (statement->process-name next))
+                          (arguments (makreel:process-parens next))))
+               next))))))
 
 (define-method (ast->process (model <model>) (o <compound>) (next <ast>))
   (sm:process
@@ -2021,6 +2030,7 @@
              (sm:allow
               (process interface-reordered-comm)
               (events (list %declarative-illegal-action
+                            %invariant-action
                             %missing-reply-action
                             %range-error-action
                             %recurse-action
@@ -2152,6 +2162,7 @@
              (sm:allow
               (process interface-comm)
               (events (list %declarative-illegal-action
+                            %invariant-action
                             %missing-reply-action
                             %range-error-action
                             %recurse-action
@@ -2447,6 +2458,7 @@
               (process provides-comm)
               (events (cons* %declarative-illegal-action
                              %illegal-action
+                             %invariant-action
                              %missing-reply-action
                              %range-error-action
                              %second-reply-action
@@ -2541,6 +2553,7 @@
                              %declarative-illegal-action
                              %defer-end-action
                              %illegal-action
+                             %invariant-action
                              %queue-full-action
                              %queue-empty-action
                              %range-error-action
@@ -2994,7 +3007,8 @@
       (name "semantics_main")
       (statement
        (sm:union*
-        `(,@(map (cute semantics-provides <> name) provides)
+        `(,(sm:sequence* %invariant-action %sm:delta)
+          ,@(map (cute semantics-provides <> name) provides)
           ,@(map (cute semantics-requires <> name) requires)))))))
 
 (define-method (semantics-unblocked (o  <component>))
@@ -3356,11 +3370,13 @@
     (define (handle-queue-empty name)
       (sm:sequence*
        %queue-empty-action
-       (sm:if* "released != []"
-               (sm:goto (name "semantics_reply")
-                        (arguments '()))
-               (sm:goto (name "semantics_blocked_rtc")
-                        (arguments '())))))
+       (sm:union*
+        (sm:sequence* %invariant-action %sm:delta)
+        (sm:if* "released != []"
+                (sm:goto (name "semantics_reply")
+                         (arguments '()))
+                (sm:goto (name "semantics_blocked_rtc")
+                         (arguments '()))))))
     (define (handle-blocked-port-reply p name)
       (let ((interface (.type p)))
         (sm:if* (sm:invoke (%nil-predicate interface)
@@ -3428,6 +3444,7 @@
                ,@(append-map (seq (cute qout-actions <> name)
                                   (cute switch-context-actions <> name))
                              requires))))
+          ,(sm:sequence* %invariant-action %sm:delta)
           ,@(append-map (seq (cute out-actions <> name)
                              (cute handle-blocked-port-reply <> name)
                              (cute handle-port-blocking <> name))
@@ -3677,6 +3694,9 @@
                 (list
                  (sm:comm-event (from (sm:multi-event
                                        (events
+                                        (list %invariant-action)))))
+                 (sm:comm-event (from (sm:multi-event
+                                       (events
                                         (list %defer-end-action)))))
                  (sm:comm-event (from (sm:multi-event
                                        (events
@@ -3896,6 +3916,7 @@
                              (%defer-qout-action o)
                              (%defer-skip-action o)
                              %illegal-action
+                             %invariant-action
                              %missing-reply-action
                              %non-compliant-action
                              %queue-full-action
@@ -4058,6 +4079,7 @@
                              %defer-end-action
                              (%defer-skip-action o)
                              %illegal-action
+                             %invariant-action
                              %missing-reply-action
                              %queue-full-action
                              %queue-not-empty-action
@@ -4267,6 +4289,7 @@
                              (%defer-qout-action o)
                              (%defer-skip-action o)
                              %illegal-action
+                             %invariant-action
                              %missing-reply-action
                              %non-compliant-action
                              %queue-empty-action

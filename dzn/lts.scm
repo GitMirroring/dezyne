@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
@@ -836,12 +836,13 @@ from LABELS."
      illegal            <-- ('illegal' / 'declarative_illegal' / 'constrained_illegal'
                           / 'non_compliance') EOF
      error              <-- queue-full / range-error / reply-error / missing-reply
-                          / second-reply
+                          / second-reply / invariant
      queue-full         <-  'queue_full' / port-name tick port- 'queue_full'
      range-error        <-  'range_error'
      reply-error        <-  'double_reply_error' / 'no_reply_error'
      missing-reply      <-  'missing_reply'
      second-reply       <-  'second_reply'
+     invariant          <-  'invariant'
      tick               <   [']
      lpar               <   [(]
      rpar               <   [)]
