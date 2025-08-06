@@ -1,0 +1,158 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2025 Rutger van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  in void hello ();
+  out void world ();
+  behavior
+  {
+    bool idle = true;
+    [idle] on hello: idle = false;
+    [!idle] on inevitable: {idle = true; world;}
+  }
+}
+
+interface isilly
+{
+  in bool test ();
+  behavior
+  {
+    on test: reply (false);
+    on test: reply (true);
+  }
+}
+
+component shared_no_function
+{
+  provides ihello a;
+  requires ihello b;
+  requires ihello c;
+  requires ihello d;
+  requires ihello e;
+  requires ihello f;
+  requires ihello g;
+  requires ihello h;
+  requires ihello i;
+  requires ihello j;
+  requires ihello k;
+  requires ihello l;
+  requires ihello m;
+  requires ihello n;
+  requires ihello o;
+  requires ihello p;
+  requires ihello q;
+  requires ihello r;
+  requires ihello s;
+  requires ihello t;
+  requires ihello u;
+  requires ihello v;
+  requires ihello w;
+  requires ihello x;
+  requires ihello y;
+  requires ihello z;
+
+  requires isilly is;
+
+  behavior
+  {
+    [a.idle] on a.hello ():
+    {
+      if (is.test ()) b.hello ();
+      if (is.test ()) c.hello ();
+      if (is.test ()) d.hello ();
+      // if (is.test ()) e.hello ();
+      // if (is.test ()) f.hello ();
+      // if (is.test ()) g.hello ();
+      // if (is.test ()) h.hello ();
+      // if (is.test ()) i.hello ();
+      // if (is.test ()) j.hello ();
+      // if (is.test ()) k.hello ();
+      // if (is.test ()) l.hello ();
+      // if (is.test ()) m.hello ();
+      // if (is.test ()) n.hello ();
+      // if (is.test ()) o.hello ();
+      // if (is.test ()) p.hello ();
+      // if (is.test ()) q.hello ();
+      // if (is.test ()) r.hello ();
+      // if (is.test ()) s.hello ();
+      // if (is.test ()) t.hello ();
+      // if (is.test ()) u.hello ();
+      // if (is.test ()) v.hello ();
+      // if (is.test ()) w.hello ();
+      // if (is.test ()) x.hello ();
+      // if (is.test ()) y.hello ();
+      z.hello ();
+    }
+    on b.world (),
+      c.world (),
+      d.world (),
+      e.world (),
+      f.world (),
+      g.world (),
+      h.world (),
+      i.world (),
+      j.world (),
+      k.world (),
+      l.world (),
+      m.world (),
+      n.world (),
+      o.world (),
+      p.world (),
+      q.world (),
+      r.world (),
+      s.world (),
+      t.world (),
+      u.world (),
+      v.world (),
+      w.world (),
+      x.world (),
+      y.world (),
+      z.world ():
+      if (b.idle
+          && c.idle
+          && d.idle
+          && e.idle
+          && f.idle
+          && g.idle
+          && h.idle
+          && i.idle
+          && j.idle
+          && k.idle
+          && l.idle
+          && m.idle
+          && n.idle
+          && o.idle
+          && p.idle
+          && q.idle
+          && r.idle
+          && s.idle
+          && t.idle
+          && u.idle
+          && v.idle
+          && w.idle
+          && x.idle
+          && y.idle
+          && z.idle) a.world ();
+  }
+}

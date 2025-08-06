@@ -595,6 +595,7 @@ REGRESSION_TESTS =				\
  %D%/shared_function				\
  %D%/shared_glue				\
  %D%/shared_nested				\
+ %D%/shared_no_function				\
  %D%/shared_out_sync_provides			\
  %D%/shared_out_sync_requires			\
  %D%/shared_reply				\
