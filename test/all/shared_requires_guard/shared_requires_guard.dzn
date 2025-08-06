@@ -40,6 +40,6 @@ component shared_requires_guard
   behavior
   {
     on h.hello (): w.hello ();
-    [w.idle] on w.world (): h.world ();
+    [!h.idle && w.idle] on w.world (): h.world ();
   }
 }
