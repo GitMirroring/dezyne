@@ -3,7 +3,7 @@
 ;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -129,10 +129,13 @@ actions."
          (taus (delete-duplicates
                 (append-map events-trigger/action
                             (append out-triggers in-actions))))
+         (flush-taus (map (compose (cute string-append <> ".<flush>")
+                                   makreel:.name)
+                          (ast:port* model)))
          (state-taus (map (compose (cute string-append <> ".<state>")
                                    makreel:.name)
                           (ast:port* model)))
-         (taus `("tag" "<defer>" ,@state-taus ,@taus)))
+         (taus `("tag" "<defer>" ,@flush-taus ,@state-taus ,@taus)))
     (string-join taus ",")))
 
 (define (deterministic-labels component)

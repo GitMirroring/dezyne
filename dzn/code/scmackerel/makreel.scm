@@ -3679,6 +3679,9 @@
                    (list
                     (sm:comm-event (from (sm:multi-event
                                           (events
+                                           (list (%flush-action p))))))
+                    (sm:comm-event (from (sm:multi-event
+                                          (events
                                            (list (%in-action p))))))
                     (sm:comm-event (from (sm:multi-event
                                           (events
@@ -3744,8 +3747,7 @@
                               (append-map
                                (lambda (p)
                                  (list
-                                  (%reply-reordered-action p)
-                                  (%flush-action p)))
+                                  (%reply-reordered-action p)))
                                provides)
                               (append-map
                                (lambda (p)
@@ -3769,6 +3771,8 @@
                  (lambda (p)
                    (let ((interface (.type p)))
                      (list
+                      (sm:rename-event (from (sm:transpose-tick (%flush-action p)))
+                                       (to (%flush-action p)))
                       (sm:rename-event (from (sm:transpose-tick (%reply-action p)))
                                        (to (%tau-reply-action interface)))
                       (sm:rename-event (from (%reply-reordered-action p))
@@ -4115,7 +4119,6 @@
                                   (%tau-modeling-action i)
                                   (%tau-reply-action i)))
                                interfaces)
-                              (map %state-action provides)
                               (append-map
                                (lambda (p)
                                  (list

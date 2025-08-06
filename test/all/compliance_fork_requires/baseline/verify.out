@@ -1,4 +1,5 @@
 model: compliance_fork_requires
 r.world
 left.world
+right.world
 <non-compliance>
