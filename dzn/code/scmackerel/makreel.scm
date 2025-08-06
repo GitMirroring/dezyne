@@ -1215,23 +1215,20 @@
       (statement
        (sm:union*
         `(,@(map
-             (lambda (port)
-               (let ((shared (filter (compose (cute ast:eq? port <>) .port)
-                                     shared)))
+             (lambda (shared-var)
+               (let ((port (.port shared-var)))
                  (sm:sequence*
                   `(,(sum-state-action port)
                     ,(sm:goto (name (statement->process-name o))
                               (arguments
-                               (map (lambda (shared-var)
-                                      (let* ((interface (.type port)))
-                                        (simple-format
-                                         #f "~a=~a (~a)"
-                                         (makreel:full-name shared-var)
-                                         (model-prefix (ast:name shared-var)
-                                                       interface)
-                                         (port-prefix "s" port))))
-                                    shared)))))))
-             ports)
+                               `(,(let* ((interface (.type port)))
+                                    (simple-format
+                                     #f "~a=~a (~a)"
+                                     (makreel:full-name shared-var)
+                                     (model-prefix (ast:name shared-var)
+                                                   interface)
+                                     (port-prefix "s" port))))))))))
+             shared)
           ,@(map (lambda (port)
                    (sm:sequence*
                     (%flush-action port)
