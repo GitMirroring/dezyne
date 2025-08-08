@@ -1680,22 +1680,26 @@
         `(,@(if (not (makreel:defer-skip? model)) '()
                 (list (%defer-skip-action model)))
           ,(%end-action model)
-          ,(sm:sequence*
-            `(,@(map sum-state-action (delete-duplicates
-                                       (map .port shared-provides)
-                                       eq?))
-              ,(sm:goto (name (statement->process-name next))
-                        (arguments
-                         (map (lambda (shared-var)
-                                (let* ((port (.port shared-var))
-                                       (interface (.type port)))
-                                  (simple-format
-                                   #f "~a=~a (~a)"
-                                   (makreel:full-name shared-var)
-                                   (model-prefix (ast:name shared-var)
-                                                 interface)
-                                   (port-prefix "s" port))))
-                              shared-provides)))))))))))
+          ,(sm:union*
+            (sm:goto (name (statement->process-name next))
+                     (arguments (makreel:process-parens next)))
+            (sm:sequence*
+             `(,%queue-empty-action
+               ,@(map sum-state-action (delete-duplicates
+                                        (map .port shared-provides)
+                                        eq?))
+               ,(sm:goto (name (statement->process-name next))
+                         (arguments
+                          (map (lambda (shared-var)
+                                 (let* ((port (.port shared-var))
+                                        (interface (.type port)))
+                                   (simple-format
+                                    #f "~a=~a (~a)"
+                                    (makreel:full-name shared-var)
+                                    (model-prefix (ast:name shared-var)
+                                                  interface)
+                                    (port-prefix "s" port))))
+                               shared-provides))))))))))))
 
 (define-method (ast->process (model <model>) (o <if>) (next <ast>))
   (sm:process
@@ -1754,22 +1758,26 @@
           ,@(if (not (makreel:defer-skip? model)) '()
                 (list (%defer-skip-action model)))
           ,(%end-action model)
-          ,(sm:sequence*
-            `(,@(map sum-state-action (delete-duplicates
-                                       (map .port shared-provides)
-                                       eq?))
-              ,(sm:goto (name (statement->process-name next))
-                        (arguments
-                         (map (lambda (shared-var)
-                                (let* ((port (.port shared-var))
-                                       (interface (.type port)))
-                                  (simple-format
-                                   #f "~a=~a (~a)"
-                                   (makreel:full-name shared-var)
-                                   (model-prefix (ast:name shared-var)
-                                                 interface)
-                                   (port-prefix "s" port))))
-                              shared-provides)))))))))))
+          ,(sm:union*
+            (sm:goto (name (statement->process-name next))
+                     (arguments (makreel:process-parens next)))
+            (sm:sequence*
+             `(,%queue-empty-action
+               ,@(map sum-state-action (delete-duplicates
+                                        (map .port shared-provides)
+                                        eq?))
+               ,(sm:goto (name (statement->process-name next))
+                         (arguments
+                          (map (lambda (shared-var)
+                                 (let* ((port (.port shared-var))
+                                        (interface (.type port)))
+                                   (simple-format
+                                    #f "~a=~a (~a)"
+                                    (makreel:full-name shared-var)
+                                    (model-prefix (ast:name shared-var)
+                                                  interface)
+                                    (port-prefix "s" port))))
+                               shared-provides))))))))))))
 
 
 ;;;
@@ -2533,6 +2541,7 @@
                              %defer-end-action
                              %illegal-action
                              %queue-full-action
+                             %queue-empty-action
                              %range-error-action
                              %recurse-action
                              %return-action
@@ -3673,7 +3682,10 @@
                                         (list (%defer-qout-action o))))))
                  (sm:comm-event (from (sm:multi-event
                                        (events
-                                        (list (%end-action o)))))))
+                                        (list (%end-action o))))))
+                 (sm:comm-event (from (sm:multi-event
+                                       (events
+                                        (list %queue-empty-action))))))
                 (append-map
                  (lambda (p)
                    (list
@@ -3727,7 +3739,6 @@
                              (%defer-skip-action o)
                              %illegal-action
                              %missing-reply-action
-                             %queue-empty-action
                              %queue-full-action
                              %queue-not-empty-action
                              %range-error-action
