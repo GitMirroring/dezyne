@@ -52,7 +52,7 @@ interface iworlda
   {
     bool idle = false;
     on hello: idle = true;
-    [idle] on inevitable: {world; idle = false;}
+    [idle] on inevitable: {idle = false; world;}
   }
 }
 
@@ -67,6 +67,6 @@ component hello_blocking_asynchronous_sync_out
     bool blocked = false;
     blocking on p.hello (): {blocked = true; ra.hello ();}
     on ra.world (): rs.hello ();
-    on rs.world (): {p.reply (); blocked = false;}
+    on rs.world (): {blocked = false; p.reply ();}
   }
 }
