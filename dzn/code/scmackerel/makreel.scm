@@ -865,14 +865,6 @@
           (statement
            (sm:invoke (%state-action port) var))))
 
-(define-method (sum-state-action (port <port>) continuation)
-  (sm:sum (type (%state (.type port)))
-          (var (port-prefix "s" port))
-          (statement
-           (sm:sequence*
-            (sm:invoke (%state-action port) var)
-            continuation))))
-
 (define %switch-context-action
   (let ((cache '()))
     (lambda (o)
@@ -1346,8 +1338,8 @@
                               (%shared)))
                    (sm:goto (name (statement->process-name next))
                             (arguments (makreel:process-parens next)))
-                   (sum-state-action
-                    port
+                   (sm:sequence*
+                    (sum-state-action port)
                     (sm:goto (name (statement->process-name next))
                              (arguments
                               (map
@@ -1471,8 +1463,8 @@
                                    (arguments (makreel:process-parens next))))
                          ((find (compose (cute ast:eq? port <>) .port)
                                 (%shared))
-                          (sum-state-action
-                           port
+                          (sm:sequence*
+                           (sum-state-action port)
                            (sm:goto
                             (name (statement->process-name next))
                             (arguments
@@ -1545,8 +1537,8 @@
                           (find (compose (cute ast:eq? port <>) .port)
                                 shared)))
                 '()
-                `(,(sum-state-action
-                    port
+                `(,(sm:sequence*
+                    (sum-state-action port)
                     (sm:goto (name name)
                              (arguments
                               (cond ((or (ast:out? o)
@@ -2873,9 +2865,10 @@
               (sm:union*
                (sm:goto (name name)
                         (arguments '()))
-               (sum-state-action
-                p (sm:goto (name name)
-                           (arguments '())))))))))
+               (sm:sequence*
+                (sum-state-action p)
+                (sm:goto (name name)
+                         (arguments '())))))))))
 
 (define-method (qout-actions (p <port>) name)
   (let ((interface (.type p)))
@@ -3591,12 +3584,13 @@
                                (arguments
                                 (list
                                  (sm:is* "port" (port-prefix "port" p)))))
-                      (sum-state-action
-                       p (sm:goto
-                          (name name)
-                          (arguments
-                           (list
-                            (sm:is* "port" (port-prefix "port" p))))))))))))
+                      (sm:sequence*
+                       (sum-state-action p)
+                       (sm:goto
+                        (name name)
+                        (arguments
+                         (list
+                          (sm:is* "port" (port-prefix "port" p))))))))))))
     ;; XXX switch-context-actions but goto
     ;; semantics_async_switch_context with switch=h'port
     (define (switch-context-actions+switch=p p name)
