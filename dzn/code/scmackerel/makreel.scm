@@ -2950,26 +2950,20 @@
                  (sm:sequence*
                   `(,(sm:invoke (%internal-action p))
                     ,(%end-action p)
-                    ,(sm:union*
-                      (list
-                       (sm:sequence*
-                        `(,%queue-empty-action
-                          ,@(map sum-state-action shared-provides)
-                          ,(sm:goto (name name))))
-                       (sm:goto (name "semantics_async")
-                                (arguments
-                                 (list
-                                  "blocking={}"
-                                  "released=[]"
-                                  (sm:is*
-                                   "reply"
-                                   (sm:entity
-                                    (name "replies")
-                                    (formals
-                                     (map
-                                      (cute model-prefix "nil" <>)
-                                      provides-interfaces))))
-                                  "port=no_port")))))))))))
+                    ,(sm:goto (name "semantics_async")
+                              (arguments
+                               (list
+                                "blocking={}"
+                                "released=[]"
+                                (sm:is*
+                                 "reply"
+                                 (sm:entity
+                                  (name "replies")
+                                  (formals
+                                   (map
+                                    (cute model-prefix "nil" <>)
+                                    provides-interfaces))))
+                                "port=no_port")))))))))
     ;; invariant QMT => allow provides in, or requires modeling
     (sm:process
       (name "semantics_main")
