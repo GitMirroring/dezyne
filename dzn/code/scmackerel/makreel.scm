@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -1622,31 +1622,31 @@
                          "return_value"
                          (makreel:return->value o)))))))))))
 
-;;; FIXME: split into interface / component?
-(define-method (ast->process (model <model>) (o <assign>) (next <ast>))
+(define-method (ast->variable-process (model <model>) (s <statement>) (o <ast>)
+                                      (next <ast>))
   (let* ((shared (%shared))
-         (expression (.expression o))
+         (expression (.expression s))
          (action? (as expression <action>))
          (port (and=> action? .port))
          (expression (makreel:ast->expression expression))
-         (type (and=> (.variable o) .type)))
+         (type (.type o)))
     (sm:process
-      (name (statement->process-name o))
-      (formals (makreel:process-formals o))
+      (name (statement->process-name s))
+      (formals (makreel:process-formals s))
       (statement
        (sm:sequence*
         `(,@(if (not action?)
                 (makreel:type->out-of-range-processes type expression)
                 `(,(ast->action action?)
                   ,@(if (not (makreel:switch-context? action?))
-                        `(,(assign->sum model action? (.variable o)))
+                        `(,(assign->sum model action? o))
                         `(,(%switch-context-action port)))))
           ,(if (and action? (makreel:switch-context? action?))
                (sm:goto (name (statement->process-name next))
                         (arguments (makreel:process-parens next)))
                (sm:goto (name (statement->process-name next))
                         (arguments
-                         (let* ((variable (.variable.name o))
+                         (let* ((variable (.name o))
                                 (variables (makreel:variables-in-scope next))
                                 (variables
                                  (map (match-lambda
@@ -1675,58 +1675,11 @@
                                             (if action? "i"
                                                 expression)))))))))))))))))
 
-;;; FIXME: split into interface / component?
+(define-method (ast->process (model <model>) (o <assign>) (next <ast>))
+  (ast->variable-process model o (.variable o) next))
+
 (define-method (ast->process (model <model>) (o <variable>) (next <ast>))
-  (let* ((shared (%shared))
-         (expression (.expression o))
-         (action? (as expression <action>))
-         (port (and=> action? .port))
-         (expression (makreel:ast->expression expression))
-         (type (.type o)))
-    (sm:process
-      (name (statement->process-name o))
-      (formals (makreel:process-formals o))
-      (statement
-       (sm:sequence*
-        `(,@(if (not action?)
-                (makreel:type->out-of-range-processes type expression)
-                `(,(ast->action action?)
-                  ,@(if (not (makreel:switch-context? action?))
-                        `(,(assign->sum model action? o))
-                        `(,(%switch-context-action port)))))
-          ,(if (and action? (makreel:switch-context? action?))
-               (sm:goto (name (statement->process-name next))
-                        (arguments (makreel:process-parens next)))
-               (sm:goto (name (statement->process-name next))
-                        (arguments
-                         (let* ((variable (.name o))
-                                (variables (makreel:variables-in-scope next))
-                                (variables (map
-                                            (match-lambda
-                                              ((and ($ <variable>) variable)
-                                               (.name variable))
-                                              ((and ($ <formal>) variable)
-                                               (.name variable))
-                                              ((and ($ <shared-variable>) variable)
-                                               (makreel:full-name variable))
-                                              ((and ($ <stack>) stack)
-                                               "s"))
-                                            variables))
-                                (assign? (member variable variables)))
-                           (cond ((and (or (not assign?)
-                                           (and action?
-                                                (ast:out? action?)))
-                                       (null? shared))
-                                  (makreel:process-parens next))
-                                 (else
-                                  `(,@(if (not action?) '()
-                                          (makreel:shared-process-arguments action?))
-                                    ,@(if (not assign?) '()
-                                          (list
-                                           (sm:is*
-                                            variable
-                                            (if action? "i"
-                                                expression)))))))))))))))))
+  (ast->variable-process model o o next))
 
 (define-method (ast->process (model <interface>) (o <the-end>) (next <ast>))
   (let* ((members (ast:member* model))
