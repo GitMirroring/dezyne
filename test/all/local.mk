@@ -446,6 +446,7 @@ REGRESSION_TESTS =				\
  %D%/hello_choice3				\
  %D%/hello_choice_action			\
  %D%/hello_choice_async				\
+ %D%/hello_choice_defer				\
  %D%/hello_choice_reply				\
  %D%/hello_complete_action			\
  %D%/hello_complete_reply			\

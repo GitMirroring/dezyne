@@ -1,0 +1,15 @@
+(header ((h) ihello_cruel_world provides) ((sut) hello_choice_defer component) ((w) ihello_reply_bool requires))
+(state ((h) (idle . true)) ((sut)) ((w)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w)))
+(trail "h.hello" "h.return")
+<defer>
+sut.w.hello -> ...
+... -> <external>.w.hello
+(state ((h) (idle . false)) ((sut)) ((w)))
+(trail "<defer>" "w.hello")
+(labels "w.true" "w.false")
+(eligible "w.true" "w.false")
