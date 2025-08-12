@@ -1,7 +1,7 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+# Copyright © 2020, 2021, 2022, 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -445,6 +445,7 @@ REGRESSION_TESTS =				\
  %D%/hello_choice2				\
  %D%/hello_choice3				\
  %D%/hello_choice_action			\
+ %D%/hello_choice_async				\
  %D%/hello_choice_reply				\
  %D%/hello_complete_action			\
  %D%/hello_complete_reply			\
