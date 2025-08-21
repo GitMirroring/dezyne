@@ -31,7 +31,7 @@
   #:use-module (ice-9 regex)
   #:use-module (ice-9 string-fun)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn misc)

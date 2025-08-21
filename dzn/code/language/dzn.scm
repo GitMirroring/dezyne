@@ -35,7 +35,7 @@
 
   #:use-module (scmackerel indent)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code goops)
   #:use-module (dzn code util)

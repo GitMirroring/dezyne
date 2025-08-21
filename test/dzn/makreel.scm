@@ -28,7 +28,7 @@
   #:use-module (srfi srfi-64)
   #:use-module (test dzn automake)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast util)
   #:use-module (dzn code language makreel)
   #:use-module (dzn parse))

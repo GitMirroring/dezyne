@@ -35,7 +35,7 @@
                 #:select (class-slots slot-definition-getter
                                       slot-definition-name slot-ref))
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn misc)
 
   #:export (as
@@ -189,7 +189,7 @@
         (deep-clone (cdr o))))
 
 (define-method (deep-clone (o <ast>))
-  ((@@ (dzn ast goops) make-wrapper)
+  ((@@ (dzn ast ast) make-wrapper)
    (deep-clone (ast:unwrap o))
    (.parent o)))
 

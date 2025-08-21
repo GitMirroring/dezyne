@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -24,9 +24,9 @@
 
 dist_%C%_scm_DATA =				\
  %D%/accessor.scm				\
+ %D%/ast.scm					\
  %D%/display.scm				\
  %D%/equal.scm					\
- %D%/goops.scm					\
  %D%/lookup.scm					\
  %D%/normalize.scm				\
  %D%/parse.scm					\

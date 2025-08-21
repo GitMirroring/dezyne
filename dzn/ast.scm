@@ -35,7 +35,7 @@
   #:use-module (ice-9 q)
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast equal)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast util)

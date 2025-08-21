@@ -35,7 +35,7 @@
 
   #:use-module (dzn ast display)
   #:use-module (dzn ast equal)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast util)
   #:use-module (dzn ast)

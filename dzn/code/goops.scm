@@ -24,7 +24,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn ast)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:export (<action-reply>
             <port-pair>

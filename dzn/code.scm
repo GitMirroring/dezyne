@@ -34,7 +34,7 @@
   #:use-module (ice-9 string-fun)
 
   #:use-module (dzn ast display)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)

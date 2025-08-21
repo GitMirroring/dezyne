@@ -28,7 +28,7 @@
   #:use-module (json)
 
   #:use-module (dzn ast display)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn config)
   #:use-module (dzn command-line)

@@ -28,7 +28,7 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast equal)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast lookup)
   #:use-module (dzn ast)
   #:use-module (dzn code)

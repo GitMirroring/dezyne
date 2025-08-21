@@ -31,7 +31,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn code language dzn)
   #:use-module (dzn misc)

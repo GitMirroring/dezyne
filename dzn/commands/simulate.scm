@@ -27,7 +27,7 @@
 
   #:use-module (srfi srfi-26)
 
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
   #:use-module (dzn command-line)
   #:use-module (dzn commands parse)
   #:use-module (dzn code)

@@ -31,7 +31,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (dzn ast accessor)
-  #:use-module (dzn ast goops)
+  #:use-module (dzn ast ast)
 
   #:export (ast:eq?
             ast:equal?
