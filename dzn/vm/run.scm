@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
@@ -658,8 +658,9 @@ until RTC?."
     (run-to-completion-unmemoized pc)))
 
 (define-method (run-flush (pc <program-counter>) (instance <runtime:component>))
-  (let ((pc (clone pc #:instance instance)))
-    (run-flush pc)))
+  (if (.status pc) (list (list pc))
+      (let ((pc (clone pc #:instance instance)))
+        (run-flush pc))))
 
 (define-method (run-silent (pc <program-counter>) (port <runtime:port>))
   (define (update-state pc port-pc)
