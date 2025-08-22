@@ -236,6 +236,9 @@
 (define-method (ast:imperative? (o <call>))
   (not (ast:declarative? o)))
 
+(define-method (ast:imported? (o <root>))
+  #f)
+
 (define-method (ast:imported? (o <ast>))
   (not (equal? (ast:source-file o) (ast:source-file (ast:parent o <root>)))))
 
