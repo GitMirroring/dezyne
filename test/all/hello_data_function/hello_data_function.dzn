@@ -1,0 +1,66 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Replying a data expression is mapped to void during verification,
+// however the expression side effects must be retained.
+//
+// Code:
+
+extern int $int$;
+
+interface ihello_data
+{
+  in int hello ();
+  in int bye ();
+  behavior
+  {
+    on hello, bye:;
+  }
+}
+
+component hello_data_function
+{
+  provides ihello_data h;
+  requires ihello_data w;
+  behavior
+  {
+    bool idle = true;
+    int f (int i)
+    {
+      return i;
+    }
+    int g (int i)
+    {
+      idle = true;
+      return i;
+    }
+    [idle] on h.hello ():
+    {
+      idle = false;
+      reply (f (g ($0$)));
+    }
+    [idle] on h.bye ():
+    {
+      idle = false;
+      reply (g (w.bye ()));
+    }
+  }
+}

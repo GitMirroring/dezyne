@@ -125,6 +125,7 @@ FEATURE_TESTS =					\
  %D%/hello_cruel_block				\
  %D%/hello_cxx20				\
  %D%/hello_data					\
+ %D%/hello_data_function			\
  %D%/hello_defer				\
  %D%/hello_else					\
  %D%/hello_enum					\
