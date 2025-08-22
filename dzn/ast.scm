@@ -208,10 +208,10 @@
              (and (pair? statements) ((compose ast:declarative? car) statements))))))
 
 (define-method (ast:declarative? (o <call>))
-  (let ((parent (ast:parent o (negate (is? <expression>)))))
+  (let ((parent (ast:parent (.parent o) (negate (is? <expression>)))))
     (or (is-a? parent <invariant>)
         (and (is-a? parent <guard>)
-             (or (null? (tree-collect (cute eq? <> o) (.statement parent)))
+             (or (null? (tree-collect (cute ast:eq? <> o) (.statement parent)))
                  (not (ast:parent parent <on>)))))))
 
 (define (ast:illegal? o)
@@ -232,6 +232,9 @@
     (or (is-a? (.parent o) <function>)
         (and (null? statements) (not (is-a? (.parent o) <behavior>)))
         (and (pair? statements) ((compose ast:imperative? car) statements)))))
+
+(define-method (ast:imperative? (o <call>))
+  (not (ast:declarative? o)))
 
 (define-method (ast:imported? (o <ast>))
   (not (equal? (ast:source-file o) (ast:source-file (ast:parent o <root>)))))
