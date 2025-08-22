@@ -228,7 +228,7 @@ behavior <-- BEHAVIOR (name)? behavior-compound
        <-- (function / variable / declarative-statement / type / &BRACE-CLOSE)#*
 
       function
-         <-- type-name name &(formals BRACE-OPEN)
+         <-- type-name (!is-event name / duplicate-identifier) &(formals BRACE-OPEN)
              enter-frame formals compound# exit-frame
 
 declarative-statement <- on / blocking / guard / compound
@@ -265,7 +265,7 @@ imperative-statement
   defer-argument <-- var / shared-var / unknown-identifier
 
   action-or-call <- (action / call) SEMICOLON#
-    action <-- is-port DOT name# arguments / is-event
+    action <-- is-port DOT name# arguments / is-event !arguments
     call <-- name arguments
       arguments <-- PAREN-OPEN (argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
         argument <-- expression
@@ -333,6 +333,7 @@ global <-- DOT
 identifier <- !KEYWORD [a-zA-Z_] [a-zA-Z_0-9]*
 
 unknown-identifier <-- identifier
+duplicate-identifier <-- identifier
 
 otherwise <-- OTHERWISE
 provides <-- PROVIDES

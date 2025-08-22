@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2017, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -477,10 +477,16 @@
 
 (define-method (wfc (o <function>))
   (append
+   (duplicate o)
    (re-definition o)
    (wfc (.signature o))
    (wfc (.statement o))
    (missing-return o)))
+
+(define-method (duplicate (o <function>))
+  (let ((name (.name o)))
+    (if (not (is-a? name <duplicate>)) '()
+        `(,(wfc-error o (format #f "duplicate identifier `~a'" (.name name)))))))
 
 
 ;;;

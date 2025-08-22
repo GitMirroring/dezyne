@@ -641,6 +641,8 @@ to the AST element."
 
         (('types types ...) (make <types-node> #:elements (helper types)))
 
+        (('duplicate-identifier name) (make <duplicate-node> #:name (helper name)))
+
         (('unknown-identifier name) (make <undefined-node> #:name (helper name)))
 
         (('var name) (make <var-node> #:name (helper name)))

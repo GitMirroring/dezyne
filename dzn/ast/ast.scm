@@ -4,7 +4,7 @@
 ;;; Copyright © 2018, 2020, 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -495,8 +495,9 @@
 
 (define-ast <var> (<named> <unary>))
 
-(define-ast <undefined> (<unary>)
-  (name))
+(define-ast <undefined> (<var>))
+
+(define-ast <duplicate> (<named>))
 
 (define-ast <shared> (<ast>))
 
