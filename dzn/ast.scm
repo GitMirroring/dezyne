@@ -1,11 +1,11 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
-;;; Copyright © 2019, 2020, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2019, 2020, 2022, 2023, 2024 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -206,6 +206,13 @@
     (and (not (is-a? (.parent o) <function>))
          (or (and (null? statements) (is-a? (.parent o) <behavior>))
              (and (pair? statements) ((compose ast:declarative? car) statements))))))
+
+(define-method (ast:declarative? (o <call>))
+  (let ((parent (ast:parent o (negate (is? <expression>)))))
+    (or (is-a? parent <invariant>)
+        (and (is-a? parent <guard>)
+             (or (null? (tree-collect (cute eq? <> o) (.statement parent)))
+                 (not (ast:parent parent <on>)))))))
 
 (define (ast:illegal? o)
   (match o
