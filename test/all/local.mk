@@ -151,6 +151,7 @@ FEATURE_TESTS =					\
  %D%/hello_inevitable				\
  %D%/hello_injected				\
  %D%/hello_int					\
+ %D%/hello_int_guard				\
  %D%/hello_invariant				\
  %D%/hello_local				\
  %D%/hello_local_bool				\
