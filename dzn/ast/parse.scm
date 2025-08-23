@@ -490,22 +490,27 @@ to the AST element."
          (make <compound-node> #:elements (helper statement)))
 
         (('behavior compound)
-         (let ((compound (helper compound)))
+         (let* ((compound (helper compound))
+                (types (filter (is? <type-node>) (.elements compound)))
+                (types (make <types-node> #:elements types))
+                (ports (filter (is? <port-node>) (.elements compound)))
+                (ports (make <ports-node> #:elements ports))
+                (elements (.elements compound))
+                (variables (filter (is? <variable-node>) elements))
+                (variables (make <variables-node> #:elements variables))
+                (functions (filter (is? <function-node>) elements))
+                (functions (make <functions-node> #:elements functions))
+                (statements (filter (conjoin (is? <statement-node>)
+                                             (negate (is? <port-node>))
+                                             (negate (is? <variable-node>)))
+                                    elements))
+                (statement (clone compound #:elements statements)))
            (make <behavior-node>
-             #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
-             #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
-             #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
-             #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-             #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
-
-        (('behavior name compound)
-         (let ((compound (helper compound)))
-           (make <behavior-node>
-             #:types (make <types-node> #:elements (filter (is? <type-node>) (.elements compound)))
-             #:ports (make <ports-node> #:elements (filter (is? <port-node>) (.elements compound)))
-             #:variables (make <variables-node> #:elements (filter (is? <variable-node>) (.elements compound)))
-             #:functions (make <functions-node> #:elements (filter (is? <function-node>) (.elements compound)))
-             #:statement (clone compound #:elements (filter (conjoin (is? <statement-node>) (negate (is? <port-node>)) (negate (is? <variable-node>))) (.elements compound))))))
+             #:types types
+             #:ports ports
+             #:variables variables
+             #:functions functions
+             #:statement statement)))
 
         (('blocking statement) (make <blocking-node> #:statement (helper statement)))
 

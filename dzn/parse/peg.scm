@@ -219,7 +219,7 @@ component <-- COMPONENT reset-port-names reset-event-names scoped-name#
 
 type-name <-- compound-name / BOOL / VOID
 
-behavior <-- BEHAVIOR (name)? behavior-compound
+behavior <-- BEHAVIOR behavior-compound
 
   behavior-compound
     <-- BRACE-OPEN# enter-frame behavior-statements BRACE-CLOSE# exit-frame
