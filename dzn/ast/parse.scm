@@ -498,7 +498,9 @@ to the AST element."
                 (elements (.elements compound))
                 (variables (filter (is? <variable-node>) elements))
                 (variables (make <variables-node> #:elements variables))
-                (functions (filter (is? <function-node>) elements))
+                (functions (filter (disjoin (is? <expression-function-node>)
+                                            (is? <function-node>))
+                                   elements))
                 (functions (make <functions-node> #:elements functions))
                 (statements (filter (conjoin (is? <statement-node>)
                                              (negate (is? <port-node>))
@@ -566,6 +568,24 @@ to the AST element."
              #:name (helper name)
              #:signature signature
              #:statement (helper statement))))
+
+        (('expression-function type name formals expression)
+         (let* ((type location comment (helper type))
+                (signature (make <signature-node>
+                             #:type.name type
+                             #:formals (helper formals)
+                             #:location location))
+                (expression (helper expression))
+                (statement (make <compound-node>
+                             #:elements (list (make <return-node>
+                                                #:expression expression
+                                                #:location (.location expression)))
+                             #:location (.location expression))))
+           (make <expression-function-node>
+             #:name (helper name)
+             #:signature signature
+             #:statement statement
+             #:expression expression)))
 
         (('functions functions ...)
          (make <functions-node> #:elements (helper functions)))

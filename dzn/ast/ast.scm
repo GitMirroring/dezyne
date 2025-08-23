@@ -561,6 +561,9 @@
   (recursive?)
   (statement))
 
+(define-ast <expression-function> (<function>)
+  (expression))
+
 (define-ast <action> (<imperative> <unary>)
   (port.name)
   (event.name)

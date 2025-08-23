@@ -545,6 +545,7 @@ procedure)."
      event-name
      events
      expression
+     expression-function
      external
      field-test
      fields

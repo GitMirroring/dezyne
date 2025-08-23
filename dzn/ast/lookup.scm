@@ -308,7 +308,7 @@ null) and return its CONTEXT."
       (and (is-a? (.parent o) <compound>)
            (ast:lookup-variable (.parent o) name (ast:statement-prefix o)))
       (ast:lookup-variable (.parent o) name statements)))
-    (($ <function>)
+    ((? (is? <function>))
      (or (find name? ((compose ast:formal* .signature) o))
          (ast:lookup-variable (.parent o) name statements)))
     (($ <formal>)

@@ -3,7 +3,7 @@
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
+;;; Copyright © 2021, 2024 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -225,13 +225,19 @@ behavior <-- BEHAVIOR behavior-compound
     <-- BRACE-OPEN# enter-frame behavior-statements BRACE-CLOSE# exit-frame
 
     behavior-statements
-       <-- (function / variable / declarative-statement / type / &BRACE-CLOSE)#*
+       <-- (expression-function / function / variable / declarative-statement /
+            type / &BRACE-CLOSE)#*
 
       function
          <-- type-name (!is-event name / duplicate-identifier) &(formals BRACE-OPEN)
              enter-frame formals compound# exit-frame
 
+      expression-function
+         <-- type-name (!is-event name / duplicate-identifier)
+             &PAREN-OPEN formals ASSIGN expression# SEMICOLON#
+
 declarative-statement <- on / blocking / guard / compound
+
   on <-- ON (illegal-triggers COLON illegal
              / enter-frame triggers# COLON# (statement / !unknown-identifier)#
              exit-frame)
