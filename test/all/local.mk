@@ -621,6 +621,7 @@ PARSER_TESTS =					\
  %D%/parse_space_duplicate_definition		\
  %D%/parse_unknown_enum				\
  %D%/parse_void_parameter			\
+ %D%/parse_void_variable			\
  %D%/wf_actionNotInOnEvent			\
  %D%/wf_actionValueDiscarded			\
  %D%/wf_assignmentExpressionNotInEventInstance	\
