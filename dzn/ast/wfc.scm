@@ -78,6 +78,9 @@
 (define (wfc-warning o message)
   (make <warning> #:ast o #:message message))
 
+(define (wfc-error->info o)
+  (wfc-info (.ast o) (.message o)))
+
 (define-method (wfc (o <model>))
   '())
 
@@ -475,7 +478,7 @@
            (.name o))))
       '()))
 
-(define-method (wfc (o <function>))
+(define-method (wfc-function (o <function>))
   (append
    (duplicate o)
    (re-definition o)
@@ -487,6 +490,33 @@
   (let ((name (.name o)))
     (if (not (is-a? name <duplicate>)) '()
         `(,(wfc-error o (format #f "duplicate identifier `~a'" (.name name)))))))
+
+(define-method (wfc (o <function>))
+  (wfc-function o))
+
+(define-method (wfc (o <expression-function>))
+  (let* ((bool? (is-a? (ast:type o) <bool>))
+         (args? (pair? (ast:formal* o)))
+         (called? (.called? o))
+         (recursive? (.recursive? o))
+         (predicate-errors (wfc-predicate (.expression o)))
+         (name (.name o)))
+    (append
+     (wfc-function o)
+     (cond
+      (recursive?
+       `(,(wfc-error o (format #f "expression function `~a' is recursive" name))))
+      ((not bool?)
+       `(,(wfc-error o (format #f "expression function `~a' does not have bool as return type" name))))
+      (args?
+       `(,(wfc-error o (format #f "expression function `~a' has arguments" name))))
+      ((pair? predicate-errors)
+       `(,(wfc-error o (format #f "expression of expression function `~a' is not a predicate" name))
+         ,@(map wfc-error->info predicate-errors)))
+      (else
+       '()))
+     (if called? '()
+         `(,(wfc-warning o (format #f "expression function `~a' is never called" name)))))))
 
 
 ;;;
@@ -530,8 +560,10 @@
                  '()))))))
   (let* ((expression (.expression o))
          (otherwise? (is-a? expression <otherwise>))
+         (predicate-errors (wfc-predicate expression))
          (wfce (wfc expression)))
-    (append wfce
+    (append predicate-errors
+            wfce
             (if (or otherwise? (pair? wfce)) '()
                 (typed-expression expression <bool>))
             (if otherwise? (otherwise o) '())
@@ -539,6 +571,27 @@
                 `(,(wfc-error o "cannot use a guard in imperative context")))
             (if (is-a? (.statement o) <statement>) (wfc (.statement o))
                 `(,(wfc-error o "statement expected"))))))
+
+(define-method (wfc-predicate (o <expression>))
+  '())
+
+(define-method (wfc-predicate (o <action>))
+  `(,(wfc-error o "action not allowed here")))
+
+(define-method  (wfc-predicate (o <call>))
+  (let* ((function (.function o))
+         (allowed? (not (and function
+                             (not (is-a? function <expression-function>))))))
+    (if allowed? '()
+        (let ((name (.name function)))
+          `(,(wfc-error o (format #f "call to function `~a' not allowed here" name)))))))
+
+(define-method (wfc-predicate (o <not>))
+  (wfc-predicate (.expression o)))
+
+(define-method (wfc-predicate (o <binary>))
+  (append (wfc-predicate (.left o))
+          (wfc-predicate (.right o))))
 
 (define-method (wfc (o <declarative-illegal>))
   ;; TODO; in source??
@@ -1009,7 +1062,7 @@
          (called (.function o))
          (non-recursive? (or (not function) (not (.recursive? function))
                              (not called) (not (.recursive? called)))))
-    (if non-recursive? '()
+    (if (or non-recursive? (is-a? function <expression-function>)) '()
         (let* ((assign (or (ast:parent o <assign>)
                            (ast:parent o <return>)
                            (ast:parent o <variable>)))
@@ -1419,7 +1472,6 @@
       `(,(wfc-error o "void value not ignored as it ought to be")))
      ((and (not (is-a? (ast:type o) <void>))
            (or (is-a? p <compound>)
-               (is-a? p <guard>)
                (is-a? p <on>)
                (and (is-a? p <if>)
                     (not (ast:eq? o (.expression p))))))
