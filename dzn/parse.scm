@@ -282,7 +282,7 @@ and the @var{tree-alist}."
 ;;; Ast.
 ;;;
 (define* (parse:annotate-ast ast)
-  (let ()
+  (let ((ast (recursive:annotate ast)))
     (when (> (dzn:debugity) 1)
       (debug "ast:")
       (ast:pretty-print ast (current-error-port)))

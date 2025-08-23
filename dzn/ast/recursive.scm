@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2019, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -29,10 +29,40 @@
   #:use-module (ice-9 match)
 
   #:use-module (dzn ast ast)
+  #:use-module (dzn ast equal)
   #:use-module (dzn ast normalize)
   #:use-module (dzn ast)
   #:use-module (dzn misc)
-  #:export (annotate-recursion))
+  #:export (recursive:annotate))
+
+(define-method (set-called? (o <behavior>))
+  (define (called-functions o)
+    (let* ((calls (tree-collect-filter
+                   (disjoin (is? <behavior>)
+                            (is? <functions>)
+                            (is? <function>)
+                            (is? <statement>)
+                            (is? <arguments>)
+                            (is? <expression>))
+                   (is? <call>)
+                   o))
+           (functions (map .function calls))
+           (functions (filter (is? <function>) functions))
+           (functions (delete-duplicates functions ast:eq?)))
+      functions))
+  (let ((called (called-functions o)))
+    (define (mark-called? f)
+      (let ((called? (and (find (cute ast:name-equal? <> f) called) #t)))
+        (clone f #:called? called?)))
+    (let* ((functions (.functions o))
+           (function-list (.elements functions))
+           (function-list (map mark-called? function-list))
+           (functions (clone functions #:elements function-list)))
+      (clone o #:functions functions))))
+
+(define (mark-recursive f)
+  (if (not (ast:recursive? f)) f
+      (clone f #:recursive? #t)))
 
 (define-method (set-recursive (o <behavior>))
   (define (mark-recursive f)
@@ -44,15 +74,18 @@
          (functions (clone functions #:elements function-list)))
     (clone o #:functions functions)))
 
-(define (annotate-recursion o)
+(define (recursive:annotate o)
   (match o
     (($ <behavior>)
-     (set-recursive o))
+     ((compose set-called? set-recursive) o))
     ((? (%normalize:short-circuit?))
      o)
     ((or ($ <interface>) ($ <component>))
-     (clone o #:behavior (and=> (.behavior o) set-recursive)))
+     (clone o #:behavior (and=> (.behavior o)
+                                (compose set-called? set-recursive))))
+    ((? (is? <function>))
+     (mark-recursive o))
     ((? (is? <ast>))
-     (tree-map annotate-recursion o))
+     (tree-map recursive:annotate o))
     (_
      o)))

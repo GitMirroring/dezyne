@@ -89,6 +89,9 @@
 (define-method (ast:name-equal? (a <named>) (b <string>))
   (ast:name-equal? (.name a) b))
 
+(define-method (ast:name-equal? (a <named>) (b <named>))
+  (ast:name-equal? (.name a) (.name b)))
+
 (define-method (ast:name-equal? (b <string>) (a <named>))
   (ast:name-equal? a b))
 
