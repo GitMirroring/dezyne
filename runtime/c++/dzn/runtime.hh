@@ -101,7 +101,7 @@ to_void (std::string const &)
 inline int
 to_int (std::string s)
 {
-  return std::stoi (s);
+  return (s == "return") ? int () : std::stoi (s);
 }
 
 inline bool
