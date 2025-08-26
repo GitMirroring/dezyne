@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger (regtur) van Beusekom <rutger@gnu.org>
+// Copyright © 2021, 2025 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -23,10 +23,23 @@
 
 import philosopher.dzn;
 
+component Test
+{
+  provides blocking IMind m;
+  requires blocking IMind m0;
+  requires blocking IMind m1;
+
+  behavior
+  {
+    bool idle = true;
+    [idle] on m.start (): {idle = false; m0.start (); m1.start ();}
+    [!idle] on m.stop (): {idle = true; m0.stop (); m1.stop ();}
+  }
+}
+
 component starving_philosophers
 {
-  provides blocking IMind m0;
-  provides blocking IMind m1;
+  provides blocking IMind m;
 
   system
   {
@@ -34,9 +47,11 @@ component starving_philosophers
     vork F0;
     philosopher P1;
     vork F1;
+    Test T;
 
-    m0 <=> P0.m;
-    m1 <=> P1.m;
+    m <=> T.m;
+    T.m0 <=> P0.m;
+    T.m1 <=> P1.m;
 
     // this configuration leads to deadlock
     // see deadlock execution trace

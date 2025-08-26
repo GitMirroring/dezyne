@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 
-// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021, 2025 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -30,12 +30,7 @@ int main()
   starving_philosophers sut(locator.set(runtime));
   sut.dzn_meta.name = "sut";
 
-  sut.m0.in.start();
-  sut.m1.in.start();
-
-
+  sut.m.in.start();
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-  sut.m0.in.stop();
-  sut.m1.in.stop();
+  sut.m.in.stop();
 }
