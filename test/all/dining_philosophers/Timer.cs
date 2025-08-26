@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2021, 2025 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -28,11 +28,11 @@ public partial class Timer
   {}
   void t_deferred ()
   {
-    dzn_locator.get<dzn.pump> ().handle (t.GetHashCode (), 0, ()=>{t.outport.timeout ();});
+    dzn_locator.get<dzn.pump> ().handle (t.GetHashCode (), 0, ()=>{t.out_port.timeout ();});
   }
   void t_set ()
   {
-    dzn_locator.get<dzn.pump> ().handle (t.GetHashCode (), 100, ()=>{t.outport.timeout ();});
+    dzn_locator.get<dzn.pump> ().handle (t.GetHashCode (), 100, ()=>{t.out_port.timeout ();});
   }
   void t_cancel ()
   {

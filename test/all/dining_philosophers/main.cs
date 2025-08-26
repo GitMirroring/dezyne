@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 
-// Copyright © 2021 Rutger van Beusekom <rutger.van.beusekom@verum.com>
+// Copyright © 2021, 2025 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -32,17 +32,11 @@ class main
   {
     dzn.Locator locator = new dzn.Locator ();
     dzn.Runtime runtime = new dzn.Runtime ();
-    using (dining_philosophers sut = new dining_philosophers (locator.set (runtime)))
+    using (dining_philosophers sut = new dining_philosophers (locator.set (runtime), "sut"))
     {
-      sut.dzn_meta.name = "sut";
-
-      sut.m0.inport.start ();
-      sut.m1.inport.start ();
-
+      sut.m.in_port.start ();
       Thread.Sleep (1000);
-
-      sut.m0.inport.stop ();
-      sut.m1.inport.stop ();
+      sut.m.in_port.stop ();
     }
   }
 }
