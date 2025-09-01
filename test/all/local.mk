@@ -116,6 +116,7 @@ FEATURE_TESTS =					\
  %D%/hello_alpha				\
  %D%/hello_blocking_external			\
  %D%/hello_bool					\
+ %D%/hello_circular_import			\
  %D%/hello_comment				\
  %D%/hello_constraint				\
  %D%/hello_constraint_modeling			\

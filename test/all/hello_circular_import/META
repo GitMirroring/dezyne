@@ -1,0 +1,3 @@
+;;; -*- scheme -*-
+((skip ( "traces" "code"))
+ (comment "no model: cannot generate traces, code"))
