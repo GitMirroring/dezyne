@@ -23,22 +23,13 @@
 //
 // Code:
 
+import ihello_world.dzn;
+
 extern int $int$;
-
-interface ihello
-{
-  in void hello ();
-
-  behavior
-  {
-    int foo;
-    on hello: {}
-  }
-}
 
 component parse_defer
 {
-  provides ihello h;
+  provides ihello_world h;
 
   behavior
   {
@@ -46,7 +37,8 @@ component parse_defer
     on h.hello ():
     {
       bool l = true;
-      defer (u,m,l) bool b = 0;
+      defer (u,m,l) h.world ();
+      defer (true) h.world ();
     }
   }
 }
