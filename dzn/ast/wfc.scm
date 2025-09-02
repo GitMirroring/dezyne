@@ -556,33 +556,38 @@
    (blocking o)
    (wfc (.statement o))))
 
-(define (wfc-defer-argument var)
-  (if (is-a? var <undefined>)
-      `(,(wfc-error var (format #f "undefined identifier `~a'" (.name var))))
-      (let* ((variable (.variable var))
-             (name (.variable.name var))
-             (type (and=> variable .type)))
-        (cond
-         ((is-a? var <shared>)
-          `(,(wfc-error
-              var
-              (format #f "cannot use interface variable `~a' as defer argument"
-                      name))
-            ,(wfc-info variable (format #f "variable `~a' defined here" name))))
-         ((not (ast:member? variable))
-          `(,(wfc-error var (format
-                             #f
-                             "cannot use local variable `~a' as defer argument"
-                             name))
-            ,(wfc-info var (format #f "variable `~a' defined here" name))))
-         ((is-a? type <extern>)
-          `(,(wfc-error var (format
-                             #f
-                             "cannot use data variable `~a' as defer argument"
-                             name))
-            ,(wfc-info var (format #f "variable `~a' defined here" name))))
-         (else
-          '())))))
+(define-method (wfc-defer-argument (o <var>))
+  (let* ((variable (.variable o))
+         (name (.variable.name o))
+         (type (and=> variable .type)))
+    (cond
+     ((not (ast:member? variable))
+      `(,(wfc-error
+          o
+          (format #f "cannot use local variable `~a' as defer argument" name))
+        ,(wfc-info o (format #f "variable `~a' defined here" name))))
+     ((is-a? type <extern>)
+      `(,(wfc-error
+          o
+          (format #f "cannot use data variable `~a' as defer argument" name))
+        ,(wfc-info o (format #f "variable `~a' defined here" name))))
+     (else
+      '()))))
+
+(define-method (wfc-defer-argument (o <shared-var>))
+  (let ((variable (.variable o))
+        (name (.variable.name o)))
+    `(,(wfc-error
+        o
+        (format #f "cannot use interface variable `~a' as defer argument" name))
+      ,(wfc-info variable (format #f "variable `~a' defined here" name)))))
+
+(define-method (wfc-defer-argument (o <expression>))
+  `(,(wfc-error o "cannot use expression as defer argument")))
+
+(define-method (wfc-defer-argument (o <undefined>))
+  (let ((name (.name o)))
+    `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
 
 (define-method (wfc (o <defer>))
   (let ((arguments (ast:argument* o)))
