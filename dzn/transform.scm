@@ -53,8 +53,9 @@
                normalize:event
                normalize:state
                purge-data
-               remove-otherwise
                remove-behavior
+               remove-invariant
+               remove-otherwise
                simplify-guard-expressions
                tag-imperative-blocks
                vm:normalize))

@@ -54,6 +54,7 @@
             purge-data
             remove-behavior
             remove-location
+            remove-invariant
             remove-otherwise
             simplify-guard-expressions
             split-variable
@@ -466,6 +467,23 @@ requires the introduction of temporaries for function calls."
                    (conjoin (is? <ast>) (disjoin ast:declarative? (compose ast:declarative? .parent)))
                    ast:imperative? o))))
 
+(define (remove-invariant o)
+  "Remove invariants from behavior."
+  (match o
+    ((? (is? <ast-list>))
+     (clone o #:elements (filter-map remove-invariant (.elements o))))
+    (($ <invariant>)
+     #f)
+    (($ <guard>)
+     (if (is-a? (.statement o) <invariant>) #f
+         o))
+    ((? (%normalize:short-circuit?))
+     o)
+    (($ <component>)
+     (clone o #:behavior (remove-invariant (.behavior o))))
+    ((? (is? <ast>)) (tree-map remove-invariant o))
+    (_ o)))
+
 (define (normalize:state o)
   "Push guards up, thereby splitting the body of a trigger into multiple
 guarded occurrences."
@@ -479,6 +497,7 @@ guarded occurrences."
               triples:simplify-guard
               triples:split-multiple-on
               triples:->triples
+              remove-invariant
               .statement
               ) o)
             #:functions
@@ -503,6 +522,7 @@ guarded occurrences."
               (triples:declarative-illegals (ast:parent o <model>))
               triples:split-multiple-on
               triples:->triples
+              remove-invariant
               .statement
               ) o)
             #:functions
