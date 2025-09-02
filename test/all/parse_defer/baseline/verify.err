@@ -1,7 +1,6 @@
-test/all/parse_defer/parse_defer.dzn:34:5: error: data variable in interface not supported: `foo'
-test/all/parse_defer/parse_defer.dzn:49:14: error: undefined identifier `u'
-test/all/parse_defer/parse_defer.dzn:49:16: error: cannot use data variable `m' as defer argument
-test/all/parse_defer/parse_defer.dzn:49:16: info: variable `m' defined here
-test/all/parse_defer/parse_defer.dzn:49:18: error: cannot use local variable `l' as defer argument
-test/all/parse_defer/parse_defer.dzn:49:18: info: variable `l' defined here
-test/all/parse_defer/parse_defer.dzn:49:21: error: type mismatch: expected `bool', found: `<int>'
+test/all/parse_defer/parse_defer.dzn:40:14: error: undefined identifier `u'
+test/all/parse_defer/parse_defer.dzn:40:16: error: cannot use data variable `m' as defer argument
+test/all/parse_defer/parse_defer.dzn:40:16: info: variable `m' defined here
+test/all/parse_defer/parse_defer.dzn:40:18: error: cannot use local variable `l' as defer argument
+test/all/parse_defer/parse_defer.dzn:40:18: info: variable `l' defined here
+test/all/parse_defer/parse_defer.dzn:41:14: error: cannot use expression as defer argument
