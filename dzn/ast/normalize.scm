@@ -47,6 +47,7 @@
             extract-call
             inline-expression-functions
             invariant:include-guard-expressions
+            make-a=>b-expression
             not-or-guards
             normalize:event
             normalize:event+illegals
@@ -498,6 +499,15 @@ requires the introduction of temporaries for function calls."
                                                  (.expression o))))
           (clone o #:expression expression)))))
 
+(define-method (make-behavior-invariant (o <behavior>))
+  (let* ((invariants (tree-collect (is? <invariant>) o))
+         (invariants (map invariant:include-guard-expressions invariants))
+         (invariants (map (cute group-expressions <>
+                                (list <and> <field-test> <or>))
+                          invariants))
+         (expression (and-expressions (map .expression invariants))))
+    (make <invariant> #:expression expression)))
+
 (define (normalize:state o)
   "Push guards up, thereby splitting the body of a trigger into multiple
 guarded occurrences."
@@ -515,7 +525,8 @@ guarded occurrences."
               .statement
               ) o)
             #:functions
-            (group-expressions (.functions o) (list <and> <field-test> <or>))))
+            (group-expressions (.functions o) (list <and> <field-test> <or>))
+            #:invariant (make-behavior-invariant o)))
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))
@@ -540,7 +551,8 @@ guarded occurrences."
               .statement
               ) o)
             #:functions
-            (group-expressions (.functions o) (list <and> <field-test> <or>))))
+            (group-expressions (.functions o) (list <and> <field-test> <or>))
+            #:invariant (make-behavior-invariant o)))
     ((? (%normalize:short-circuit?))
      o)
     ((? (is? <ast>))

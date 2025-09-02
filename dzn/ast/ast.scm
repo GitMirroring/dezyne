@@ -559,6 +559,7 @@
   (types #:init-form (make <types-node>))
   (variables #:init-form (make <variables-node>))
   (functions #:init-form (make <functions-node>))
+  (invariant)
   (statement #:init-form (make <compound-node>)))
 
 (define-ast <function> (<scope> <declaration>)
