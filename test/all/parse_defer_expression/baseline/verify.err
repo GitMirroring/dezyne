@@ -1,0 +1,4 @@
+test/all/parse_defer_expression/parse_defer_expression.dzn:32:27: error
+    on h.hello (): defer (true) h.world ();
+                          ^
+                          `PAREN-CLOSE' expected

@@ -670,6 +670,7 @@ PARSER_TESTS =					\
  %D%/parse_component_shadow_missing_event	\
  %D%/parse_component_without_trigger		\
  %D%/parse_defer				\
+ %D%/parse_defer_expression			\
  %D%/parse_defer_shared				\
  %D%/parse_duplicate_definition			\
  %D%/parse_duplicate_import_prefix		\
