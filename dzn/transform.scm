@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2022, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -47,6 +47,7 @@
                add-explicit-temporaries
                code:normalize
                extract-call
+               inline-expression-functions
                makreel:normalize
                normalize:compounds
                normalize:event

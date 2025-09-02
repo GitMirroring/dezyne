@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
@@ -45,6 +45,7 @@
             add-reply-port
             binding-into-blocking
             extract-call
+            inline-expression-functions
             not-or-guards
             normalize:event
             normalize:event+illegals
@@ -856,6 +857,27 @@ to a separate statement, for mCRL2."
     (($ <component>)
      (clone o #:behavior (extract-call (.behavior o))))
     ((? (is? <ast>)) (tree-map extract-call o))
+    (_ o)))
+
+(define-method (inline-expression-functions (o <top>))
+  "Inline expression-functions calls."
+  (match o
+    ((? (%normalize:short-circuit?))
+     o)
+    ((? (is? <ast-list>))
+     (clone o #:elements (map inline-expression-functions (.elements o))))
+    (($ <call>)
+     (let ((function (.function o)))
+       (if (not (is-a? function <expression-function>)) o
+           (let* ((expression (.expression function))
+                  (expression (inline-expression-functions expression))
+                  (parent (.parent o)))
+             (clone expression #:parent parent)))))
+    (($ <interface>)
+     (clone o #:behavior (inline-expression-functions (.behavior o))))
+    (($ <component>)
+     (clone o #:behavior (inline-expression-functions (.behavior o))))
+    ((? (is? <ast>)) (tree-map inline-expression-functions o))
     (_ o)))
 
 (define* (add-defer-end o)
