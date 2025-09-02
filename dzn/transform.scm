@@ -48,6 +48,7 @@
                code:normalize
                extract-call
                inline-expression-functions
+               invariant:include-guard-expressions
                makreel:normalize
                normalize:compounds
                normalize:event

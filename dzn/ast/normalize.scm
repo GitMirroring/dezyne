@@ -46,6 +46,7 @@
             binding-into-blocking
             extract-call
             inline-expression-functions
+            invariant:include-guard-expressions
             not-or-guards
             normalize:event
             normalize:event+illegals
@@ -483,6 +484,19 @@ requires the introduction of temporaries for function calls."
      (clone o #:behavior (remove-invariant (.behavior o))))
     ((? (is? <ast>)) (tree-map remove-invariant o))
     (_ o)))
+
+(define-method (make-a=>b-expression (a <expression>) (b <expression>))
+  (make <or> #:left (make <not> #:expression a) #:right b))
+
+(define-method (invariant:include-guard-expressions (o <invariant>))
+  "Include guard expression into invariants."
+  (let ((guards (filter (is? <guard>) (ast:path o))))
+    (if (null? guards) o
+        (let* ((expressions (map .expression guards))
+               (parent (.parent o))
+               (expression (make-a=>b-expression (and-expressions expressions)
+                                                 (.expression o))))
+          (clone o #:expression expression)))))
 
 (define (normalize:state o)
   "Push guards up, thereby splitting the body of a trigger into multiple
