@@ -248,6 +248,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_system_diamond			\
  %D%/call_before_variable			\
  %D%/calling_context				\
+ %D%/choice_invariant				\
  %D%/circular_import_directory			\
  %D%/clash_event_name				\
  %D%/clash_port_variable			\
