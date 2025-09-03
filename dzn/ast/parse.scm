@@ -505,6 +505,10 @@ to the AST element."
            #:arguments (helper arguments)
            #:statement (helper statement)))
 
+        (('defer-arguments argument) (make <arguments-node> #:elements (list (helper argument))))
+        (('defer-arguments argument ...) (make <arguments-node> #:elements (helper argument)))
+        (('defer-argument expression) (helper expression))
+
         (('arguments argument) (make <arguments-node> #:elements (list(helper argument))))
         (('arguments argument ...) (make <arguments-node> #:elements (helper argument)))
         (('argument expression) (helper expression))

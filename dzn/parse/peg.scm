@@ -257,7 +257,9 @@ imperative-statement
   <- variable / assign / if-statement / illegal / return / skip-statement
      / compound / reply / defer / action-or-call / interface-action SEMICOLON#
 
-  defer <-- DEFER arguments? imperative-statement
+  defer <-- DEFER defer-arguments? imperative-statement
+  defer-arguments <-- PAREN-OPEN (defer-argument (&PAREN-CLOSE / COMMA#))* PAREN-CLOSE#
+  defer-argument <-- var / shared-var / unknown-identifier
 
   interface-action <-- is-event
 
