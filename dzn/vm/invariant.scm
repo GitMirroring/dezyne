@@ -63,8 +63,9 @@
 (define-method (check-invariants (instance <runtime:instance>) trace)
   (let* ((pc (car trace))
          (pc (clone pc #:instance instance)))
-    (map (cute cons <> trace)
-         (check-invariants instance pc))))
+    (if (or (.status pc) (get-handling pc instance)) '()
+        (map (cute cons <> trace)
+             (check-invariants instance pc)))))
 
 (define-method (check-invariants trace)
   (append-map (cute check-invariants <> trace) (state-instances)))
