@@ -582,9 +582,6 @@
         (format #f "cannot use interface variable `~a' as defer argument" name))
       ,(wfc-info variable (format #f "variable `~a' defined here" name)))))
 
-(define-method (wfc-defer-argument (o <expression>))
-  `(,(wfc-error o "cannot use expression as defer argument")))
-
 (define-method (wfc-defer-argument (o <undefined>))
   (let ((name (.name o)))
     `(,(wfc-error o (format #f "undefined identifier `~a'" name)))))
