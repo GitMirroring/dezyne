@@ -3,7 +3,7 @@
 !#
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2019, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2019, 2021-2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -182,7 +182,7 @@ All rights reserved.
   (let ((text (gulp-pipe
                (format #f
                        "\
-grep -E 'Copyright © ([0-9, ]*[0-9]) ' ~a || echo"
+grep -E 'Copyright © ([-0-9, ]*[0-9]) ' ~a || echo"
                        file-name))))
     (string-split text #\newline)))
 
@@ -191,14 +191,59 @@ grep -E 'Copyright © ([0-9, ]*[0-9]) ' ~a || echo"
     (gulp-pipe (format #f "grep -Ei '(~a|~a)' ~a || echo" name email
                        file-name))))
 
+(define (range-expand year)
+  (let ((m (string-match "([0-9]{4}) *- *([0-9]{4})" year)))
+    (if (not m) (list year)
+        (let* ((start (string->number (match:substring m 1)))
+               (end (string->number (match:substring m 2)))
+               (range (iota (1+ (- end start)) start)))
+          (map number->string range)))))
+
+(define (year/range->string year/range)
+  (match year/range
+    ((start end) (format #f "~a-~a" start end))
+    (year (number->string year))))
+
+(define (create-ranges years)
+  (let* ((years (map string->number years))
+         (ranges (fold (lambda (year result)
+                         (match result
+                           (((and (? number?) previous))
+                            (list previous year))
+                           ((prefix ...
+                                    (and (? number?) before-previous)
+                                    (and (? number?) previous))
+                            (if (and (= year (1+ previous))
+                                     (= previous (1+ before-previous)))
+                                (append prefix (list (list before-previous year)))
+                                (append prefix (list before-previous previous year))))
+                           ((prefix ... (before-previous previous))
+                            (if (= year (1+ previous))
+                                (append prefix (list (list before-previous year)))
+                                (append result (list year))))
+                           (_ (append result (list year)))))
+                       '()
+                       years))
+         (lst (map year/range->string ranges))
+         (line (string-join lst ", ")))
+    line))
+
+(define (flatten-years years)
+  (let* ((years (map string->number years))
+         (lst (map year/range->string years))
+         (line (string-join lst ", ")))
+    line))
+
 (define (file-author-copyright-years file-name author)
   (let* ((text (file-author-copyright-line file-name author))
-         (years (string-match "© ([0-9, ]*[0-9]) +" text))
+         (years (string-match "© ([-0-9, ]*[0-9]) +" text))
          (years (and=> years (cute match:substring <> 1)))
          (years (and=> years (cute string-split <> #\,)))
          (years (or (and years (map string-trim years)) '()))
+         (years (filter (negate string-null?) years))
+         (years (or (and years (append-map range-expand years)) '()))
          (years (delete-duplicates years)))
-    (filter (negate string-null?) years)))
+    years))
 
 (define (git:author-copyright-years file-name author)
   (let* ((name email (author->name+email author))
@@ -250,23 +295,24 @@ git show --pretty=format:'Author:  %aN <%aE>%n' --no-patch ~a \\
                 #\newline)))
     (filter (negate skip?) files)))
 
-(define* (author-copyright-line file-name author #:key update?)
+(define* (author-copyright-line file-name author #:key (range? #t) update?)
   (let* ((git-years (if (not update?) '()
                         (git:author-copyright-years file-name author)))
          (file-years (file-author-copyright-years file-name author))
          (years (append git-years file-years))
          (years (sort years string<))
          (years (delete-duplicates years))
-         (years (string-join years ", "))
+         (years (or (and years (if range? (create-ranges years)
+                                   (flatten-years years))) '()))
          (author (if (not update?) author
                      (canonicalize-author author))))
     (format #f "Copyright © ~a ~a" years author)))
 
 (define (filter-author line)
-  (let ((m (string-match "© ([0-9, ]*[0-9]) +(.*>)" line)))
+  (let ((m (string-match "© ([-0-9, ]*[0-9]) +(.*>)" line)))
     (and m (match:substring m 2))))
 
-(define* (copyright-lines file-name #:key commit hysterical?)
+(define* (copyright-lines file-name #:key commit hysterical? (range? #t))
   (let* ((file-authors (file-authors file-name))
          (file-authors (filter-map filter-author file-authors))
          (git-authors (if hysterical? (git:file-authors file-name)
@@ -275,11 +321,12 @@ git show --pretty=format:'Author:  %aN <%aE>%n' --no-patch ~a \\
          (authors (delete-duplicates authors author-equal?))
          (update? (if hysterical? authors
                       (map (cute member <> git-authors author-equal?) authors))))
-    (append (map (cute author-copyright-line file-name <> #:update? <>)
+    (append (map (cut author-copyright-line file-name <> #:update? <>
+                      #:range? range?)
                  authors
                  update?))))
 
-(define* (fix-header file-name #:key commit dry-run? hysterical?)
+(define* (fix-header file-name #:key commit dry-run? hysterical? (range? #t))
   (format (current-error-port) "~a..." file-name)
   (let* ((header (cond (%ide?
                         ide-header)
@@ -320,7 +367,8 @@ git show --pretty=format:'Author:  %aN <%aE>%n' --no-patch ~a \\
            (header-rest (filter (negate (cute string-contains <> "Copyright")) header-rest))
            (header-rest (string-join header-rest "\n"))
            (copyright-lines (copyright-lines file-name #:commit commit
-                                             #:hysterical? hysterical?))
+                                             #:hysterical? hysterical?
+                                             #:range? range?))
            (copyright (string-join copyright-lines "\n"))
            (copyright (comment type copyright)))
       (newline (current-error-port))
@@ -338,7 +386,8 @@ git show --pretty=format:'Author:  %aN <%aE>%n' --no-patch ~a \\
   (or (symbolic-link? file-name)
       (member file-name '("ide/json.scm"
                           "build-aux/copyright-header.scm"
-                          "build-aux/ltmain.sh"))
+                          "build-aux/ltmain.sh"
+                          "test/all/hello_imported/hello_imported.dzn"))
       (string-prefix? "doc/" file-name)
       (string-prefix? "dzn/peg" file-name)
       (string-prefix? "test/language" file-name)
@@ -355,17 +404,19 @@ git show --pretty=format:'Author:  %aN <%aE>%n' --no-patch ~a \\
     (setenv "GIT_COMMIT" "HEAD")
     (match (command-line)
       ((copyright-header)
-       (let ((files (filter (negate skip?) files)))
-         (for-each fix-header files)))
+       (format (current-error-port) "Usage: build-aux/copyright-header.scm FILE...\n")
+       (exit 2))
       ((copyright-header files ...)
        (let* ((dry-run? (member "--dry-run" files))
               (hysterical? (member "--hysterical" files))
+              (expand-range? (member "--expand-range" files))
               (files (filter (negate (cute string-prefix? "--" <>)) files))
               (files (if (pair? files) files
                          (git:files-in-commit commit)))
               (files (filter (negate skip?) files)))
-         (for-each (cute fix-header <>
-                         #:commit commit
-                         #:dry-run? dry-run?
-                         #:hysterical? hysterical?)
+         (for-each (cut fix-header <>
+                        #:commit commit
+                        #:dry-run? dry-run?
+                        #:hysterical? hysterical?
+                        #:range? (not expand-range?))
                    files))))))
