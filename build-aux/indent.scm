@@ -2,7 +2,6 @@
 # -*-scheme-*-
 exec guile -L ${0%/*} -e '(indent)' -s "$0" "$@"
 !#
-
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>

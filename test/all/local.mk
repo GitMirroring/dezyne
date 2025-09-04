@@ -1,8 +1,8 @@
 # Dezyne --- Dezyne command line tools
 #
 # Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-# Copyright © 2020, 2021, 2022, 2023, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
-# Copyright © 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
+# Copyright © 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+# Copyright © 2020, 2021, 2022, 2023, 2024 Paul Hoogendijk <paul@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 # Copyright © 2020 Rob Wieringa <rma.wieringa@gmail.com>
 # Copyright © 2023 Karol Kobiela <karol.kobiela@verum.com>

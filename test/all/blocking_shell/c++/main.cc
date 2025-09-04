@@ -2,6 +2,7 @@
 //
 // Copyright © 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 // Copyright © 2021, 2022, 2025 janneke Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
