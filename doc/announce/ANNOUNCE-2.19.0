@@ -1,0 +1,163 @@
+Subject: Dezyne 2.19.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are happy to announce Dezyne 2.19 which introduces data return,
+invariants, and directory support for verify and code.  This release
+represents 226 commits over one year.
+
+See the NEWS below for a brief summary.
+
+Here is the Dezyne home page:
+    https://dezyne.org
+
+What's next?
+
+In the next releases we would like to see:
+- External functions and Global functions.
+- New sequential simulator infrastructure with improved support for
+  constraining interfaces, shared state, and debugging communcations
+  labeled with external and defer.
+- Support for early return and the deprecation of reply.
+- Replace dzn traces with dzn test to enable end users to automate their
+  functional or end to end tests.
+- Performance improved parse infrastructure with respect to
+  serialization, parse tree and abstract syntax tree related
+  functionality: including language extensions and early editing
+  feedback.
+- Move blocking from the component to the interface.
+- The unification of state and data at the language level.
+- Composing specifications for verification from multiple interfaces
+  separate from the component behavior.
+- Verify these composed specifications both at the component as well as
+  at the system level.
+
+Enjoy!
+The Dezyne developers.
+
+ABOUT
+
+Dezyne is a programming language and a set of tools to specify,
+validate, verify, simulate, document, and implement concurrent control
+software for embedded and cyber-physical systems.
+
+The Dezyne language has formal semantics expressed in mCRL2
+(https://mcrl2.org) developed at the department of Mathematics and
+Computer Science of the Eindhoven University of Technology
+(https://tue.nl).  Dezyne requires that every model is finite,
+deterministic and free of deadlocks, livelocks, and contract violations.
+This is achieved by means of the language itself as well as by builtin
+verification through model checking.  This allows the construction of
+complex systems by assembling independently verified components.
+
+DOWNLOAD
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
+Here are the compressed sources:
+
+  https://dezyne.org/download/dezyne/dezyne-2.19.0.tar.gz
+
+Here is the GPG detached signature:
+
+  https://dezyne.org/download/dezyne/dezyne-2.19.0.tar.gz.sig
+
+Here are the SHA1 and SHA256 checksums:
+
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.18.0.tar.gz
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.18.0.tar.gz
+
+Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify .sig
+
+The signature should match the fingerprint of the following key:
+
+  pub   rsa4096 2018-04-08 [SC]
+        1A85 8392 E331 EAFD B8C2  7FFB F3C1 A0D9 C1D6 5273
+  uid           [  full  ] Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+If that command fails because you don't have the required public key,
+or that public key has expired, try the following commands to retrieve
+or refresh it, and then rerun the 'gpg --verify' command.
+
+  gpg --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+As a last resort to find the key, you can try the official GNU
+keyring:
+
+  wget -q https://ftp.gnu.org/gnu/gnu-keyring.gpg
+  gpg --keyring gnu-keyring.gpg --verify .sig
+
+This release is based on the dezyne git repository, available as
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
+with commit  tagged as v2.19.0.
+
+For a summary of changes and contributors, see:
+
+  https://git.sv.gnu.org/gitweb/?p=dezyne.git;a=shortlog;h=v2.19.0
+
+or run this command from a git-cloned dezyne directory:
+
+  git shortlog v2.18.4..v2.19.0
+
+Alternatively, Dezyne can be installed using GNU Guix:
+
+  guix pull
+  guix install dezyne
+
+NEWS
+
+* Changes in 2.19.0 since 2.18.4
+** Language
+  - The concept of a predicate function, i.e., a boolean function
+    consisting of a single expression without side effects, has been
+    added.
+  - A boolean implication operator `=>' has been added.
+  - Invariants have been added and can use both of these features.
+  - An external type (data) can now be used as the return value of
+    events and functions.
+** Commands
+  - A new command `dzn exec' has been added to run anything in a Docker
+    container, such as, `dzn exec ltsconvert ...'.
+  - A new command, `dzn hash' has been added to produce a crpytographic
+    hash of a dezyne file and its imports.
+  - The `dzn' command has a new option: `--version-number.  This may
+    simplify getting the version in environments where Dezyne is the
+    only program in use that conforms to the GNU coding standards.
+  - The `dzn hello' command has a new option: `--runtime' to display the
+    (installed) location of the runtime.
+** Parser
+  - The `dzn parse' command has a new `-D,--no-directives' option,
+    removing the need to use, know, or learn `grep -v ^#'.
+** Code
+  - Using --shell=model for a non-existent model, an imported model, or
+    a non-system model now produces an error and exits unsuccessfully.
+  - When generating C++ code, makefile dependencies are generated.
+  - The `dzn code' command now supports generating code for multiple
+    files, and for directories.
+  - The `dzn code' command has a new `-t,--touch-empty-files' option
+    to touch empty C++ execution units for consistency.
+** Verification
+  - The `--threads' option of mCRL2 202307.1 can now be used via `dzn
+    --threads=N'.
+  - When verifying multiple files or directories, imported models are
+    skipped to prevent duplicate verification.
+** Noteworthy bug fixes
+  - Trivial deadlocks in a `dzn graph' procduced LTS or state-diagram in
+    blocking external and collateral blocking defer contexts have been
+    fixed.
+  - The verify command now also respects the `--model=MODEL' selection
+    when MODEL is an interface.
+  - Using an expression as defer argument is flagged as an error by the
+    parser.
+
+Thanks to everyone who contributed to this release:
+
+   155	Janneke Nieuwenhuizen
+    38	Paul Hoogendijk
+    33	Rutger van Beusekom
