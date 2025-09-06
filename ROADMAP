@@ -36,14 +36,6 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
 
 * TODO
-** Release 2.19
-  - dzn hash, dzn code, dzn verify on multiple files / directory
-    - Finish and merge wip-build
-  - Invariants
-    + Finish and merge wip-invariant
-  - Data return
-    - Finish and merge wip-data
-
 ** Release 2.20
   - Refactor node/parent
     + Finish and merge wip-canonical-on
