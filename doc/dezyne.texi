@@ -4795,7 +4795,7 @@ bool c = negate (idle);
 @node Functions
 @subsection Functions
 
-A function can is used to name and reuse a sequence of imperative
+A function can be used to name and reuse a sequence of imperative
 statements.
 
 @example
@@ -4843,7 +4843,7 @@ expression functions but regular function calls or actions are not allowed.
 Note that expression functions can be used in a declarative context,
 like guards and invariants, while this is not allowed for regular functions.
 
-Expression functions are are available as of Dezyne 2.19.0.
+Expression functions are available as of Dezyne 2.19.0.
 
 @node Components
 @section Components
