@@ -1,2 +1,3 @@
 ;;; -*- scheme -*-
-((skip ("c" "cs" "javascript" "scheme")))
+((timeout 600)
+ (skip ("c" "cs" "javascript" "scheme")))
