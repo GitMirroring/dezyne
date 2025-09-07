@@ -87,10 +87,17 @@ int
 log_typed (char *prefix, char *event, dzn_map *event_map, int (*string_to_value) (char *string_val), char * (*value_to_string) (int int_val))
 {
   char *s;
+  char *e;
   int r;
   fprintf (stderr, "<external>.%s%s -> sut.%s%s\n", prefix, event, prefix, event);
   s = consume_synchronous_out_events (prefix, event, event_map);
-  r = string_to_value (drop_prefix (s, prefix));
+  e = drop_prefix (s, prefix);
+  if (!strcmp (e, "return"))
+    {
+      fprintf (stderr, "<external>.%s%s <- sut.%s%s\n", prefix, "return", prefix, "return");
+      return 0;
+    }
+  r = string_to_value (e);
   if ((int)r != INT_MAX)
     {
       char *p = strchr (s, '.') + 1;
