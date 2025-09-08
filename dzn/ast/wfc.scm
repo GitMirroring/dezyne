@@ -286,7 +286,7 @@
    (let ((type (ast:type o)))
      (cond ((not type)
             `(,(wfc-error o (format #f "unknown type name `~a'" (type-name (.type.name o))))))
-           ((is-a? type <extern>)
+           ((and (not (feature-supported? "reply-data")) (is-a? type <extern>))
             `(,(wfc-error o (format #f "cannot use extern type `~a' as return type" (type-name (.type.name o))))))
            (else '())))
    (append-map wfc (ast:formal* o))
