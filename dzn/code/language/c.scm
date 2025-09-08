@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015, 2017, 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -52,6 +52,7 @@
             c:event-slot-call-name
             c:enum*
             c:event-name
+            c:formal-type-name
             c:ref
             c:type-name))
 
@@ -98,6 +99,11 @@
 
 (define-method (c:type-name (o <extern>))
   (c:type-name (.value o)))
+
+(define-method (c:formal-type-name (o <formal>))
+  (let ((pointer (if (ast:out? o) "*" ""))
+        (type (.type o)))
+    (string-append (c:type-name type) pointer)))
 
 (define-method (c:signature-equal? (a <trigger>) (b <trigger>))
   (ast:equal? ((compose .signature .event) a)
