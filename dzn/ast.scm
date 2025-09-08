@@ -156,6 +156,7 @@
                ast:field*
                ast:formal*
                ast:function*
+               ast:function**
                ast:import*
                ast:instance*
                ast:member*
