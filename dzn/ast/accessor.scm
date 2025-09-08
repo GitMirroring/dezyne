@@ -45,6 +45,7 @@
             ast:field*
             ast:formal*
             ast:function*
+            ast:function**
             ast:import*
             ast:instance*
             ast:member*
@@ -117,6 +118,7 @@
 (define-method (ast:namespace** (o <namespace>)) (filter (is? <namespace>) (ast:top** o)))
 (define-method (ast:model** (o <namespace>)) (filter (is? <model>) (ast:top** o)))
 (define-method (ast:type** (o <namespace>)) (filter (is? <type>) (ast:top** o)))
+(define-method (ast:function** (o <namespace>)) (filter (is? <function>) (ast:top** o)))
 
 (define-method (ast:type** (o <interface>)) (append (ast:type* o) (ast:type* (.behavior o))))
 
@@ -138,9 +140,11 @@
 (define-method (ast:formal* (o <signature>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <trigger>)) ((compose ast:formal* .formals) o))
 (define-method (ast:formal* (o <out-bindings>)) (.elements o))
+(define-method (ast:function* (o <behavior>)) ((compose ast:function* .functions) o))
+(define-method (ast:function* (o <ast-list>)) (filter (is? <function>) (.elements o)))
 (define-method (ast:function* (o <component>)) ((compose ast:function* .behavior) o))
 (define-method (ast:function* (o <foreign>)) '())
-(define-method (ast:function* (o <behavior>)) ((compose ast:function* .functions) o))
+(define-method (ast:function** (o <scope>)) (ast:function** (ast:parent o <root>)))
 (define-method (ast:instance* (o <system>)) ((compose ast:instance* .instances) o))
 (define-method (ast:member* (o <model>)) ((compose ast:member* .behavior) o))
 (define-method (ast:member* (o <foreign>)) '())
