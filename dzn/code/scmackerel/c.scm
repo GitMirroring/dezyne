@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -107,8 +107,7 @@
   (let* ((type (ast:type o))
          (interface (.type (.port o)))
          (formals (ast:formal* o))
-         (types (map .type formals))
-         (types (map c:type-name types)))
+         (types (map c:formal-type-name formals)))
     (simple-format #f "(~a (*) (~a*~a))"
                    (c:type-name type)
                    (c:type-name interface)
