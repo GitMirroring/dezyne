@@ -4783,6 +4783,23 @@ vice versa).  However only as long as every function involved in the
 recursion is @emph{tail recursive}; which means that a recursive call is
 the last statement in the function.
 
+@subsection Expression Functions
+@cindex expression-function
+@cindex predicate
+
+A expression functions can be used to name a single expression of type bool.
+
+@example
+function ::= bool "(" ")" "=" expression ";"
+@end example
+
+The expression of the expression functions can contain calls to other
+expression functions but regular function calls or actions are not allowed.
+Note that expression functions can be used in a declarative context,
+like guards and invariants, while this is not allowed for regular functions.
+
+Expression functions are are available as of Dezyne 2.19.0.
+
 @node Components
 @section Components
 
