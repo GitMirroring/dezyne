@@ -44,6 +44,9 @@
 (define-method (ast:empty-namespace? (o <string>))
   (equal? o "/"))
 
+(define-method (ast:empty-namespace? (o <scope.name>))
+  (= (length (.ids o)) 1))
+
 
 ;;;
 ;;; ast:name-equal?
