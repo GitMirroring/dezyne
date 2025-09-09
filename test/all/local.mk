@@ -593,6 +593,7 @@ REGRESSION_TESTS =				\
  %D%/range_local_expression			\
  %D%/range_member				\
  %D%/range_return				\
+ %D%/reply_data_full				\
  %D%/reply_expression				\
  %D%/reply_extern				\
  %D%/requires_twice				\

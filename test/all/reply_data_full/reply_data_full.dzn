@@ -1,0 +1,218 @@
+// Dezyne --- Dezyne command line tools
+//
+// Copyright © 2025 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+//
+// This file is part of Dezyne.
+//
+// Dezyne is free software: you can redistribute it and/or modify it
+// under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// Dezyne is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Commentary:
+//
+// Code:
+
+interface ihello
+{
+  extern int $int$;
+  enum Status {Yes, No};
+  in int hello ();
+  out void world (int i);
+
+  behavior
+  {
+    on hello: {}
+    on hello: world;
+  }
+}
+
+interface iworld
+{
+  in ihello.int hello ();
+  in bool cruel ();
+  in void world (ihello.int v);
+
+  behavior
+  {
+    bool even = true;
+    on hello: even = !even;
+    on cruel: reply (even);
+    on world: {}
+  }
+}
+
+component reply_data_full_
+{
+  provides ihello h;
+  requires iworld w;
+
+  behavior
+  {
+    ihello.int ii = $0$;
+    ihello.int jj = $0$;
+    ihello.int kk = $0$;
+    int done0 = 0;
+    int done1 = 0;
+    int done2 = 0;
+    ihello.int helper0 (ihello.int world)
+    {
+      ii = world;
+      done0 = done0+1;
+      return $0$;
+    }
+    ihello.int helper1 (ihello.int world)
+    {
+      jj = world;
+      done1 = done1+1;
+      return world;
+    }
+    ihello.int helper2 (ihello.int world, ihello.int b, ihello.int c)
+    {
+      kk = b;
+      done2 = done2+1;
+      return b;
+    }
+
+    void assert_ (bool c)
+    {
+      if (!c) illegal;
+    }
+
+    subint int {0..10};
+    int p = 0;
+    [p==0] on h.hello ():
+    {
+      ihello.int j = $42$;
+      reply (j);
+      p=p+1;
+    }
+    [p==1] on h.hello ():
+    {
+      reply ($43$);
+      p=p+1;
+    }
+
+    ihello.int func44 ()
+    {
+      return $44$;
+    }
+    [p==2] on h.hello ():
+    {
+      reply (func44 ());
+      p=p+1;
+    }
+    [p==3] on h.hello ():
+    {
+      jj = $0$;
+      done0 = 0;
+      done1 = 0;
+      ihello.int j = helper0 (helper1 ($45$));
+      assert_ (done0==1);
+      assert_ (done1==1);
+      reply (jj);
+      p=p+1;
+    }
+    [p==4] on h.hello ():
+    {
+      ii = $0$;
+      done0 = 0;
+      done1 = 0;
+      ihello.int j = helper0 (helper1 ($46$));
+      assert_ (done0==1);
+      assert_ (done1==1);
+      reply (ii);
+      p=p+1;
+    }
+    [p==5] on h.hello ():
+    {
+      kk = $0$;
+      done0 = 0;
+      done1 = 0;
+      done2 = 0;
+      ihello.int j = helper2 (helper0 ($0$), helper2 ($1$, helper1 ($47$), helper0 ($2$)), helper1 ($3$));
+      assert_ (done0==2);
+      assert_ (done1==2);
+      assert_ (done2==2);
+      reply (kk);
+      p=6;
+    }
+    [p==6] on h.hello ():
+    {
+      done1 = 0;
+      p=7;
+      reply (helper1 ($48$));
+      assert_ (done1==1);
+    }
+    [p==7] on h.hello ():
+    {
+      bool even = false;
+      p=0;
+      ihello.int res = helper0 (w.hello ());
+      even = w.cruel ();
+      assert_ (!even);
+      w.world(w.hello ());
+      even = w.cruel ();
+      assert_ (even);
+      reply (w.hello ());
+      even = w.cruel ();
+      assert_ (!even);
+      h.world (w.hello ());
+      even = w.cruel ();
+      assert_ (even);
+    }
+  }
+}
+
+component proxy
+{
+  provides ihello top;
+  requires ihello bottom;
+
+  behavior
+  {
+    void f (ihello.int i)
+    {
+      top.world (i);
+    }
+    on bottom.world (i): f (i);
+    on top.hello (): reply (bottom.hello ());
+  }
+}
+
+component stub
+{
+  provides iworld h;
+
+  behavior
+  {
+    bool even = true;
+    on h.hello (): {even = !even; reply ($49$);}
+    on h.cruel (): reply (even);
+    on h.world(b): {}
+  }
+}
+
+component reply_data_full
+{
+  provides ihello h;
+  system
+  {
+    proxy p;
+    reply_data_full_ c;
+    stub s;
+
+    p.top <=> h;
+    c.h <=> p.bottom;
+    c.w <=> s.h;
+  }
+}
