@@ -32,7 +32,7 @@
 (define-public mcrl2-next
   (package
     (inherit mcrl2)
-    (version "202407.1")
+    (version "202507.0")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -40,7 +40,7 @@
                     version ".tar.gz"))
               (sha256
                (base32
-                "1ay7zf5g9zpqz37is2118pcqfa7blkzfhvh5f461d3xfah2gs4sn"))))
+                "08w7v2dx1s164q3vc5lzf864nlxrf8s0kgsa26mmkgfqfqcwdgjj"))))
     (name "mcrl2-next")))
 
 (define-public mcrl2-next-minimal
