@@ -1114,7 +1114,6 @@
   (let ((name (ast:name o)))
     (ast:lookup (ast:parent o <scope>) name)))
 
-(use-modules (dzn ast accessor))
 (define (previous-definition-unshadowed o)
   "Disallow shadowing altogether"
   (let ((name (make <scope.name> #:ids (ast:full-name o))))
