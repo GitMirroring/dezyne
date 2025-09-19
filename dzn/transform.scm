@@ -41,10 +41,10 @@
   #:use-module (dzn vm normalize)
 
   #:export (add-calling-context
+            add-explicit-temporaries
             inline-functions
             normalize:compounds-wrap)
   #:re-export (add-function-return
-               add-explicit-temporaries
                code:normalize
                extract-call
                inline-expression-functions
@@ -70,6 +70,11 @@ and pass it as argument accordingly."
       (format (current-error-port) "warning: no -c,--calling-context set.\n"))
     (parameterize ((%calling-context calling-context))
       (code:add-calling-context o))))
+
+(define (add-explicit-temporaries o)
+  "Make implicit temporary values in action, call, if, reply, and return
+expressions explicit."
+  (((@ (dzn ast normalize) add-explicit-temporaries)) o))
 
 (define (normalize:compounds-wrap o)
   "Like normalize:compounds and wrap singleton top level imperative
