@@ -540,6 +540,7 @@ REGRESSION_TESTS =				\
  %D%/implicit_temporary2			\
  %D%/implicit_temporary3			\
  %D%/implicit_temporary4			\
+ %D%/implicit_temporary5			\
  %D%/import_cycle				\
  %D%/implies_expressions			\
  %D%/import_path				\
