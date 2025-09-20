@@ -1,6 +1,6 @@
 // Dezyne --- Dezyne command line tools
 //
-// Copyright © 2016, 2021, 2024 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2016, 2021, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
@@ -48,20 +48,13 @@ component multiple_provides
 
   behavior
   {
-    bool b_left = false;
-    bool b_right = false;
-
-    [!b_left && !b_right]
-    {
-      on left.hello (): {r.hello (); b_left = true;}
-      on right.hello ():{r.hello (); b_right = true;}
-    }
-    [b_left || b_right]
-    {
-      [!b_left] on left.hello (): left.world ();
-      [!b_right] on right.hello (): right.world ();
-      [b_left] on r.world (): {b_left = false; left.world ();}
-      [b_right] on r.world (): {b_right = false; right.world ();}
-    }
+    enum Side {LEFT, RIGHT};
+    Side side = Side.LEFT;
+    bool left_idle = true;
+    bool right_idle = true;
+    on left.hello (): if (right_idle) {side = Side.LEFT; left_idle = false; r.hello ();} else left.world ();
+    on right.hello (): if (left_idle) {side = Side.RIGHT; right_idle = false; r.hello ();} else right.world ();
+    [side.LEFT] on r.world (): {left_idle = true; left.world ();}
+    [side.RIGHT] on r.world (): {right_idle = true; right.world ();}
   }
 }
