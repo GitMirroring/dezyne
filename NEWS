@@ -5,6 +5,29 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.19.3 since 2.19.2
+** Code
+  - The c++ runtime's pump::wait is now a supported interface that makes
+    all callers wait until the pump is idle to wake them up
+    collectively.
+** Commands
+  - A new command, `dzn anonymize' has been added
+** Noteworthy bug fixes
+  - Reporting a deadlock for an interface missing a reply after an
+    action instead of reporting <missing-reply>.  This is a regression
+    that was introduced in 2.18.0.
+  - A function shadowing a port name is now reported as an error.  This
+    is a regression that was introduced in 2.18.0.
+  - The `dzn lts' command now exits gracefully upon receiving no input
+    LTS.
+  - The verify pipeline, upon failure, now halts further execution, and
+    reports the command that failed.
+  - In the C++ runtime some MSVC compiler related warnings have been
+    fixed.
+  - The `dzn parse --list-models' command now handles Dezyne files with
+    syntax errors again.  This is a regression that was introduced in
+    2.19.0.rc0.
+
 * Changes in 2.19.2 since 2.19.1
 ** Code
   - The c++ runtime declared an uninitialized pump thread_id member,
@@ -41,7 +64,7 @@
   - An external type (data) can now be used as the return value of
     events and functions.
 ** Commands
-  - A new command `dzn exec' has been added to run anything in a Docker
+  - A new command, `dzn exec' has been added to run anything in a Docker
     container, such as, `dzn exec ltsconvert ...'.
   - A new command, `dzn hash' has been added to produce a cryptographic
     hash of a dezyne file and its imports.
@@ -77,6 +100,8 @@
   - False positive verification deadlocks when using shared state in
     combination with multiple provides have been fixed.  This is a
     regression introduced in 2.18.4.
+  - Reporting a deadlock for an interface missing a reply after an
+    action instead of <missing-reply>.  This was introduced in 2.18.0.
 
 * Changes in 2.18.4 since 2.18.3
 ** Verification
@@ -1296,8 +1321,8 @@
 
 * legalese
 
-Copyright © 2017,2018,2019,2020,2021,2022,2023,2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-Copyright © 2017,2018,2019,2020,2021,2022,2023 Rutger van Beusekom <rutger@dezyne.org>
+Copyright © 2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Janneke Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2017,2018,2019,2020,2021,2022,2023,2024,2025,2026 Rutger van Beusekom <rutger@dezyne.org>
 Copyright © 2018,2019 Rob Wieringa <rma.wieringa@gmail.com>
 
   Copying and distribution of this file, with or without modification,
