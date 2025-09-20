@@ -48,6 +48,9 @@
     when MODEL is an interface.
   - Using an expression as defer argument is flagged as an error by the
     parser.
+  - False positive verification deadlocks when using shared state in
+    combination with multiple provides have been fixed.  This is a
+    regression introduced in 2.18.4.
 
 * Changes in 2.18.4 since 2.18.3
 ** Verification
