@@ -1671,7 +1671,7 @@
                     (arguments (makreel:process-parens next)))))))))
 
 (define-method (ast->process (model <component>) (o <the-end>) (next <ast>))
-  (let ((shared-provides (filter (compose ast:provides? .port) (%shared))))
+  (let ((provides-shared (filter (compose ast:provides? .port) (%shared))))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -1684,22 +1684,32 @@
             (sm:goto (name (statement->process-name next))
                      (arguments (makreel:process-parens next)))
             (sm:sequence*
-             `(,%queue-empty-action
-               ,@(map sum-state-action (delete-duplicates
-                                        (map .port shared-provides)
-                                        eq?))
-               ,(sm:goto (name (statement->process-name next))
-                         (arguments
-                          (map (lambda (shared-var)
-                                 (let* ((port (.port shared-var))
-                                        (interface (.type port)))
-                                   (simple-format
-                                    #f "~a=~a (~a)"
-                                    (makreel:full-name shared-var)
-                                    (model-prefix (ast:name shared-var)
-                                                  interface)
-                                    (port-prefix "s" port))))
-                               shared-provides))))))))))))
+             %queue-empty-action
+             (if (null? provides-shared) (sm:goto
+                                          (name (statement->process-name next))
+                                          (arguments (makreel:process-parens
+                                                      next)))
+                 (sm:union*
+                  `(,(sm:goto
+                      (name (statement->process-name next))
+                      (arguments (makreel:process-parens
+                                  next)))
+                    ,@(map (lambda (shared-state)
+                             (let* ((port (.port shared-state))
+                                    (interface (.type port)))
+                               (sm:sequence*
+                                (sum-state-action (.port shared-state))
+                                (sm:goto (name (statement->process-name next))
+                                         (arguments
+                                          `(,(simple-format
+                                              #f "~a=~a (~a)"
+                                              (makreel:full-name shared-state)
+                                              (model-prefix (ast:name shared-state)
+                                                            interface)
+                                              (port-prefix "s" port))))))))
+                           (delete-duplicates provides-shared
+                                              (lambda (a b)
+                                                (eq? (.port a) (.port b))))))))))))))))
 
 (define-method (ast->process (model <model>) (o <if>) (next <ast>))
   (sm:process
@@ -1748,7 +1758,7 @@
                  (arguments (makreel:process-parens next))))))))
 
 (define-method (ast->process (model <model>) (o <defer-end>) (next <ast>))
-  (let ((shared-provides (filter (compose ast:provides? .port) (%shared))))
+  (let ((provides-shared (filter (compose ast:provides? .port) (%shared))))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
@@ -1764,7 +1774,7 @@
             (sm:sequence*
              `(,%queue-empty-action
                ,@(map sum-state-action (delete-duplicates
-                                        (map .port shared-provides)
+                                        (map .port provides-shared)
                                         eq?))
                ,(sm:goto (name (statement->process-name next))
                          (arguments
@@ -1777,7 +1787,7 @@
                                     (model-prefix (ast:name shared-var)
                                                   interface)
                                     (port-prefix "s" port))))
-                               shared-provides))))))))))))
+                               provides-shared))))))))))))
 
 
 ;;;
@@ -2949,7 +2959,7 @@
          (provides-interfaces (map .type provides))
          (requires (ast:requires-port* o))
          (shared (map .port (%shared)))
-         (shared-provides (lset-intersection ast:eq? provides shared)))
+         (provides-shared (lset-intersection ast:eq? provides shared)))
     (define (semantics-provides p name)
       (let ((interface (.type p)))
         (sm:sum (type (%actions interface))
@@ -3351,7 +3361,7 @@
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
          (shared (map .port (%shared)))
-         (shared-provides (lset-intersection ast:eq? provides shared)))
+         (provides-shared (lset-intersection ast:eq? provides shared)))
     (define (handle-queue-empty name)
       (sm:sequence*
        %queue-empty-action
@@ -3416,7 +3426,7 @@
        (sm:union*
         `(,(sm:if* "blocking == {} && released == []"
                    (sm:sequence*
-                    `(,@(map sum-state-action shared-provides)
+                    `(,@(map sum-state-action provides-shared)
                       ,(sm:union*
                         (sm:goto (name "semantics_main"))
                         (defer-qout-actions-async o name)))))
@@ -3512,7 +3522,7 @@
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
          (shared (map .port (%shared)))
-         (shared-provides (lset-intersection ast:eq? provides shared)))
+         (provides-shared (lset-intersection ast:eq? provides shared)))
     (define (blocked-main-provides p name)
       (let ((interface (.type p)))
         (sm:if* (sm:not* (sm:in* (port-prefix "port" p) "blocking"))
@@ -3547,7 +3557,7 @@
        (sm:union*
         (sm:if* "blocking == {}"
                 (sm:sequence*
-                 `(,@(map sum-state-action shared-provides)
+                 `(,@(map sum-state-action provides-shared)
                    ,(sm:union* (sm:goto (name "semantics_main"))
                                (defer-qout-actions-async o name)))))
         (sm:if* "blocking != {}"
@@ -3579,7 +3589,7 @@
   (let* ((provides (ast:provides-port* o))
          (requires (ast:requires-port* o))
          (shared (map .port (%shared)))
-         (unshared-provides shared-provides
+         (provides-unshared provides-shared
                             (lset-diff+intersection ast:eq? provides shared)))
     (define (provides-flush p name)
       (let ((interface (.type p)))
@@ -3631,29 +3641,33 @@
       (formals `(,@%blocking-formals
                  "port: provides_ports"))
       (statement
-       (sm:union*
-        `(,(sm:sequence*
-            (%end-action o)
-
-            (sm:union*
-             (sm:sequence*
-              `(,%queue-empty-action
-                ,@(map sum-state-action shared-provides)
-                ,(sm:union*
-                  `(,(sm:if* (sm:invoke %no-port-predicate "port")
-                             (sm:union* (sm:goto (name "semantics_main"))
-                                        (sm:sequence*
-                                         (defer-qout-actions o name))))
-                    ,@(map (cute provides-flush <> name) unshared-provides)
-                    ,@(map (cute provides-shared-flush <> name) shared-provides)))))
-             (sm:sequence* %queue-not-empty-action
-                           (sm:goto (name name) (arguments '())))))
-          ,(sm:sequence* %defer-end-action
-                         (sm:goto (name name) (arguments '())))
-          ,@(map (cute out-actions+port=p <> name) provides)
-          ,@(append-map (seq (cute switch-context-actions+switch=p <> name)
-                             (cute qout-actions <> name))
-                        requires)))))))
+       (let ((continuation (sm:union*
+                            `(,(sm:if* (sm:invoke %no-port-predicate "port")
+                                       (sm:union* (sm:goto (name "semantics_main"))
+                                                  (sm:sequence*
+                                                   (defer-qout-actions o name))))
+                              ,@(map (cute provides-flush <> name) provides-unshared)
+                              ,@(map (cute provides-shared-flush <> name) provides-shared)))))
+         (sm:union*
+          `(,(sm:sequence*
+              (%end-action o)
+              (sm:union*
+               (sm:sequence*
+                `(,%queue-empty-action
+                  ,@(if (null? provides-shared) `(,continuation)
+                        (map (lambda (shared-state)
+                               (sm:sequence*
+                                (sum-state-action shared-state)
+                                continuation))
+                             provides-shared))))
+               (sm:sequence* %queue-not-empty-action
+                             (sm:goto (name name) (arguments '())))))
+            ,(sm:sequence* %defer-end-action
+                           (sm:goto (name name) (arguments '())))
+            ,@(map (cute out-actions+port=p <> name) provides)
+            ,@(append-map (seq (cute switch-context-actions+switch=p <> name)
+                               (cute qout-actions <> name))
+                          requires))))))))
 
 (define-method (component-semantics-processes (o <component>))
   (let* ((provides (ast:provides-port* o))
