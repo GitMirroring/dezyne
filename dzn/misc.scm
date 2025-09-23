@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2019, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2015, 2017, 2020, 2024 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2015, 2017, 2020, 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -21,6 +21,7 @@
 
 (define-module (dzn misc)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
 
   #:use-module (srfi srfi-1)
@@ -46,6 +47,7 @@
             merge-alist2
             merge-alist-list
             pke
+            ppke
             seq
             singleton?
             split-lists
@@ -224,6 +226,21 @@ the next element."
   (write stuff (current-error-port))
   (newline (current-error-port))
   (car (last-pair stuff)))
+
+(define (ppke . args)
+  "A pretty version of pke."
+  ;; FIXME printing goops
+  ;; (pretty-print args #:per-line-prefix ";;; ") should have been enough
+  ;; but printing the AST requires serializing and then reading it back as sexp
+  (define (pretty o)
+    (pretty-print
+     (call-with-input-string
+         (with-output-to-string (cute write o))
+       read)
+     (current-error-port)
+     #:per-line-prefix ";;; "))
+  (for-each pretty args)
+  (car (last-pair args)))
 
 (define (debug fmt . args)
   (when (%debug?)
