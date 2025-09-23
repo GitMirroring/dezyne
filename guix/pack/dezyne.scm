@@ -43,7 +43,7 @@
 (define-public dezyne
   (package
     (name "dezyne")
-    (version #!dezyne!# "2.19.0.rc0")
+    (version #!dezyne!# "2.19.0.rc1")
     (source
      (origin
        (method url-fetch)
@@ -52,7 +52,7 @@
                            "dezyne.org/download/dezyne/"
                            name "-" version ".tar.gz"))
        (sha256
-        (base32 #!dezyne!# "0fz6w2wrb92z1ppkl221w69mvxhjyb937ldbjfmqcb79xacv15cg"))))
+        (base32 #!dezyne!# "0k2v3sb9rmlaynq8br58rc6h0v1idlc4vxhdfghb8rvdpkx3rw08"))))
     (build-system gnu-build-system)
     (native-inputs (list guile-3.0 pkg-config))
     (inputs (list bash-minimal
