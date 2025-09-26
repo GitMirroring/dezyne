@@ -575,7 +575,8 @@ REGRESSION_TESTS =				\
  %D%/nested.space.system_hello			\
  %D%/no_return					\
  %D%/no_unreachable				\
- %D%/parameter_shadow_port				\
+ %D%/parameter_shadow_port			\
+ %D%/parameter_shadow_function			\
  %D%/port_shadow_interface			\
  %D%/pump_twice					\
  %D%/queue_size_four				\
