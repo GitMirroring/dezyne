@@ -1,2 +1,0 @@
-;;; -*- scheme -*-
-((features ("reply-data")))
