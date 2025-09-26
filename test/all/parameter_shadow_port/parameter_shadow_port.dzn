@@ -33,7 +33,7 @@ interface ihello
   }
 }
 
-component param_shadow
+component parameter_shadow_port
 {
   provides ihello port;
 
