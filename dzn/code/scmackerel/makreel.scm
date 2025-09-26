@@ -169,8 +169,7 @@
                       (make <variable>
                         #:name "return_value"
                         #:type.name (.name ast:int)
-                        #:expression (make <literal> #:value "return_value")))
-                     (_ (pke "XXX TODO makreel:return-variable for" type)))))
+                        #:expression (make <literal> #:value "return_value"))))))
     (clone variable #:parent (or (.parent type) (.parent o)))))
 
 (define-method (makreel:process-formals (o <ast>))
@@ -260,9 +259,7 @@
        (let ((expression (makreel:ast->expression expression)))
          (model-prefix
           (simple-format #f "int_return (~a)" expression)
-          model)))
-      (_ (pke "XXX TODO makreel:return->value for type"  type)
-         "TODO"))))
+          model))))))
 
 (define-method (makreel:type->range-expression (o <subint>) name)
   (let* ((range (.range o))
