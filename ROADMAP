@@ -18,6 +18,11 @@ The goals of the Dezyne project are two-fold:
   - to relieve the programmer from inhumane tasks that should be
     automated, by using formal verification to replace testing.
 
+  - to enable correct by construction, by making specification
+    inherently part of the construction (constraining interfaces,
+    component invariants, LTS based testing, data flow and invariant
+    specification) instead of separate tests.
+
 Since its inception, the project has gone a long way towards that goal.
 Version "2.9" was the last closed, cloud-based release.  Version "2.10"
 release was serverless, client-only.  Version "2.11" included support
@@ -30,7 +35,7 @@ Dezyne "3.0" has long been the milestone to mark the transition of
 Dezyne to a free software project: https://dezyne.org.  This has been
 prioritized to the "2.14" release.
 
-Below is a list of items we want for version "3.0" of Dezyne.
+Below is a list of items we want leading up to version "3.0" of Dezyne.
 
 You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 #dezyne on Libera Chat!
@@ -45,39 +50,48 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Finish and merge wip-external-function
   - Global functions
     + Finish and merge wip-global-function
+  - Deprecate injected, replace with global functions
 
 ** Release 2.21
   - Refactor transformations
     + Finish and merge wip-transform
-  - ast/tree cleanup, serialization
+  - ast/tree cleanup, serialization and name lookup
     + Finish and merge wip-serialize
-  - External debugging
-    + Finish and merge wip-trivial-runtime, wip-sequential
+  - WFC performance
 
 ** Release 2.22
-  - Early return / deprecate reply
-    + Finish and merge wip-return
-  - Replace dzn traces with dzn test, i.e. LTS-based testing
+  - External debugging
+    + Finish and merge wip-trivial-runtime
+    + Finish and merge wip-external
+    + Finish and merge wip-sequential
 
 ** Release 2.23
   - Remove the need for a daemon
     + Parsing performance
     + Serialization performance
-    + WFC performance
+    + Normalization performance
 
 ** Release 2.24
-  - Data
-    + Deprecate injected, replace with global functions
-    + Data behavior (data interfaces, data shims)
-    + Structured state types
-    + C: Support data with dzn_pump_run
+  - Early return / deprecate reply
+    + Finish and merge wip-return
+  - Replace dzn traces with dzn test, i.e. LTS-based testing
 
 ** Release 2.25
+  - Data
+    + Stateful (control) parameters
+    + Structured state types
+
+** Release 2.26
+  - Data
+    + Data behavior (data interfaces, data shims)
+    + C: Support data with dzn_pump_run
+
+** Release 2.27
   - Finish and merge wip-stitch
     + Cleanup dzn/lts.scm!
   - Replace dzn traces with dzn test, i.e. LTS-based testing
 
-** Release 2.26
+** Release 2.28
   - Module
     + Module specifications (aka aggregate interfaces)
   - Functional verification
@@ -85,14 +99,14 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + Develop single threaded approach to testing on scheme prototype.
   - Active system (thread-safe-shell) abstraction: external & blocking
 
-** Release 2.27
+** Release 2.29
   - Impossible futures
     + XFAIL: compliance_livelock
     + XFAIL: compliance_livelock_escape
     + XFAIL: compliance_livelock_refusal
     + XFAIL: external_blocking_livelock
 
-** Release 2.28
+** Release 2.30
   - Hierarchical behaviors (sub machines)
 
 ** Release 3.0
