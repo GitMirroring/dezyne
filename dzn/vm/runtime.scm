@@ -24,6 +24,7 @@
   #:use-module (srfi srfi-26)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
 
   #:use-module (dzn ast ast)
   #:use-module (dzn ast)

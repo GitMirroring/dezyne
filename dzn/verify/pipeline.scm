@@ -30,6 +30,7 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
 
   #:use-module (dzn ast ast)
@@ -213,6 +214,7 @@ actions."
 
 (define root+model->makreel
   (perfect-funcq
+   1024
    (lambda (root model)
      (with-output-to-string (cute makreel:model->makreel root model)))))
 
@@ -472,7 +474,7 @@ to (current-output-port)."
       (list result status))))
 
 (define memoizing-verify-pipeline
-  (perfect-funcq verify-pipeline-wrapper))
+  (perfect-funcq 1024 verify-pipeline-wrapper))
 
 (define* (verify-pipeline out root model #:key (init (get-init model)))
   "Create a verify pipeline to produce OUT from MODEL.  Use standard

@@ -20,13 +20,13 @@
 ;;; License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (dzn misc)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 rdelim)
+
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
-
-  #:use-module (ice-9 curried-definitions)
-  #:use-module (ice-9 match)
-  #:use-module (ice-9 pretty-print)
 
   #:use-module (json)
 
@@ -46,10 +46,8 @@
             json-string->alist-scm
             merge-alist2
             merge-alist-list
-            perfect-funcq
             pke
             ppke
-            pure-funcq
             seq
             singleton?
             split-lists
@@ -251,26 +249,3 @@ the next element."
 
 (define (write-line-error o)
   (write-line o (current-error-port)))
-
-
-;;;
-;;; Memoization.
-;;;
-(define funcq-hash (@@ (ice-9 poe) funcq-hash))
-(define funcq-assoc (@@ (ice-9 poe) funcq-assoc))
-(define funcq-memo (@@ (ice-9 poe) funcq-memo))
-(define funcq-buffer (@@ (ice-9 poe) funcq-buffer))
-(define not-found (@@ (ice-9 poe) not-found))
-
-(define ((funcq funcq-memo) base-func)
-  (lambda args
-    (let* ((key (cons base-func args))
-           (cached (hashx-ref funcq-hash funcq-assoc funcq-memo key not-found)))
-      (funcq-buffer key)
-      (if (not (eq? cached not-found)) cached
-          (let ((val (apply base-func args)))
-            (hashx-set! funcq-hash funcq-assoc funcq-memo key val)
-            val)))))
-
-(define pure-funcq (funcq funcq-memo))
-(define perfect-funcq (funcq (make-hash-table 1024)))

@@ -46,6 +46,8 @@
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 peg)
+  #:use-module (ice-9 poe)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 

@@ -32,6 +32,7 @@
   #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 match)
+  #:use-module (ice-9 poe)
 
   #:use-module (dzn misc)
   #:use-module (dzn parse location)
