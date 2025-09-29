@@ -316,7 +316,7 @@
      (append-map wfc arguments)
      (cond
       ((and (ast:parent o <component>)
-            (ast:parent o <action>))
+            (as (.parent o) <action>))
        =>
        (lambda (ast)
          (let* ((count (length arguments))
@@ -329,7 +329,7 @@
                       `(,(wfc-error ast (format #f "argument count mismatch, expected ~a, found: ~a" event-count count))
                         ,(wfc-info event (format #f "for formals of event `~a' defined here" (.name event)))))
                   (append-map (argument-type-check o) arguments formals)))))))
-      ((let ((ast (ast:parent o <call>)))
+      ((let ((ast (as (.parent o) <call>)))
          (and ast
               (.function ast)
               ast))
