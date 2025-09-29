@@ -477,7 +477,7 @@ in code backends like c."
 
 (define (code:shared-lts o)
   (parameterize ((%context (%context)))
-    ((perfect-funcq code:shared-lts-unmemoized) o)))
+    ((ast:perfect-funcq code:shared-lts-unmemoized) o)))
 
 (define-method (code:shared (o <event>))
   "Return a list of transitions for event O from the interface LTS"
