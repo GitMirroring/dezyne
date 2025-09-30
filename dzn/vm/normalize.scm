@@ -220,8 +220,8 @@
     set-blocking-reply-port
     transform-end-of-on
     (annotate-otherwise)
-    (add-explicit-temporaries)
     lift-invariants
     inline-expression-functions
-    purge-data)
+    purge-data
+    (add-explicit-temporaries))
    root))

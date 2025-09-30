@@ -609,11 +609,11 @@ transformations."
                   normalize:state+illegals
                   remove-otherwise
                   makreel:tick-names
-                  (add-explicit-temporaries)
                   inline-expression-functions
                   add-defer-end
                   purge-data
-                  ) ast)))
+                  (add-explicit-temporaries))
+                 ast)))
       (when (> (dzn:debugity) 1)
         (debug "normalized root:")
         (ast:pretty-print root (current-error-port)))

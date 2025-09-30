@@ -752,12 +752,12 @@ and pass it as argument accordingly."
   (parameterize ((%normalize:short-circuit? code:short-circuit?))
     ((compose
       code:annotate-shells
-      (add-explicit-temporaries #:call-only? #t)
       add-reply-port
       (binding-into-blocking)
       normalize:event+illegals
       remove-otherwise
-      code:add-calling-context)
+      code:add-calling-context
+      (add-explicit-temporaries #:call-only? #t))
      ast)))
 
 (define (code:normalize ast)
