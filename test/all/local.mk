@@ -596,6 +596,7 @@ REGRESSION_TESTS =				\
  %D%/range_local_expression			\
  %D%/range_member				\
  %D%/range_return				\
+ %D%/reply_data_action_call			\
  %D%/reply_data_full				\
  %D%/reply_expression				\
  %D%/reply_extern				\
