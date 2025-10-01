@@ -4,7 +4,7 @@ Subject: Dezyne 2.19.0 released
 
 We are happy to announce Dezyne 2.19 which introduces data return,
 invariants, and directory support for verify and code.  This release
-represents 226 commits over one year.
+represents 258 commits over one year.
 
 See the NEWS below for a brief summary.
 
@@ -64,8 +64,8 @@ Here is the GPG detached signature:
 
 Here are the SHA1 and SHA256 checksums:
 
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.18.0.tar.gz
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.18.0.tar.gz
+  3a3999d32543968c6715332bd71ca8831f6ac27e  dezyne-2.19.0.tar.gz
+  aa43ab8014afb48c0912de96ce1b2c73cdc0d48a34f0a793760f0917de4773ca  dezyne-2.19.0.tar.gz
 
 Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
@@ -126,7 +126,7 @@ NEWS
     container, such as, `dzn exec ltsconvert ...'.
   - A new command, `dzn hash' has been added to produce a crpytographic
     hash of a dezyne file and its imports.
-  - The `dzn' command has a new option: `--version-number.  This may
+  - The `dzn' command has a new option: `--version-number`.  This may
     simplify getting the version in environments where Dezyne is the
     only program in use that conforms to the GNU coding standards.
   - The `dzn hello' command has a new option: `--runtime' to display the
@@ -158,6 +158,6 @@ NEWS
 
 Thanks to everyone who contributed to this release:
 
-   155	Janneke Nieuwenhuizen
+   182	Janneke Nieuwenhuizen
     38	Paul Hoogendijk
-    33	Rutger van Beusekom
+    38	Rutger van Beusekom
