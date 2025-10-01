@@ -127,6 +127,7 @@ FEATURE_TESTS =					\
  %D%/hello_data					\
  %D%/hello_data_argument			\
  %D%/hello_data_function			\
+ %D%/hello_data_reply				\
  %D%/hello_defer				\
  %D%/hello_else					\
  %D%/hello_enum					\
