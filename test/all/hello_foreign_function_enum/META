@@ -1,0 +1,2 @@
+;;; -*- scheme -*-
+((lts-test? #t))
