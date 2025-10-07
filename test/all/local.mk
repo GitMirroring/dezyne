@@ -888,6 +888,8 @@ FULL_TESTS =					\
  $(USAGE_TESTS)
 
 dzn_exampledir = $(pkgdatadir)/examples
-nodist_dzn_example_DATA =			\
- %D%/cruise-control/cruise-control.dzn		\
+nodist_dzn_example_DATA =				\
+ %D%/cruise-control/cruise-control-interfaces.dzn	\
+ %D%/cruise-control/cruise-control.dzn			\
+ %D%/ihello/ihello.dzn					\
  %D%/hello/hello.dzn
