@@ -221,7 +221,7 @@
     transform-end-of-on
     (annotate-otherwise)
     lift-invariants
-    inline-expression-functions
     purge-data
-    (add-explicit-temporaries))
+    (add-explicit-temporaries)
+    inline-expression-functions)
    root))
