@@ -556,6 +556,7 @@ REGRESSION_TESTS =				\
  %D%/interface_int				\
  %D%/interface_missing_reply			\
  %D%/invariant_blocking_two_out			\
+ %D%/invariant_functions_expression		\
  %D%/invariant_group_expressions 		\
  %D%/invariant_guarded				\
  %D%/invariant_out_forward			\
