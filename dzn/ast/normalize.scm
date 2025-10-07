@@ -1279,6 +1279,8 @@ add-explicit-temporaries transformation for splitting argument lists."
                      (else
                       (cons statement (loop rest)))))))))
          (clone o #:elements statements)))
+      ((or ($ <expression-function>) ($ <invariant>))
+       o)
       (($ <behavior>)
        (clone o
               #:functions (split-complex-expressions (.functions o))
@@ -1394,6 +1396,8 @@ expressions explicit."
                      (_
                       (cons statement (loop rest)))))))))
          (clone o #:elements statements)))
+      ((or ($ <expression-function>) ($ <invariant>))
+       o)
       (($ <function>)
        (clone o #:statement (add-explicit-temporaries (.statement o))))
       (($ <behavior>)
