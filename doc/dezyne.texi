@@ -4835,7 +4835,7 @@ the last statement in the function.
 A expression functions can be used to name a single expression of type bool.
 
 @example
-function ::= bool "(" ")" "=" expression ";"
+expression-function ::= bool identifier "(" ")" "=" expression ";"
 @end example
 
 The expression of the expression functions can contain calls to other
