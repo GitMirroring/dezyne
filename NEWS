@@ -5,6 +5,13 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.19.1 since 2.19.0
+** Noteworthy bug fixes
+  - Using complex expressions in expression functions is now fixed
+    and no longer leads to false positive <invariant> errors.
+  - A false positive unreachable code error in expression functions has
+    been fixed.
+
 * Changes in 2.19.0 since 2.18.4
 ** Language
   - The concept of a predicate function, i.e., a boolean function
