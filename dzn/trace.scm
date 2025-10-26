@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2018, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -912,7 +912,7 @@ ws               <   [ \t]
   (let* ((header (find header? steps))
          (r-steps (reverse steps))
          (eligible (find eligible? r-steps))
-         (eligible (and eligible (eligible-sexp eligible)))
+         (eligible (if eligible (eligible-sexp eligible) '()))
          (labels (find labels? r-steps))
          (labels (if labels (labels-sexp labels) '()))
          (header (header-sexp header))
