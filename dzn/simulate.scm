@@ -478,6 +478,7 @@ final REPORT and return exit status."
       (or (and deadlock-traces
                (pair? (.blocked pc))
                (report traces
+                       #:eligible #f
                        #:internal? internal?
                        #:locations? locations?
                        #:trace trace
@@ -751,7 +752,7 @@ status."
     (when (equal? trace "trace")
       (serialize-header (.state pc) (current-output-port))
       (newline))
-    (or (report (list (list pc)) #:trace trace)
+    (or (report (list (list pc)) #:trace trace #:eligible #f)
         (match (check-invariants (list pc))
           ((traces ..1) (report traces #:trace trace))
           (_ #f))
@@ -828,6 +829,7 @@ status."
                        (loop blocked))
                       ((pair? non-blocked)
                        (or (report non-blocked
+                                   #:eligible #f
                                    #:internal? internal?
                                    #:locations? locations?
                                    #:state? state?

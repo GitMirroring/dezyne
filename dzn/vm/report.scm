@@ -1063,7 +1063,7 @@ intermediate steps such as assignments, function calls, replies,
               (format #f "~ainfo: end of trail; stopping here: ~a~a\n" location prefix ast))))
       (_ #f))))
 
-(define* (report traces #:key eligible (trace "event") internal? locations? state? verbose?)
+(define* (report traces #:key (eligible '()) (trace "event") internal? locations? state? verbose?)
   "Print any error messages and the trail of (car TRACES) in
 trace-format TRACE, given that the trail is the same for all TRACES."
 
