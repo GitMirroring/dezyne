@@ -1,0 +1,27 @@
+(header ((h) ihello_world provides) ((sut) compliance_second_out_action component) ((w) ihello_world requires))
+(state ((h) (idle . true)) ((sut)) ((w) (idle . true)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.hello -> ...
+... -> <external>.w.hello
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+(trail "h.hello" "w.hello" "w.return" "h.return")
+test/all/compliance_second_out_action/compliance_second_out_action.dzn:34:34: error: non-compliance
+... <- <external>.w.world
+sut.<q> <- ...
+... <- sut.<q>
+sut.w.world <- ...
+... <- sut.h.world
+<external>.h.world <- ...
+... <- sut.h.world
+<external>.h.world <- ...
+<non-compliance>
+(state ((h) (idle . false)) ((sut)) ((w) (idle . false)))
+test/all/compliance_second_out_action/compliance_second_out_action.dzn:34:34: error: non-compliance
+(trail "w.world" "h.world" "h.world" "<non-compliance>")
+(labels "h.hello" "w.world")
+(eligible)

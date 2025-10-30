@@ -1,0 +1,8 @@
+model: compliance_second_out_action
+h.hello
+w.hello
+w.return
+h.return
+w.world
+h.world
+<non-compliance>

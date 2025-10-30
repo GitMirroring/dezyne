@@ -1,0 +1,11 @@
+verify: ihello_world: check: deadlock: ok
+verify: ihello_world: check: unreachable: ok
+verify: ihello_world: check: livelock: ok
+verify: ihello_world: check: deterministic: ok
+verify: compliance_second_out_action: check: deterministic: ok
+verify: compliance_second_out_action: check: illegal: ok
+verify: compliance_second_out_action: check: deadlock: ok
+verify: compliance_second_out_action: check: unreachable: ok
+verify: compliance_second_out_action: check: livelock: ok
+verify: compliance_second_out_action: check: compliance: fail
+error: component compliance_second_out_action is non-compliant with interface(s) of provides port(s)

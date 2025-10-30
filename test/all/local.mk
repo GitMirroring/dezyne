@@ -345,6 +345,7 @@ REGRESSION_TESTS =				\
  %D%/compliance_reply_bool			\
  %D%/compliance_reply_illegal			\
  %D%/compliance_requires_illegal		\
+ %D%/compliance_second_out_action		\
  %D%/compliance_single_to_multiple		\
  %D%/compliance_sync_action			\
  %D%/compliance_system_provides_bool		\
