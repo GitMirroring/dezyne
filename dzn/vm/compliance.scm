@@ -545,12 +545,6 @@ Return a list of traces, possibly marked with <compliance-error>."
                            (not (any (cute event-on-trail? (.event.name trigger) <>)
                                      non-compliances))
                            trigger))
-                     (port-trails (parameterize ((%sut port-instance))
-                                    (map trace->string-trail non-compliances)))
-                     (shortest (apply min (map length port-trails)))
-                     (truncate? (>= (length sut-trail) shortest))
-                     (trace (if (not truncate?) trace
-                                (truncate-to-observable trace shortest)))
                      (acceptance? (conjoin
                                    .statement
                                    (compose
