@@ -187,9 +187,11 @@
          (parameters (if (not (and (is-a? o <action-reply>)
                                    (.variable.name o)))
                          parameters
-                         (filter (compose not
-                                          (cute equal? (.variable.name o) <>)
-                                          .name)
+                         (filter (disjoin
+                                  (is? <stack>)
+                                  (compose not
+                                           (cute equal? (.variable.name o) <>)
+                                           .name))
                                  parameters)))
          (model (ast:parent o <model>)))
     (map (match-lambda
