@@ -520,7 +520,7 @@
                               #:variable.name name)))
          (cons* statement action-reply (add-action-reply rest))))
       ((statement rest ...)
-       (cons statement (add-action-reply rest)))
+       (cons (add-action-reply statement) (add-action-reply rest)))
       (_
        o)))
 
