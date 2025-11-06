@@ -531,9 +531,8 @@
      (clone o #:statement (makreel:add-action-reply (.statement o))))
     (($ <guard>)
      (clone o #:statement (makreel:add-action-reply (.statement o))))
-    ((and (? ast:imperative?) ($ <compound>))
-     (let ((elements (add-action-reply (ast:statement* o))))
-       (clone o #:elements elements)))
+    (($ <compound>)
+     (add-action-reply o))
     (($ <behavior>)
      (clone o
             #:statement (makreel:add-action-reply (.statement o))
