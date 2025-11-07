@@ -223,7 +223,6 @@
                         (filter (match-lambda ("/" #f) (o o)) scope)))
              (global? (and (pair? scope) (equal? "/" (car scope))))
              (target (if (null? scope) name (car scope)))
-             (foo (ast:declaration* context))
              (found (filter (cute ast:name-equal? <> target)
                             (ast:declaration* context))))
         (and (pair? found)
