@@ -51,7 +51,7 @@
 
   #:declarative? #f
 
-  #:export (%model-name
+  #:export (%model
             makreel:.name
             makreel:arguments
             makreel:call-continuation*
@@ -76,10 +76,11 @@
             makreel:proc-list
             makreel:process-identifier
             makreel:variables-in-scope
+            model-name
             root->))
 
 (define %id-alist (make-parameter #f))
-(define %model-name (make-parameter #f))
+(define %model (make-parameter #f))
 (define %next-alist (make-parameter #f))
 
 
@@ -106,7 +107,7 @@
                                       (cute eq? <> model))
                              root)))
     (parameterize ((%language "makreel")
-                   (%model-name model-name))
+                   (%model model))
       (root-> root'))))
 
 (define (makreel:unticked-dotted-name o)
@@ -242,7 +243,8 @@
     (makreel:call-continuation* behavior)))
 
 (define-method (makreel:call-continuation* (o <ast>))
-  (let ((behavior (ast:parent o <behavior>)))
+  (let ((behavior (or (ast:parent o <behavior>)
+                      (.behavior (%model)))))
     (makreel:call-continuation* behavior)))
 
 (define-method (makreel:stack-empty? (o <call>))
@@ -255,14 +257,9 @@
 ;;; Helpers.
 ;;;
 (define-method (makreel:init (o <root>))
-  (let* ((model-name (%model-name)))
-    (define (named? o)
-      (equal? (makreel:unticked-dotted-name o) model-name))
-    (let ((model (and model-name
-                      (find named? (ast:model** o)))))
-      (or model
-          (find (is? <component>) (ast:model** o))
-          (find (is? <interface>) (ast:model** o))))))
+  (or (%model)
+      (find (is? <component>) (ast:model** o))
+      (find (is? <interface>) (ast:model** o))))
 
 (define (makreel:init-process process)
   (format #f "init ~a;\n" process))
