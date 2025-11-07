@@ -106,7 +106,7 @@
 (define* (model-prefix str #:optional model)
   (match model
     (#f
-     (string-append (%model-name) str))
+     (string-append (makreel:full-name (%model)) str))
     (($ <port>) ;; HMM?
      (port-prefix str model))
     (_
@@ -122,19 +122,20 @@
 (define-method (variable-prefix str (o <formal>))
   (string-append (.name o) str))
 
-(define-method (statement->process-name (o <behavior>))
-  (model-prefix "behavior"))
+(define-method (statement->process-name  (o <behavior>))
+  (model-prefix "behavior" (%model)))
 
 (define-method (statement->process-name (o <ast>))
   (let* ((function (as (.parent o) <function>))
          (name (or (and=> function .name) "")))
-    (model-prefix (string-append name (makreel:process-identifier o)))))
+    (model-prefix (string-append name (makreel:process-identifier o)) (%model))))
 
-(define-method (statement->process-name (o <ast>) (model <model>))
-  (let* ((function (as (.parent o) <function>))
+(define-method (statement->process-name (o <ast>))
+  (let* ((model (%model))
+         (function (as (.parent o) <function>))
          (name (or (and=> function .name) ""))
          (identifier (makreel:process-identifier o #:model model)))
-    (model-prefix (string-append name identifier))))
+    (model-prefix (string-append name identifier) model)))
 
 (define-method (makreel:type->string (o <type>))
   (match o
@@ -1576,7 +1577,7 @@
           ,@(if (not (.last? o)) '()
                 (list %recurse-action))
           ,(sm:goto
-            (name (statement->process-name statement model))
+            (name (statement->process-name statement))
             (arguments
              (append
               (map (lambda (f a) (sm:is* f a))
@@ -1861,9 +1862,8 @@
     (statement->processes model statement)))
 
 (define-method (function->processes (o <function>))
-  (let ((model (ast:parent o <model>))
-        (statement (.statement o)))
-    (statement->processes model statement)))
+  (let ((statement (.statement o)))
+    (statement->processes (%model) statement)))
 
 (define-method (return-processes (o <model>))
   (define (variable->local v)
@@ -2282,7 +2282,7 @@
 
 (define-method (model->scmackerel (o <interface>))
   (makreel:proc-list (.behavior o))
-  (parameterize ((%model-name (makreel:full-name o)))
+  (parameterize ((%model o))
     (interface->scmackerel o)))
 
 
@@ -2290,7 +2290,7 @@
 ;;; Component.
 ;;;
 (define-method (port-processes (o <port>))
-  (parameterize ((%model-name (makreel:full-name (.type o)))
+  (parameterize ((%model (.type o))
                  (%port-name (.name o)))
     (let* ((interface (.type o))
            (proc (sm:rename
@@ -4389,7 +4389,7 @@
 
 (define-method (model->scmackerel (o <component>))
   (makreel:proc-list (.behavior o))
-  (parameterize ((%model-name (makreel:full-name o)))
+  (parameterize ((%model o))
     (let* ((ports (ast:port* o))
            (requires (ast:requires-port* o))
            (port-processes (append-map port-processes ports))
@@ -4530,7 +4530,8 @@
   (let* ((models (ast:model** root))
          (component (find (is? <component>) models)))
     (parameterize ((%shared (if component (ast:shared* component) '())))
-      (let* ((model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
+      (let* ((model-name (or (and=> (%model) ast:dotted-name)
+                             (ast:dotted-name (ast:get-model root))))
              (act-processes (list (dummy-tag-process)))
              (interfaces (if component (filter (is? <interface>) models)
                              (filter (conjoin
@@ -4542,7 +4543,7 @@
               (map
                interface-types->scmackerel
                (filter (conjoin (is? <interface>)
-                                (compose not (cute equal? (%model-name) <>)
+                                (compose not (cute equal? model-name <>)
                                          ast:dotted-name))
                        models)))
              (interface-mcrl2 (map model->scmackerel interfaces))
