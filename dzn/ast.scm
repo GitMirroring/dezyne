@@ -402,13 +402,6 @@
 ;;;
 (define-method (ast:event* (o <port>)) ((compose ast:event* .type) o))
 
-(define-method (ast:function* (o <function>))
-  (let* ((calls (tree-collect (conjoin
-                               (is? <call>)
-                               (negate (cute ast:parent <> <defer>))) o))
-         (functions (filter-map .function calls)))
-    (delete-duplicates functions ast:name-equal?)))
-
 
 ;;;
 ;;; Algorithmic accessors.
@@ -1082,12 +1075,20 @@ to bottom."
         (find (cute eq? <> o) (succ* o)))))
 
 (define-method (ast:recursive? (o <function>))
+  (define (function->called-functions function)
+    "Return the list of unique functions directly called (not via defer) by
+FUNCTION."
+    (let* ((calls (tree-collect (conjoin (is? <call>)
+                                         (negate (cute ast:parent <> <defer>)))
+                                function))
+           (functions (filter-map .function calls)))
+      (delete-duplicates functions ast:name-equal?)))
   (define (clean-function* o)
     "This is used by silence:annotate-functions, which is called
 pre-well-formnedness checking (which seems to be only because that is
 also reponsible for annotating #:recursive on functions, which is needed
 by well-formednes), when ast:function* may return non-function ASTs."
-    (filter (cute as <> <function>) (ast:function* o)))
+    (filter (cute as <> <function>) (function->called-functions o)))
   (ast:graph-cyclic? clean-function* o))
 
 (define-method (ast:continuation* (o <ast>))
