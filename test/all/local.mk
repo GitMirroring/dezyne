@@ -225,6 +225,7 @@ REGRESSION_TESTS =				\
  %D%/blocking_function_reply			\
  %D%/blocking_function_reply2			\
  %D%/blocking_function_skip			\
+ %D%/blocking_if_action_in_function		\
  %D%/blocking_if_skip				\
  %D%/blocking_imperative			\
  %D%/blocking_multiple_provides0		\
