@@ -28,6 +28,7 @@
 
 (define-module (dzn ast lookup)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-71)
 
@@ -510,12 +511,10 @@ null) and return its CONTEXT."
     (ast:lookup ((compose .behavior .type .port) o) type-name)))
 
 (define-method (.type (o <enum-literal>))
-  (let* ((parent (or (ast:parent o <shared-field-test>)
-                     (ast:parent o <shared-variable>)))
-         (type-name (.type.name o)))
-    (cond (parent
-           (let ((type-name (last (.ids type-name))))
-             (ast:lookup ((compose .behavior .type .port) parent) type-name)))
-          (else
-           (or (ast:parent o <enum>)
-               (ast:lookup o type-name))))))
+  (let ((type-name (.type.name o)))
+    (or (and-let* ((parent (or (ast:parent o <shared-field-test>)
+                               (ast:parent o <shared-variable>)))
+                   (type-name (last (.ids type-name))))
+          (ast:lookup ((compose .behavior .type .port) parent) type-name))
+        (ast:parent o <enum>)
+        (ast:lookup o type-name))))
