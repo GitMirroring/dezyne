@@ -630,6 +630,7 @@ REGRESSION_TESTS =				\
  %D%/shared_field_test				\
  %D%/shared_function				\
  %D%/shared_glue				\
+ %D%/shared_indirect_type			\
  %D%/shared_multiple_provides			\
  %D%/shared_nested				\
  %D%/shared_no_function				\
