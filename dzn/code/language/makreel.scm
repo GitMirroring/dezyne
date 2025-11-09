@@ -58,6 +58,7 @@
             makreel:constraint
             makreel:defer*
             makreel:defer-skip?
+            makreel:direct->direct+indirect
             makreel:enum-fields
             makreel:full-name
             makreel:get-model
@@ -221,15 +222,28 @@
                 (cute make <enum-literal> #:type.name (.name o) #:field <>))
        (ast:field* o)))
 
+(define (makreel:direct->direct+indirect direct-calls)
+  "Given that every call in a behavior points to a called function and
+every called function may call zero or more functions.  Return the list
+of all unique called functions and calls."
+  (let loop ((calls direct-calls) (functions '()) (direct+indirect-calls '()))
+    (if (null? calls) (values direct+indirect-calls functions)
+        (let* ((call (car calls))
+               (function (.function call)))
+          (if (find (cute eq? function <>) functions)
+              (loop (cdr calls) functions (cons call direct+indirect-calls))
+              (loop (append (cdr calls)
+                            (tree-collect (is? <call>) function))
+                    (lset-adjoin eq? functions function)
+                    (cons call direct+indirect-calls)))))))
+
 (define-method (makreel:call-continuation*-unmemoized (o <behavior>))
-  (let* ((calls (tree-collect (disjoin
-                               (conjoin (is? <call>) ast:imperative?)
-                               (conjoin
-                                (disjoin (is? <variable>)
-                                         (is? <assign>))
-                                (compose (is? <call>)
-                                         .expression)))
-                              o)))
+  (let* ((calls (tree-collect
+                 (disjoin (conjoin (is? <call>) ast:imperative?)
+                          (conjoin (disjoin (is? <variable>) (is? <assign>))
+                                   (compose (is? <call>) .expression)))
+                 o))
+         (calls (makreel:direct->direct+indirect calls)))
     (cons (map (compose car ast:continuation*) calls)
           calls)))
 

@@ -1082,7 +1082,7 @@ FUNCTION."
                                          (negate (cute ast:parent <> <defer>)))
                                 function))
            (functions (filter-map .function calls)))
-      (delete-duplicates functions ast:name-equal?)))
+      (delete-duplicates functions eq?)))
   (define (clean-function* o)
     "This is used by silence:annotate-functions, which is called
 pre-well-formnedness checking (which seems to be only because that is

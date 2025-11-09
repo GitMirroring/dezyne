@@ -51,9 +51,14 @@
            (functions (delete-duplicates functions eq?)))
       functions))
   (let ((called (called-functions o)))
-    (define (mark-called? f)
-      (let ((called? (and (find (cute ast:name-equal? <> f) called) #t)))
-        (clone f #:called? called?)))
+    (define (mark-called? function)
+      (define (function-equal? f)
+        ;; Cannot use eq?, as functions get modified
+        ;; Cannot use (equal? (ast:full-name f) (ast:full-name function))
+        ;; as we don't have %context yet.
+        (eq? (.location f) (.location function)))
+      (let ((called? (and (find function-equal? called) #t)))
+        (clone function #:called? called?)))
     (let* ((functions (.functions o))
            (function-list (.elements functions))
            (function-list (map mark-called? function-list))
