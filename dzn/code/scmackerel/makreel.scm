@@ -463,27 +463,25 @@
       (or
        (assq-ref cache o)
        ;; XXX c&p from %replies
-       (let* ((functions (ast:function* (.behavior o)))
+       (let* ((returns calls (makreel:call-continuation* o))
+              (functions (map .function calls))
+              (functions (lset-union eq? functions (ast:function* o)))
               (functions (filter (negate (is? <expression-function>)) functions))
               (return-types (map ast:type functions)))
          (and
-          (pair? return-types)
           (let* ((return-enums (filter (is? <enum>) return-types))
                  (return-enums (delete-duplicates return-enums eq?))
-                 (void? (find (is? <void>) return-types))
                  (bool? (find (is? <bool>) return-types))
                  (int? (find (is? <int>) return-types))
                  (result
                   (sm:type (name (model-prefix "return_type" o))
                            (entities
-                            `(,@(if (not void?) '()
-                                    (list
-                                     (sm:entity
-                                      (name (model-prefix "void_return" o))
-                                      (formals
-                                       (list
-                                        (sm:formal (type %void)
-                                                   (name "void_value")))))))
+                            `(,(sm:entity
+                                (name (model-prefix "void_return" o))
+                                (formals
+                                 (list
+                                  (sm:formal (type %void)
+                                             (name "void_value")))))
                               ,@(if (not bool?) '()
                                     (list
                                      (sm:entity
@@ -1870,17 +1868,17 @@
     (let ((name (.name v)))
       (simple-format #f "~a=~a (s)" name (variable-prefix "local" v))))
   (let ((returns calls (makreel:call-continuation* o)))
-    (if (null? returns) '()
-        (list
-         (sm:process
-           (name (model-prefix "return" o))
-           (formals (append
-                     (makreel:process-formals o)
-                     (list (sm:formal (type (model-prefix "stack" o))
-                                      (name "s"))
-                           (sm:formal (type (model-prefix "return_type" o))
-                                      (name "return_value")))))
-           (statement
+    (list
+     (sm:process
+       (name (model-prefix "return" o))
+       (formals (append
+                 (makreel:process-formals o)
+                 (list (sm:formal (type (model-prefix "stack" o))
+                                  (name "s"))
+                       (sm:formal (type (model-prefix "return_type" o))
+                                  (name "return_value")))))
+       (statement
+        (if (null? returns) %sm:delta
             (sm:union*
              (map
               (lambda (c r)
@@ -2245,8 +2243,9 @@
          (enums (filter (is? <enum>) (ast:type** o)))
          (enums (map enum->scmackerel enums))
          (behavior-processes (behavior->processes o))
-         (functions (append (ast:function* behavior)
-                            (ast:function** (ast:parent o <root>))))
+         (calls (tree-collect (is? <call>) (.behavior o)))
+         (calls functions (makreel:direct->direct+indirect calls))
+         (functions (lset-union eq? functions (ast:function* o)))
          (functions (filter (negate (is? <expression-function>)) functions))
          (function-processes (append-map function->processes functions))
          (return-processes (return-processes o))
@@ -4397,8 +4396,9 @@
            (enums (map enum->scmackerel enums))
            (members (filter (negate (is? <shared-variable>)) (ast:variable* o)))
            (behavior-processes (behavior->processes o))
-           (functions (append (ast:function* behavior)
-                              (ast:function** (ast:parent o <root>))))
+           (calls (tree-collect (is? <call>) (.behavior o)))
+           (calls functions (makreel:direct->direct+indirect calls))
+           (functions (lset-union eq? functions (ast:function* o)))
            (functions (filter (negate (is? <expression-function>)) functions))
            (function-processes (append-map function->processes functions))
            (return-processes (return-processes o))
