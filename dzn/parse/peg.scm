@@ -189,7 +189,7 @@ type <- enum / int / extern
   extern <-- EXTERN scoped-name# dollars# SEMICOLON#
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
-  namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
+  namespace-root <-- (type / namespace / function / interface / component / &BRACE-CLOSE)#*
 
 interface <-- INTERFACE scoped-name#
               BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)#
@@ -319,7 +319,8 @@ plus-min-expression
   <- not-expression (PLUS / MINUS) plus-min-expression# / not-expression
 
 not-expression
-  <- minus / negation / group / dollars / literal / !(is-port / var) enum-literal
+  <- minus / negation / group / dollars / literal
+     / !(is-port / call / var) enum-literal
      / field-test / action / shared-field-test / shared-var / call / var
      / unknown-identifier
 
