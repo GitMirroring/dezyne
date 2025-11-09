@@ -1,6 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -211,9 +212,15 @@
               (expression (ast->code expression)))))
         variable)))))
 
+(define (ast->namespace ast)
+  (let loop ((ast ast))
+    (if (is-a? ast <root>) '()
+        (append (loop (ast:parent ast <namespace>))
+                (list (ast:name ast))))))
+
 (define-method (ast->code (o <call>))
   (let* ((function (.function o))
-         (name (ast:name function))
+         (name (string-join (ast->namespace function) (%type-infix)))
          (arguments (map ast->expression (ast:argument* o))))
     (if (ast:parent function <behavior>)
         (sm:call-method
