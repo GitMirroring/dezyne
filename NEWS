@@ -5,6 +5,25 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.19.2 since 2.19.1
+** Noteworthy bug fixes
+  - The simulator trace now always adds an eligible field to
+    avoid failing to display a trace in the trace view.
+  - The simulator trace now always adds eligible and labels fields even
+    when an invariant is never upheld.
+  - Cross interface enum lookup has been fixed to avoid a stack trace
+    when verifying.
+  - A verification stack trace related to the use of a collateral
+    blocking action in an if expression in a function has been fixed.
+  - Unnecessary curtailment of the simulator compliance trace is fixed,
+    now the users attention is directed to the right location.
+  - Reporting deadlock when external events are pending has now been
+    fixed in the simulator.
+** Runtime
+  - The c++ runtime declared an uninitialized pump thread_id member,
+    which is now initialized to the pump thread id, even when thread
+    bases coroutines are in use.
+
 * Changes in 2.19.1 since 2.19.0
 ** Noteworthy bug fixes
   - Using complex expressions in expression functions is now fixed
