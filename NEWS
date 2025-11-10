@@ -24,7 +24,7 @@
 ** Commands
   - A new command `dzn exec' has been added to run anything in a Docker
     container, such as, `dzn exec ltsconvert ...'.
-  - A new command, `dzn hash' has been added to produce a crpytographic
+  - A new command, `dzn hash' has been added to produce a cryptographic
     hash of a dezyne file and its imports.
   - The `dzn' command has a new option: `--version-number.  This may
     simplify getting the version in environments where Dezyne is the
@@ -48,7 +48,7 @@
   - When verifying multiple files or directories, imported models are
     skipped to prevent duplicate verification.
 ** Noteworthy bug fixes
-  - Trivial deadlocks in a `dzn graph' procduced LTS or state-diagram in
+  - Trivial deadlocks in a `dzn graph' produced LTS or state-diagram in
     blocking external and collateral blocking defer contexts have been
     fixed.
   - The verify command now also respects the `--model=MODEL' selection
@@ -137,7 +137,7 @@
 * Changes in 2.18.1 since 2.18.0
 ** Code
   - C++ runtime facilitates shared-state strictness through the
-    dzn_strict_p boolean, which is explicityly set to true by the
+    dzn_strict_p boolean, which is explicitly set to true by the
     generated code, and therefore false by default.  Note that the
     default case is aimed at thread safe shell systems, which do not
     support shared state on their boundary events.
@@ -153,7 +153,7 @@
   - In the generated (C++) code, a local enum variable used only as a
     field test in a defer statement is now captured by value and
     can no longer go out of scope.
-  - A bug was fixed in the verifyer that would erroneously flag a
+  - A bug was fixed in the verifier that would erroneously flag a
     deadlock when using nested guarding.
   - During verification of a component, interface models are verified
     only once.
@@ -207,7 +207,7 @@
   - Setting the dzn_share_p boolean in a port to false, before it is
     connected, allows disabling maintaining state sharing, as well as
     strict illegal checking.  This is a (temporary) workaround for an
-    interface that is more restrive than its handwritten implementation.
+    interface that is more restrictive than its handwritten implementation.
   - The pretty printer (code --language=dzn) now also supports most
     synthesized AST elements which is especially useful in combination
     with transformations (`-t,--transform').
@@ -220,7 +220,7 @@
   - The `--language=json' output no longer implicitly remove behaviors.
 ** Noteworthy bug fixes
   - A verification bug was fixed that would erroneously report a
-    deadlock for non-determinstic interface constraints.
+    deadlock for non-deterministic interface constraints.
   - A verification bug was fixed to correctly report unreachable code
     when interface and component imperative statement locations overlap.
   - Running the parser in `-f,--fall-back' mode now shows a parse tree
@@ -344,7 +344,7 @@
   - As a result of the unreachable code check, two identical on
     statements are now reported as having an overlapping guard.
   - The verifier has a new option `-C,--no-constraint' to disable
-    the constraining fo a component's behavior.
+    the constraining of a component's behavior.
   - The verifier has a new option '-D,--non-non-compliance' to report a
     deadlock error instead of a non-compliance error.
   - The verifier has a new option `-U,--no-unreachable' to disable the
@@ -462,7 +462,7 @@
   - The code generators now preserve the top level comment.
 ** Commands
   - The `dzn' command has a new option: `-t,--transform=TRANS'.  This
-    makes dzn->dzn transformation avaiable from the command line.
+    makes dzn->dzn transformation available from the command line.
     + New transformations have been added:
       `add-determinism-temporaries`, `inline-functions',
       `simplify-guard-expressions', and `split-complex-expressions'.
@@ -561,7 +561,7 @@
     + In a component with multiple provides ports, but see the
       `Blocking' section in the manual for caveats,
     + A new `blocking' qualifier for ports must be used if a port can
-      block, or block collateraly.
+      block, or block collaterally.
   - Using unobservable non-determinism in interfaces is no longer
     supported.
   - An action or function call can now also be used in a return
@@ -606,7 +606,7 @@
 ** Noteworthy bug fixes
   - Using the construct `provides external' (which has no semantics) no
     longer confuses the simulator.
-  - A bug has been fixed that would cause the well-welformness check for
+  - A bug has been fixed that would cause the well-formedness check for
     system bindings to ignore certain missing bindings.
   - A bug has been fixed when assigning a value to a formal parameter of
     a function.
@@ -614,7 +614,7 @@
     hang when using a foreign component that has both provides and
     requires ports (note: don't do that!).
   - The test framework can be built using gcc-11.
-  - A bug has been fixed in the code generator when assiging to a local
+  - A bug has been fixed in the code generator when assigning to a local
     variable that shadows a formal parameter or member variable.
   - A bug has been fixed in the verifier when creating a new local
     variable or assigning a variable that remains otherwise unused.
@@ -678,7 +678,7 @@
     reports a false positive when using the -Wuninitialized
     option. Although the ports have not been initialized at this point
     the address of a member is valid and can be safely captured. This is
-    now side stepped by deferring the initalization of this field to the
+    now side stepped by deferring the initialization of this field to the
     body of the constructor.
 ** Views
   - A new command `dzn graph' can be used to generate graphs using
@@ -704,7 +704,7 @@
   - The simulator no longer reports false positives for the interface
     unobservably non-deterministic check.
   - The simulator no longer lists events on a blocked port as eligible.
-  - The simulator no longer reports false potitives for the compliance
+  - The simulator no longer reports false positives for the compliance
     check in the case of a blocking trace with a stateful provides port.
   - A quadratic performance problem when parsing pre-processed dezyne
     input has been fixed.
@@ -728,7 +728,7 @@
 ** Noteworthy bug fixes
   - The default model selection for a command no longer considers
     imported models ([[https://gitlab.com/dezyne/dezyne-issues/-/issues/46][#46]]).
-  - Verification and simulation now have a new check that dissallows
+  - Verification and simulation now have a new check that disallows
     non-deterministic behaviour in interfaces which is not directly but
     indirectly observable by the client.
   - The new option `--no-interface-determinism' can be used to disable
@@ -763,7 +763,7 @@
     + Lookup was rewritten to breadth-first and to allow memoization
       for better performance,
     + Lookup now supports bool, subint and extern variables, arguments,
-      event type, formals, expresions, blocking out-bindings, component
+      event type, formals, expressions, blocking out-bindings, component
       instances, system bindings, and namespaces,
     + Completion was rewritten to use type resolving based on context
       accessors,
@@ -923,7 +923,7 @@
 
 * Changes in 2.12.0 since 2.11.0
 ** Commands
-  - A new command 'dzn explore' can be used to create LTSs and accurate
+  - A new command 'dzn explore' can be used to create LTSses and accurate
     state diagrams of interfaces, components and systems.
   - A new command 'dzn simulate' provides a basic system simulator.
   - Code completion now supports boolean expressions in (partial) guards
@@ -1051,7 +1051,7 @@
     reply statement would crash the verifier.
   - Fixed a bug where a boolean "not" used as the expression in a
     reply statement was ignored.
-  - Fixed a bug with precedence in deeply nested boolean expresisons
+  - Fixed a bug with precedence in deeply nested boolean expressions
     in generated code.
 
 * Changes in development since 2.9.1
@@ -1136,7 +1136,7 @@
 ** Verification
   - The verification performance has been improved by a factor 3-4, especially
     for large models. For an interface, the deadlock and livelock checks are
-    performed in parallel. For a component, the determinisctic, illegal,
+    performed in parallel. For a component, the deterministic, illegal,
     deadlock, and livelock checks are performed in parallel.
   - The verification results view reports per check the number of states and
     transitions that have been considered.
