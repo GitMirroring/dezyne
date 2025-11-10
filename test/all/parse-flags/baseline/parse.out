@@ -62,7 +62,8 @@ parse --parse-tree -o- test/language/interface1.dzn
 parse --parse-tree -o- test/language/interface1.dzn => 1
 parse --preprocess test/language/interface1.dzn
 #file "test/language/interface1.dzn"
-interfparse --preprocess test/language/interface1.dzn => 0
+interf
+parse --preprocess test/language/interface1.dzn => 0
 parse --preprocess test/language/interface1.dzn | --verbose parse -
 parse: errors found
 parse --preprocess test/language/interface1.dzn | --verbose parse - => 1
@@ -109,7 +110,6 @@ component S
     C c;
   }
 }
-
 #imported "test/all/parse_import_path/interface.dzn"
 // Dezyne --- Dezyne command line tools
 //
@@ -140,7 +140,6 @@ interface I
 }
 
 typo
-
 #imported "test/all/parse_import_path/component.dzn"
 // Dezyne --- Dezyne command line tools
 //
