@@ -27,6 +27,7 @@
 #define DZN_COROUTINE_HH
 
 #include <dzn/config.hh>
+#include <thread>
 
 #if HAVE_BOOST_COROUTINE
 #include <boost/coroutine/all.hpp>
@@ -57,7 +58,7 @@ struct coroutine
   bool finished;
   bool skip_block;
   coroutine ();
-  coroutine (size_t id, std::function<void()> &&worker);
+  coroutine (size_t id, std::thread::id thread_id, std::function<void()> &&worker);
   void yield_to (dzn::coroutine &that);
   void call (coroutine &that);
   void release ();

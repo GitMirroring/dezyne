@@ -28,5 +28,12 @@ public:
   Logger (const dzn::locator &l)
     : skel::Logger (l)
   {}
-  void log_log (std::string) {}
+  void log_log (std::string s) {
+    std::cout << "LOG " << s << " "
+              << dzn_locator.get<dzn::pump>().thread_id
+#ifndef HAVE_BOOST_COROUTINE
+              << " == " << dzn::get_thread_id ()
+#endif
+              << std::endl;
+  }
 };

@@ -210,6 +210,7 @@ pump::flush ()
 void
 pump::operator () ()
 {
+  thread_id = std::this_thread::get_id ();
   try
     {
       auto work_p = [this] {return queue.size () || deferred.size () || !running;};
@@ -316,7 +317,7 @@ pump::coroutine_id ()
 void
 pump::create_context ()
 {
-  coroutines.emplace_back (++current_coroutine, [&]
+  coroutines.emplace_back (++current_coroutine, thread_id, [&]
   {
     try
       {

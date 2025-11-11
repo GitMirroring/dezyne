@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2024 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2024, 2025 Rutger van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -25,9 +25,24 @@
 
 namespace dzn
 {
-coroutine::coroutine (size_t id, std::function<void()>&& worker)
+thread_local std::thread::id s_thread_id;
+void set_thread_id (std::thread::id id)
+{
+  s_thread_id = id;
+}
+std::thread::id get_thread_id ()
+{
+  return s_thread_id;
+}
+#if HAVE_BOOST_COROUTINE
+coroutine::coroutine (size_t id, std::thread::id, std::function<void()>&& worker)
   : id (id)
   , context ([this, worker] (dzn::yield &yield)
+#else
+coroutine::coroutine (size_t id, std::thread::id thread_id, std::function<void()>&& worker)
+  : id (id)
+  , context (thread_id, [this, worker] (dzn::yield &yield)
+#endif
   {
     this->yield = std::move (yield);
     worker ();

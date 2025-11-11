@@ -41,7 +41,8 @@
 namespace dzn
 {
 extern std::ostream debug;
-
+void set_thread_id (std::thread::id);
+std::thread::id get_thread_id ();
 class context
 {
   enum State {INITIAL, RELEASED, BLOCKED, FINAL};
@@ -72,13 +73,14 @@ public:
     forced_unwind (): std::runtime_error ("forced_unwind") {}
   };
   template <typename Work>
-  context (Work &&work)
+  context (std::thread::id id, Work &&work)
     : state (INITIAL)
-    , work ()
+    , work (std::move (work))
     , mutex ()
     , condition ()
-    , future (dzn::std_async ([this]
+    , future (dzn::std_async ([id, this]
     {
+      set_thread_id (id);
       try
         {
           std::unique_lock<std::mutex> lock (mutex);
@@ -104,7 +106,6 @@ public:
   {
     std::unique_lock<std::mutex> lock (mutex);
     while (state != BLOCKED) condition.wait (lock);
-    this->work = std::move (work);
   }
   context ()
     : state (INITIAL)
@@ -143,12 +144,12 @@ public:
     std::unique_lock<std::mutex> lock (mutex);
     do_release (lock);
 
-    std::unique_lock<std::mutex> lock2 (c.mutex);
+    std::unique_lock<std::mutex> c_lock (c.mutex);
     c.state = BLOCKED;
 
     lock.unlock ();
 
-    do { c.condition.wait (lock2); }
+    do { c.condition.wait (c_lock); }
     while (c.state == BLOCKED);
   }
   void yield (context &to)
