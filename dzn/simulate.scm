@@ -127,15 +127,16 @@
         (cons event traces)))
     (let ((labels (labels pc)))
       (map (cute event->label-traces pc <>) labels)))
-
   (cond
    ((is-a? (%sut) <runtime:port>)
     (event-traces-alist pc))
    ((is-a? (%sut) <runtime:component>)
     (let* ((interface (interfaces-event-traces-alist pc))
            (interface-eligible (eligible-labels interface))
+           (external-eligible (map trigger->string
+                                   (append-map cdr (.external-q pc))))
            (component (event-traces-alist pc)))
-      (filter (compose (cute member <> interface-eligible) car)
+      (filter (compose (cute member <> (append interface-eligible external-eligible)) car)
               component)))
    ((is-a? (%sut) <runtime:system>)
     (interfaces-event-traces-alist pc))))
