@@ -3,7 +3,7 @@
 #+TITLE: Tentative Dezyne Road Map
 
 Copyright © 2019, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
-Copyright © 2020, 2021, 2022, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2020, 2021, 2022, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 Copyright © 2022 Rutger van Beusekom <rutger@dezyne.org>
 
   Copying and distribution of this file, with or without modification,
@@ -45,12 +45,13 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
   - Refactor node/parent
     + Finish and merge wip-canonical-on
     + Finish and merge wip-parent
-  - External functions
-    + non-deterministic behavior in verification
-    + Finish and merge wip-external-function
   - Global functions
     + Finish and merge wip-global-function
-  - Deprecate injected, replace with global functions
+  - Foreign functions
+    + non-deterministic behavior in verification
+    + partially/minimally introduce wip-lts-test for foreign functions
+    + Finish and merge wip-foreign-function
+  - Deprecate injected, replace with foreign (and global) functions
 
 ** Release 2.21
   - Refactor transformations
@@ -74,7 +75,8 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 ** Release 2.24
   - Early return / deprecate reply
     + Finish and merge wip-return
-  - Replace dzn traces with dzn test, i.e. LTS-based testing
+  - Fully replace dzn traces with dzn test, i.e. LTS-based testing
+    + Finish wip-lts-test
 
 ** Release 2.25
   - Data
