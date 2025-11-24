@@ -1,1 +1,1 @@
-test/all/parse_fall_back_preprocessed_foo/parse_fall_back_preprocessed_foo.dzn:20:1: `import, dollars, type, namespace, interface, component, EOF' expected
+test/all/parse_fall_back_preprocessed_foo/parse_fall_back_preprocessed_foo.dzn:20:1: `dollars, type, namespace, function, interface, component, EOF' expected
