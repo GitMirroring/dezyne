@@ -55,7 +55,6 @@
             makreel:.name
             makreel:arguments
             makreel:call-continuation*
-            makreel:called-function*
             makreel:constraint
             makreel:defer*
             makreel:defer-skip?
@@ -125,7 +124,7 @@
 (define-method (makreel:defer*-unmemoized (o <ast>))
   (tree-collect (conjoin (is? <defer>)
                          (disjoin (negate (cute ast:parent <> <function>))
-                                  (compose is-called? (cute ast:parent <> <function>))))
+                                  (cute ast:parent <> <function>)))
                 o))
 
 (define makreel:defer*
@@ -147,42 +146,6 @@
 
 (define-method (makreel:full-name (o <shared-variable>))
   (string-append (.port.name o) "port_" (.name o)))
-
-(define (reachable calls)
-  (let ((nested direct (partition (cute ast:parent <> <function>) calls)))
-    (let loop ((nested nested) (direct direct))
-      (let ((reached rest (partition
-                           (lambda (call)
-                             (find (cute eq? (ast:parent call <function>) <>)
-                                   (map .function direct))) nested)))
-        (let* ((reached (append reached direct)))
-          (if (equal? direct reached) direct
-              (loop rest reached)))))))
-
-(define (reachable-calls-unmemoized root o)
-  (let* ((calls (tree-collect-filter
-                 (disjoin (is? <behavior>)
-                          (is? <declarative>)
-                          (is? <functions>)
-                          (is? <function>)
-                          (is? <statement>))
-                 (conjoin (is? <call>) ast:imperative?)
-                 o))
-         (calls (reachable calls)))
-    calls))
-
-(define (reachable-calls o)
-  ((ast:perfect-funcq reachable-calls-unmemoized) (ast:parent o <root>) o))
-
-(define-method (is-called? (o <function>))
-  (let ((calls (reachable-calls (ast:parent o <behavior>))))
-    (find (compose (cute ast:name-equal? <> o) .function.name) calls)))
-
-(define-method (makreel:called-function* (o <behavior>))
-  (filter is-called? (ast:function* o)))
-
-(define-method (makreel:called-function* (o <model>))
-  ((compose makreel:called-function* .behavior) o))
 
 (define-method (makreel:process-index (o <statement>))
   (makreel:process-identifier o))
@@ -265,13 +228,7 @@
                                          (is? <assign>))
                                 (compose (is? <call>)
                                          .expression)))
-                              o))
-         (called (makreel:called-function* o))
-         (calls (filter (compose
-                         (disjoin not
-                                  (cute memq <> called))
-                         (cute ast:parent <> <function>))
-                        calls)))
+                              o)))
     (cons (map (compose car ast:continuation*) calls)
           calls)))
 
@@ -314,8 +271,9 @@
   (let ((location (.location o)))
     (format #f "~a, ~a" (.line location) (.column location))))
 
-(define (makreel:process-identifier o)
-  (let* ((model (ast:parent o <model>))
+(define* (makreel:process-identifier o #:key model)
+  (let* ((model (or (ast:parent o <model>) model))
+         ;; HACK; FIXME
          (model-key (.id model))
          (path (ast:path o))
          (key (map .id path))
