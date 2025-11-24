@@ -1059,10 +1059,18 @@
 ;;; helper functions
 ;;;
 (define-method (defined-function (o <call>))
-  (let* ((behavior (ast:parent o <behavior>))
-         (functions (ast:function* behavior))
-         (name (.function.name o)))
-    (if (find (cute ast:name-equal? name <>) functions) '()
+  (let* ((root (ast:parent o <root>))
+         (global-functions (ast:function** root))
+         (behavior (ast:parent o <behavior>))
+         (functions (if (not behavior) global-functions
+                        (append global-functions
+                                (ast:function* behavior))))
+         (name (.function.name o))
+         (name? (cute ast:name-equal? name <>)))
+    (if (or (find name? functions)
+            (find (conjoin (is? <function>) name?)
+                  (ast:top** (ast:parent o <root>))))
+        '()
         `(,(wfc-error o (format #f "undefined function call: ~s"
                                 (ast:name name)))))))
 
@@ -1493,7 +1501,7 @@
      ((and (is-a? (ast:type o) <void>)
            (is-a? p <variable>))
       `(,(wfc-error o "void value not ignored as it ought to be")))
-     ((and (not (is-a? (ast:type o) <void>))
+     ((and (and=> (ast:type o) (negate (is? <void>)))
            (or (is-a? p <compound>)
                (is-a? p <on>)
                (and (is-a? p <if>)
@@ -1600,5 +1608,6 @@
 ;;;
 (define-method (wfc (o <root>))
   (append
+   (append-map wfc (ast:function** o))
    (append-map wfc (ast:model** o))
    (append-map wfc (ast:type** o))))
