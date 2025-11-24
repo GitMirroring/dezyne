@@ -407,14 +407,10 @@ null) and return its CONTEXT."
 (define-method (.event.direction (o <trigger>))
   ((compose .direction .event) o))
 
-(define-method (.function (model <model>) (o <call>))
-  (and (.function.name o) (ast:lookup model (.function.name o))))
-
 (define-method (.function (o <call>))
   (and (.function.name o)
-       (ast:lookup
-        (and=> (ast:parent o <behavior>) .functions)
-        (.function.name o))))
+       (and=> (ast:lookup o (.function.name o))
+              (cute as <> <function>))))
 
 (define-method (.variable (o <assign>))
   (and=> (.variable.name o) (cute ast:lookup-variable o <>)))

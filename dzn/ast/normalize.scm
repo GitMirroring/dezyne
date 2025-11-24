@@ -1381,7 +1381,8 @@ add-explicit-temporaries transformation for splitting argument lists."
                      (else (make <scope.name> #:ids (ast:full-name type)))))
          (name (temp-name o))
          (location (.location o))
-         (parent (ast:parent o <behavior>))
+         (parent (or (ast:parent o <behavior>)
+                     (ast:parent o <statement>)))
          (temporary (make <variable>
                       #:name name
                       #:type.name type-name

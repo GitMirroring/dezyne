@@ -7,39 +7,39 @@ parse --preprocess test/all/ihelloworld/ihelloworld.dzn | --verbose parse -
 --verbose parse test/all/ihelloworld/ihelloworld.dzn
 parse test/all/ihelloworld/ihelloworld.dzn -o-
 parse --fall-back test/language/interface1.dzn
-test/language/interface1.dzn:1:1: `import, dollars, type, namespace, interface, component, EOF' expected
+test/language/interface1.dzn:1:1: `dollars, type, namespace, function, interface, component, EOF' expected
 parse --fall-back --parse-tree test/language/interface1.dzn
-test/language/interface1.dzn:1:1: `import, dollars, type, namespace, interface, component, EOF' expected
+test/language/interface1.dzn:1:1: `dollars, type, namespace, function, interface, component, EOF' expected
 --verbose parse parse --parse-tree test/language/interface1.dzn
 test/language/interface1.dzn:1:1: error
 interf
 ^
-`import, dollars, type, namespace, interface, component, EOF' expected
+`dollars, type, namespace, function, interface, component, EOF' expected
 parse --parse-tree -o- test/language/interface1.dzn
 test/language/interface1.dzn:1:1: error
 interf
 ^
-`import, dollars, type, namespace, interface, component, EOF' expected
+`dollars, type, namespace, function, interface, component, EOF' expected
 parse --preprocess test/language/interface1.dzn
 parse --preprocess test/language/interface1.dzn | --verbose parse -
 test/language/interface1.dzn:1:1: error
 interf
 ^
-`import, dollars, type, namespace, interface, component, EOF' expected
+`dollars, type, namespace, function, interface, component, EOF' expected
 --verbose parse test/language/interface1.dzn
 test/language/interface1.dzn:1:1: error
 interf
 ^
-`import, dollars, type, namespace, interface, component, EOF' expected
+`dollars, type, namespace, function, interface, component, EOF' expected
 parse test/language/interface1.dzn -o-
 test/language/interface1.dzn:1:1: error
 interf
 ^
-`import, dollars, type, namespace, interface, component, EOF' expected
+`dollars, type, namespace, function, interface, component, EOF' expected
 parse --fall-back test/all/parse_import_path/parse_import_path.dzn
-test/all/parse_import_path/parse_import_path.dzn:27:2: `import, dollars, type, namespace, interface, component, EOF' expected
+test/all/parse_import_path/parse_import_path.dzn:27:2: `dollars, type, namespace, function, interface, component, EOF' expected
 parse --fall-back --parse-tree test/all/parse_import_path/parse_import_path.dzn
-test/all/parse_import_path/parse_import_path.dzn:27:2: `import, dollars, type, namespace, interface, component, EOF' expected
+test/all/parse_import_path/parse_import_path.dzn:27:2: `dollars, type, namespace, function, interface, component, EOF' expected
 --verbose parse parse --parse-tree test/all/parse_import_path/parse_import_path.dzn
 In test/all/parse_import_path/interface.dzn:
 imported from test/all/parse_import_path/component.dzn:
@@ -48,7 +48,7 @@ imported from test/all/parse_import_path/parse_import_path.dzn:
 test/all/parse_import_path/interface.dzn:27:2: error
 }
  ^
- `import, dollars, type, namespace, interface, component, EOF' expected
+ `dollars, type, namespace, function, interface, component, EOF' expected
 parse --parse-tree -o- test/all/parse_import_path/parse_import_path.dzn
 In test/all/parse_import_path/interface.dzn:
 imported from test/all/parse_import_path/component.dzn:
@@ -57,7 +57,7 @@ imported from test/all/parse_import_path/parse_import_path.dzn:
 test/all/parse_import_path/interface.dzn:27:2: error
 }
  ^
- `import, dollars, type, namespace, interface, component, EOF' expected
+ `dollars, type, namespace, function, interface, component, EOF' expected
 parse --preprocess test/all/parse_import_path/parse_import_path.dzn
 parse --preprocess test/all/parse_import_path/parse_import_path.dzn | --verbose parse -
 In test/all/parse_import_path/interface.dzn:
@@ -67,7 +67,7 @@ imported from test/all/parse_import_path/parse_import_path.dzn:
 test/all/parse_import_path/interface.dzn:27:2: error
 }
  ^
- `import, dollars, type, namespace, interface, component, EOF' expected
+ `dollars, type, namespace, function, interface, component, EOF' expected
 --verbose parse test/all/parse_import_path/parse_import_path.dzn
 In test/all/parse_import_path/interface.dzn:
 imported from test/all/parse_import_path/component.dzn:
@@ -76,7 +76,7 @@ imported from test/all/parse_import_path/parse_import_path.dzn:
 test/all/parse_import_path/interface.dzn:27:2: error
 }
  ^
- `import, dollars, type, namespace, interface, component, EOF' expected
+ `dollars, type, namespace, function, interface, component, EOF' expected
 parse test/all/parse_import_path/parse_import_path.dzn -o-
 In test/all/parse_import_path/interface.dzn:
 imported from test/all/parse_import_path/component.dzn:
@@ -85,7 +85,7 @@ imported from test/all/parse_import_path/parse_import_path.dzn:
 test/all/parse_import_path/interface.dzn:27:2: error
 }
  ^
- `import, dollars, type, namespace, interface, component, EOF' expected
+ `dollars, type, namespace, function, interface, component, EOF' expected
 parse --fall-back test/all/parse_non_existent_import/parse_non_existent_import.dzn
 No such file: non_existent.dzn found in: test/all/parse_non_existent_import;
 imported from test/all/parse_non_existent_import/parse_non_existent_import.dzn

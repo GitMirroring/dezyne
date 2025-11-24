@@ -3,4 +3,4 @@ test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argume
 test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:11: `;' expected
 test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:12: `}' expected
 test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:42:12: `expression-function, function, variable, declarative-statement, type, }' expected
-test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:44:4: `import, dollars, type, namespace, interface, component, EOF' expected
+test/all/parse_fall_back_out_binding_argument/parse_fall_back_out_binding_argument.dzn:44:4: `dollars, type, namespace, function, interface, component, EOF' expected

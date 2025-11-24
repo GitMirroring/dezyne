@@ -128,6 +128,9 @@
 (define-method (statement->process-name (o <ast>))
   (model-prefix (makreel:process-identifier o)))
 
+(define-method (statement->process-name (o <ast>) (model <model>))
+  (model-prefix (makreel:process-identifier o #:model model)))
+
 (define-method (makreel:type->string (o <type>))
   (match o
     (($ <bool>) "Bool")
@@ -455,6 +458,7 @@
        (assq-ref cache o)
        ;; XXX c&p from %replies
        (let* ((functions (ast:function* (.behavior o)))
+              (functions (filter (negate (is? <expression-function>)) functions))
               (return-types (map ast:type functions)))
          (and
           (pair? return-types)
@@ -1567,7 +1571,7 @@
           ,@(if (not (.last? o)) '()
                 (list %recurse-action))
           ,(sm:goto
-            (name (statement->process-name statement))
+            (name (statement->process-name statement model))
             (arguments
              (append
               (map (lambda (f a) (sm:is* f a))
@@ -2241,7 +2245,9 @@
          (enums (filter (is? <enum>) (ast:type** o)))
          (enums (map enum->scmackerel enums))
          (behavior-processes (behavior->processes o))
-         (functions (makreel:called-function* behavior))
+         (functions (append (ast:function* behavior)
+                            (ast:function** (ast:parent o <root>))))
+         (functions (filter (negate (is? <expression-function>)) functions))
          (function-processes (append-map function->processes functions))
          (return-processes (return-processes o))
          (reorder-processes (interface-reorder-processes o))
@@ -4391,7 +4397,9 @@
            (enums (map enum->scmackerel enums))
            (members (filter (negate (is? <shared-variable>)) (ast:variable* o)))
            (behavior-processes (behavior->processes o))
-           (functions (makreel:called-function* behavior))
+           (functions (append (ast:function* behavior)
+                              (ast:function** (ast:parent o <root>))))
+           (functions (filter (negate (is? <expression-function>)) functions))
            (function-processes (append-map function->processes functions))
            (return-processes (return-processes o))
            (defer-processes (append-map defer->processes (makreel:defer* o)))
