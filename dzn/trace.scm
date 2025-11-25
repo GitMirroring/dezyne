@@ -57,8 +57,9 @@
 
   (define-peg-string-patterns
     "trace <- line*
-line             <-  garbage eol# / sexp ws* eol# / location? ws* (communication ws* eol# / message ws* eol#)
+line             <-  garbage eol# / sexp ws* eol# / location? ws* (illegal / communication / message) ws* eol#
 garbage          <   SEMICOLON (!eol .)+
+illegal          <-- '<illegal>'
 communication    <-- content ws* arrow ws* content# ws* state-vector?
 content          <-- instance-event
 state-vector     <   '[' (!']' .)+ ']'
@@ -94,6 +95,7 @@ ws               <   [ \t]
       (let ((result (trace-parse trace)))
         (match result
           (('communication communication ...) (list result))
+          (('illegal event ...) (list result))
           (_ result))))
     (peg:handle-syntax-error file-name trace)))
 
@@ -135,6 +137,13 @@ ws               <   [ \t]
   (let ((type (record-type-descriptor o)))
     (cons (record-type-name type)
           (map (lambda (f) (cons f ((record-accessor type f) o))) (record-type-fields type)))))
+
+(define-immutable-record-type <illegal>
+  (make-illegal line location event)
+  illegal?
+  (line illegal-line)
+  (location illegal-location)
+  (event illegal-event))
 
 (define-immutable-record-type <message>
   (make-message line location message)
@@ -189,6 +198,14 @@ ws               <   [ \t]
           (make-state state))
          (('trail trail ...)
           (make-trail trail)))))
+
+    (('illegal event)
+     (make-illegal o #f event))
+
+    ((('location location) (and illegal ('illegal event)))
+     (let ((illegal (step->communication illegal)))
+       (and illegal
+            (set-field illegal (illegal-location) location))))
 
     ((('location location) ('message message))
      (make-message o location message))
@@ -410,6 +427,9 @@ ws               <   [ \t]
      (else
       (format #f "~s" o)))))
 
+(define (illegal->string o)
+  (illegal-event o))
+
 (define (message->string o)
   (let ((location (or (message-location o) "")))
     (string-append
@@ -439,6 +459,7 @@ ws               <   [ \t]
         ((eligible? o) (eligible->string o))
         ((header? o) (header->string o))
         ((labels? o) (labels->string o))
+        ((illegal? o) (illegal->string o))
         ((message? o) (message->string o))
         ((state? o) (state->string o))
         ((trail? o) (trail->string o))))
@@ -486,6 +507,8 @@ ws               <   [ \t]
         (cdr instance)
         (list (communication-event o)))
        ".")))
+   ((illegal? o)
+    (illegal->string o))
    ((message? o)
     (message->string o))))
 
@@ -1047,7 +1070,8 @@ ws               <   [ \t]
           (string-match "^<[-a-z]+>$" event))))
   (let ((steps (filter (disjoin (conjoin (negate q-out?) external?)
                                 defer-qout?
-                                (conjoin (const meta?) message? meta-event?))
+                                (conjoin (const meta?) message? meta-event?)
+                                illegal?)
                        steps)))
     (map step->event steps)))
 
