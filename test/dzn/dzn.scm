@@ -194,6 +194,9 @@ output, and standard error as three values."
 (define (flush? file-name)
   (get-meta-flag file-name 'flush))
 
+(define (lts-test? file-name)
+  (get-meta-flag file-name 'lts-test?))
+
 (define (no-unreachable? file-name)
   (get-meta-flag file-name 'no-unreachable))
 
@@ -437,7 +440,8 @@ output, and standard error as three values."
        (or (code-error? file-name)
            (let* ((traces (find-files file-name ".*trace.*$"))
                   (traces (sort traces trace<)))
-             (and-map (cute run-execute file-name language <>) traces)))))
+             (if (lts-test? file-name) (run-lts-test file-name language)
+                 (and-map (cute run-execute file-name language <>) traces))))))
 
 (define (run-traces file-name)
   (format #t "** stage: traces\n")
@@ -714,6 +718,75 @@ are weak-bisim equivalent"
                                                   " <(echo -e '" net "')" ))
                                 #f))
                    (zero? status))))))))
+
+(define (run-lts-test file-name language)
+  (format #t "** stage: module-test: ~a\n" language)
+  (let* ((base-name (basename file-name))
+         (dzn-name (string-append file-name "/" base-name ".dzn"))
+         (input "")
+         (out (string-append file-name "/out"))
+         (out-lang (string-append out "/" language))
+         (test (string-append out-lang "/test"))
+         (interpreter (or (assoc-ref %interpreter-alist language) '()))
+         (lts (string-append out "/traces/" base-name ".aut"))
+         (i/o-lts (string-append out "/lts/io-lts.aut"))
+         (i/o-result (string-append out "/lts/io-result.aut"))
+         (model (or (model? file-name) base-name)))
+    (mkdir-p (string-append out "/lts"))
+    (or (error-model? file-name)
+        (feature-skip? file-name language)
+        (skip? file-name
+               language
+               "code" (string-append language ":code")
+               "build" (string-append language ":build")
+               "execute" (string-append language ":execute"))
+        (let* ((simulate-lts-file lts)
+               (simulate-lts (with-input-from-file lts read-string))
+               (foreign (list-matches
+                         "\"([^.\"]*[.][^.\"]*[.][^\"]*)\""
+                         simulate-lts))
+               (foreign (map (cute match:substring <> 1) foreign))
+               (foreign (delete-duplicates foreign))
+               (modeling (list-matches
+                          "\"([^\"]*[.](inevitable|optional))\""
+                          simulate-lts))
+               (modeling (map (cute match:substring <> 1) modeling))
+               (modeling (delete-duplicates modeling))
+               (foreign+modeling (append foreign modeling)))
+          (observe
+           `("ltsconvert"
+             "-eweak-trace"
+             ,(string-append "--tau=" (string-join foreign+modeling ","))
+             ,simulate-lts-file
+             ,lts)
+           "")
+          (receive (status stdout stderr)
+              (observe
+               `("dzn"
+                 "lts"
+                 "--i/o-lts"
+                 "-m" ,model
+                 ,dzn-name
+                 ,lts)
+               "")
+            (with-output-to-file i/o-lts (cute display stdout)))
+          (receive (status stdout stderr)
+              (observe `("dzn" "test" "-r" "50"
+                         ,i/o-lts
+                         ,@interpreter
+                         ,test)
+                       input)
+            (with-output-to-file i/o-result (cute display stdout)))
+          (receive (status stdout stderr)
+              (observe
+               `("ltscompare"
+                 "--quiet"
+                 "-ebisim"
+                 ,i/o-lts
+                 ,i/o-result)
+               "")
+            (and (zero? status)
+                 (string-contains stdout "true")))))))
 
 (define (run-simulate-trace file-name trace)
   (format #t "** stage: simulate-trace ~a\n" trace)
