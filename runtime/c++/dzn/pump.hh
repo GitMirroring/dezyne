@@ -50,6 +50,7 @@ struct runtime;
 
 struct pump
 {
+  bool wait_for_timeouts;
   std::vector<void *> unblocked;
   bool running;
   bool paused;
@@ -79,7 +80,7 @@ struct pump
   std::condition_variable idle;
   std::mutex mutex;
   std::future<void> task;
-  pump ();
+  pump (bool wait_for_timeouts = false);
   ~pump ();
   size_t coroutine_id ();
   void stop ();
