@@ -39,6 +39,7 @@ dist_%C%_scm_DATA =				\
  %D%/shell-util.scm				\
  %D%/simulate.scm				\
  %D%/templates.scm				\
+ %D%/test.scm					\
  %D%/timing.scm					\
  %D%/trace.scm					\
  %D%/transform.scm
