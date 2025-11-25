@@ -138,8 +138,9 @@ pump::deadline::deadline (size_t id, size_t ms)
   , time (std::chrono::steady_clock::now () + std::chrono::milliseconds (ms))
 {}
 
-pump::pump ()
-  : unblocked ()
+pump::pump (bool b)
+  : wait_for_timeouts (b)
+  , unblocked ()
   , running (true)
   , executing (false)
   , paused (false)
@@ -179,7 +180,13 @@ pump::wait ()
 {
   debug.rdbuf () &&debug << "pump::wait" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
-  idle.wait (lock, [this] {return !executing && queue.empty () && deferred.empty ();});
+  idle.wait (lock, [this]
+  {
+    return !executing
+      && queue.empty ()
+      && deferred.empty ()
+      && (!wait_for_timeouts || timers.empty ());
+  });
 }
 
 void
