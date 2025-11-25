@@ -34,6 +34,7 @@ dist_%C%_scm_DATA =				\
  %D%/lts.scm					\
  %D%/parse.scm					\
  %D%/simulate.scm				\
+ %D%/test.scm					\
  %D%/trace.scm					\
  %D%/traces.scm					\
  %D%/verify.scm
