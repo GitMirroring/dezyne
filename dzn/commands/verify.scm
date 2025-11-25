@@ -150,6 +150,7 @@ Check FILEs and DIRECTORYs for verification errors in Dezyne models
 
 (define (main args)
   (setvbuf (current-output-port) 'line)
+  (setvbuf (current-error-port) 'line)
   (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (files (append-map file-name->dzn-files files))
