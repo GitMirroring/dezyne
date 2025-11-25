@@ -35,19 +35,25 @@
   #:use-module (ice-9 regex)
 
   #:use-module (dzn lts)
+  #:use-module (dzn misc)
+  #:use-module (dzn command-line)
+  #:use-module (dzn commands parse)
 
   #:export (main))
 
 (define (parse-opts args)
   (let* ((option-spec '((cleanup (single-char #\c))
                         (deadlock (single-char #\d))
+                        (deterministic-labels (single-char #\n) (value #t))
                         (exclude-illegal)
                         (exclude-tau (value #t))
                         (failures (single-char #\f))
                         (help (single-char #\h))
                         (illegal (single-char #\i))
+                        (i/o-lts)
+                        (import (single-char #\I) (value #t))
                         (livelock (single-char #\l))
-                        (deterministic-labels (single-char #\n) (value #t))
+                        (model (single-char #\m) (value #t))
                         (prefix (single-char #\p) (value #t))
                         (single-line (single-char #\s))
                         (tau (single-char #\t) (value #t))
@@ -66,8 +72,11 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
                                     option --failures)
   -f, --failures                  introduce a failure for each 'optional' event
   -h, --help                      display this help and exit
+  -I, --import=DIR+               add DIR to import path
   -i, --illegal                   detect whether LTS contains <illegal> labels
+      --i/o-lts                   prefix each label with in or out
   -l, --livelock                  detect tau-loops in LTS
+  -m, --model=MODEL               generate main for MODEL
   -n, --deterministic-labels=LABEL[,LABEL...]
                                   assert determinism by detecting multiple edges
                                   of LABEL from a single state
@@ -95,6 +104,7 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
          (exclude-illegal? (option-ref options 'exclude-illegal #f))
          (failures? (option-ref options 'failures #f))
          (illegal? (option-ref options 'illegal #f))
+         (i/o-lts? (option-ref options 'i/o-lts #f))
          (livelock? (option-ref options 'livelock #f))
          (deterministic-labels (option-ref options 'deterministic-labels #f))
          (deterministic-labels (and deterministic-labels
@@ -131,6 +141,15 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
     (cond
      (cleanup?
       (cleanup-aut #:file-name file-name #:prefix prefix))
+     (i/o-lts?
+      (unless file-name
+        (format #t "missing DZN file-name, exiting\n")
+        (exit 1))
+      (let* ((parse-options (filter (negate (compose (cut eq? <> 'model) car)) options))
+             (ast (parse parse-options file-name))
+             (lts (and (> (length files) 1) (cadr files)))
+             (model-name (command-line:get 'model)))
+        (i/o-lts ast lts #:model-name model-name)))
      (else
       (let* ((text (if (or (null? files) (equal? "-" file-name))
                        (with-input-from-port (current-input-port) read-string)
