@@ -91,8 +91,7 @@ all COMMANDS."
                         (with-error-to-port error-output-port
                           (cute pipeline commands))))
        (close error-output-port)
-       (let ((error (read-string error-input-port)))
-         (values output-port input-port error-input-port pids))))))
+       (values output-port input-port error-input-port pids)))))
 
 (define* (pipeline->string commands #:key (input ""))
   "Execute a pipeline of COMMANDS, feeding INPUT to the first command.
