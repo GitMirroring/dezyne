@@ -43,6 +43,7 @@
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
+  #:use-module (srfi srfi-71)
 
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 match)
@@ -51,8 +52,12 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 
+  #:use-module (dzn ast)
+  #:use-module (dzn ast ast)
   #:use-module (dzn command-line)
   #:use-module (dzn misc)
+  #:use-module (dzn vm goops)
+
   #:export (%<declarative-illegal>
             %<illegal>
             add-failures
@@ -69,6 +74,7 @@
             edge-to
             edge?
             initial
+            i/o-lts
             lts->alphabet
             lts->nodes
             lts->rtc-lts
@@ -981,3 +987,47 @@ from LABELS."
                    (vector-length lts)
                    separator)
     (for-each display-edge edges)))
+
+(define* (i/o-lts ast file-name #:key model-name)
+  (let* ((input-port (if file-name (open-input-file file-name)
+                         (current-input-port)))
+         (label-re (make-regexp "\"([^\"]*)\""))
+         (model (ast:get-model ast model-name))
+         (ports (ast:port* model))
+         (provides requires (partition ast:provides? ports))
+         (provides-in (map .name (append-map ast:in-event* provides)))
+         (requires-out (map .name (append-map ast:out-event* requires)))
+         (requires-return-values (append-map ast:return-values requires))
+         (requires-return-values (map (compose (cute format #f "~a" <>) ->sexp)
+                                      requires-return-values)))
+    (define (prefix label)
+      (let* ((defer? (equal? "<defer>" label))
+             (illegal? (equal? "<illegal>" label))
+             (port event (match (string-split label #\.)
+                           ((port event) (values port event))
+                           (_ (values #f #f))))
+             (flush? (equal? "<flush>" event))
+             (provides? (member port (map .name provides)))
+             (requires? (not provides?))
+             (in? (member event provides-in))
+             (out? (member event requires-out))
+             (reply? (member event requires-return-values))
+             (direction (if (or flush?
+                                (and provides? in?)
+                                (and requires?
+                                     (or out? reply?))
+                                defer?) "in"
+                                     "out")))
+        (if (not (or port event defer? illegal?)) (format #f "\"~a\"" label)
+            (format #f "\"~a.~a\"" direction label))))
+
+    (let loop ((line (read-line input-port 'concat)))
+      (unless (eof-object? line)
+        (let ((out-line (regexp-substitute/global
+                         #f label-re line
+                         'pre
+                         (compose prefix
+                                  (cute match:substring <> 1))
+                         'post)))
+          (display out-line))
+        (loop (read-line input-port 'concat))))))
