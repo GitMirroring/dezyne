@@ -3008,7 +3008,7 @@ The @var{option}s can be among the following:
 
 @item --help
 @itemx -h
-Display help on invoking @code{ide hello}, and then exit.
+Display help on invoking @code{dzn hello}, and then exit.
 
 @item --runtime
 Display the (installed) location of the runtime, and then exit.
