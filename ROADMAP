@@ -51,13 +51,14 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
     + non-deterministic behavior in verification
     + partially/minimally introduce wip-lts-test for foreign functions
     + Finish and merge wip-foreign-function
-  - Deprecate injected, replace with foreign (and global) functions
+  - Show defer skip and function call and return in the trace.
 
 ** Release 2.21
   - Refactor transformations
     + Finish and merge wip-transform
   - ast/tree cleanup, serialization and name lookup
     + Finish and merge wip-serialize
+    + Finish and merge wip-lookup
   - WFC performance
 
 ** Release 2.22
@@ -80,8 +81,12 @@ You're welcome to discuss this road map on dezyne-devel@nongnu.org or
 
 ** Release 2.25
   - Data
-    + Stateful (control) parameters
+    + Port parameters for global functions
+    + Port parameters for foreign functions
+    + Behavior for foreign functions
+    + Data with state (control parameters)
     + Structured state types
+  - Deprecate injected, replace with foreign (and global) functions
 
 ** Release 2.26
   - Data
