@@ -141,6 +141,8 @@
                        (string-append doc "\n")))))))
         (format port "\
 Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
+Run COMMAND with ARGUMENTs.
+
   -d, --debug            enable debug ouput
   -h, --help             display this help
   -p, --skip-wfc         use plain PEG, skip well-formedness checking
@@ -149,7 +151,6 @@ Usage: dzn [OPTION]... COMMAND [COMMAND-ARGUMENT...]
   -t, --transform=TRANS  use transformation TRANS
   -T, --timings          show timings
       --threads=N        invoke LTS2LPS with --threads=N
-
 
 Commands:~a
 
