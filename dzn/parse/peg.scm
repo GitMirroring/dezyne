@@ -170,7 +170,8 @@ SEMICOLON < ';'")
 
 imports <-- import+
 
-definitions <-- (dollars / type / namespace / function / interface / component / EOF)#+
+definitions <-- (dollars / type / namespace / function / prototype /
+                interface / component / EOF)#+
 
 import <-- IMPORT file-name SEMICOLON#
   file-name <- (!SEMICOLON .)+
@@ -231,6 +232,9 @@ behavior <-- BEHAVIOR behavior-compound
       function
          <-- type-name (!is-event name / duplicate-identifier) &(formals BRACE-OPEN)
              enter-frame formals compound# exit-frame
+
+      prototype
+         <-- type-name (!is-event name / duplicate-identifier) formals SEMICOLON#
 
       expression-function
          <-- type-name (!is-event name / duplicate-identifier)
