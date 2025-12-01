@@ -1,4 +1,4 @@
 test/all/parse_import_end/parse_import_end.dzn:33:2: error
 }
  ^
- `dollars, type, namespace, function, interface, component, EOF' expected
+ `dollars, type, namespace, function, prototype, interface, component, EOF' expected

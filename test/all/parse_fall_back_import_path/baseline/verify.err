@@ -1,1 +1,1 @@
-test/all/parse_fall_back_import_path/parse_fall_back_import_path.dzn:27:2: `dollars, type, namespace, function, interface, component, EOF' expected
+test/all/parse_fall_back_import_path/parse_fall_back_import_path.dzn:27:2: `dollars, type, namespace, function, prototype, interface, component, EOF' expected
