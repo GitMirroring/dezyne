@@ -572,6 +572,17 @@ to the AST element."
              #:signature signature
              #:statement (helper statement))))
 
+        (('prototype type name formals)
+         (let* ((type location comment (helper type))
+                (signature (make <signature>
+                             #:type.name type
+                             #:formals (helper formals)
+                             #:location location)))
+           (make <function>
+             #:name (helper name)
+             #:signature signature
+             #:statement (make <return> #:expression (make <literal> #:value "*")))))
+
         (('expression-function type name formals expression)
          (let* ((type location comment (helper type))
                 (signature (make <signature>
