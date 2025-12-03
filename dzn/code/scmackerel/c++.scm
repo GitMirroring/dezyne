@@ -151,11 +151,13 @@ std::basic_ostream<Char, Traits> &")
     (c++:include-guard o statements)))
 
 (define (c++:global-function->statements function)
-  (let ((statement (sm:function
-                    (name (.name function))
-                    (type (code:type-name (ast:type function)))
-                    (formals (map c++:->formal (ast:formal* function)))
-                    (statement (ast->code (.statement function))))))
+  (let* ((statement (.statement function))
+         (statement (sm:function
+                     (name (.name function))
+                     (type (code:type-name (ast:type function)))
+                     (formals (map c++:->formal (ast:formal* function)))
+                     (statement (if (is-a? statement <return>) ";"
+                                    (ast->code (.statement function)))))))
     (let loop ((statements (list statement)) (ast function))
       (let ((namespace (ast:parent ast <namespace>)))
         (if (is-a? namespace <root>) statements
@@ -465,7 +467,9 @@ std::basic_ostream<Char, Traits> &")
      (root->header-global-functions o))))
 
 (define-method (root->global-functions (o <root>))
-  (let ((functions (filter (negate ast:imported?) (ast:function** o))))
+  (let ((functions (filter (conjoin (negate ast:imported?)
+                                    (compose not (is? <return>) .statement))
+                           (ast:function** o))))
     (append-map c++:global-function->statements functions)))
 
 (define-method (root->statements (o <root>))
