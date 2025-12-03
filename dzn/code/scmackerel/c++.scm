@@ -442,11 +442,13 @@ std::basic_ostream<Char, Traits> &")
 
 (define-method (root->global-functions (o <root>))
   (define (global-function->sm function)
-    (let ((sm (sm:function
-               (name (.name function))
-               (type (code:type-name (ast:type function)))
-               (formals (map c++:->formal (ast:formal* function)))
-               (statement (ast->code (.statement function))))))
+    (let* ((statement (.statement function))
+           (sm (sm:function
+                (name (.name function))
+                (type (code:type-name (ast:type function)))
+                (formals (map c++:->formal (ast:formal* function)))
+                (statement (if (is-a? statement <return>) ";"
+                               (ast->code statement))))))
       (let loop ((sm sm) (ast function))
         (let ((namespace (ast:parent ast <namespace>)))
           (if (is-a? namespace <root>) sm
