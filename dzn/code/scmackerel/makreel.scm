@@ -247,30 +247,27 @@
 (define-method (makreel:enum-type (o <enum>))
   (string-append (makreel:full-name o) "enum"))
 
-(define-method (makreel:return->value (o <return>))
-  (let* ((model (ast:parent o <model>))
-         (expression (.expression o))
-         (type (ast:type expression)))
-    (match type
-      (($ <void>)
-       (model-prefix "void_return (void)" model))
-      (($ <bool>)
-       (let ((expression (makreel:ast->expression expression)))
-         (model-prefix
-          (simple-format #f "bool_return (~a)" expression)
-          model)))
-      (($ <enum>)
-       (let ((expression (makreel:ast->expression expression)))
-         (model-prefix
-          (simple-format #f "~a_return (~a)"
-                         (makreel:type->string type)
-                         expression)
-          model)))
-      ((or ($ <int>) ($ <subint>))
-       (let ((expression (makreel:ast->expression expression)))
-         (model-prefix
-          (simple-format #f "int_return (~a)" expression)
-          model))))))
+(define-method (makreel:return->value expression model type)
+  (match type
+    (($ <void>)
+     (model-prefix "void_return (void)" model))
+    (($ <bool>)
+     (let ((expression (makreel:ast->expression expression)))
+       (model-prefix
+        (simple-format #f "bool_return (~a)" expression)
+        model)))
+    (($ <enum>)
+     (let ((expression (makreel:ast->expression expression)))
+       (model-prefix
+        (simple-format #f "~a_return (~a)"
+                       (makreel:type->string type)
+                       expression)
+        model)))
+    ((or ($ <int>) ($ <subint>))
+     (let ((expression (makreel:ast->expression expression)))
+       (model-prefix
+        (simple-format #f "int_return (~a)" expression)
+        model)))))
 
 (define-method (makreel:type->range-expression (o <subint>) name)
   (let* ((range (.range o))
@@ -1598,22 +1595,42 @@
 
 (define-method (ast->process (model <model>) (o <return>) (next <ast>))
   (let* ((function (ast:parent o <function>))
-         (type (ast:type function))
-         (expression (.expression o))
-         (expression (makreel:ast->expression expression)))
+         (return-type (ast:type function))
+         (expression (.expression o)))
     (sm:process
       (name (statement->process-name o))
       (formals (makreel:process-formals o))
       (statement
-       (sm:sequence*
-        `(,@(makreel:type->out-of-range-processes type expression)
-          ,%return-action
-          ,(sm:goto
-            (name (model-prefix "return" model))
-            (arguments (list
-                        (sm:is*
-                         "return_value"
-                         (makreel:return->value o)))))))))))
+       (if (not (and (is-a? expression <literal>)
+                     (equal? "*" (.value expression))))
+           (sm:sequence*
+            `(,@(makreel:type->out-of-range-processes
+                 return-type (makreel:ast->expression expression))
+              ,%return-action
+              ,(sm:goto
+                (name (model-prefix "return" model))
+                (arguments
+                 (list
+                  (sm:is*
+                   "return_value"
+                   (makreel:return->value expression model return-type)))))))
+           (sm:sum (var "x")
+                   (type (sm:type (name (makreel:type->string return-type))
+                                  (entities '())))
+                   (statement
+                    (let ((return->goto (sm:sequence*
+                                         `(,%return-action
+                                           ,(sm:goto
+                                             (name (model-prefix "return" model))
+                                             (arguments
+                                              (list
+                                               (sm:is*
+                                                "return_value"
+                                                (makreel:return->value
+                                                 var model return-type)))))))))
+                      (if (not (is-a? return-type <subint>)) return->goto
+                          (sm:if* (makreel:type->range-expression return-type var)
+                                  return->goto))))))))))
 
 (define-method (ast->variable-process (model <model>) (s <statement>) (o <ast>)
                                       (next <ast>))
