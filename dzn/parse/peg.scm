@@ -190,7 +190,7 @@ type <- enum / int / extern
   extern <-- EXTERN scoped-name# dollars# SEMICOLON#
 
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
-  namespace-root <-- (type / namespace / function / interface / component / &BRACE-CLOSE)#*
+  namespace-root <-- (type / function / prototype / namespace / interface / component / &BRACE-CLOSE)#*
 
 interface <-- INTERFACE scoped-name#
               BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)#
