@@ -258,7 +258,7 @@
          (pc (if (and (is-a? next <return>)
                       (is-a? (ast:type next) <void>))
                  ;; tail call: call/return elimination
-                 (continuation continuation-pc (.statement continuation-pc))
+                 (continuation continuation-pc next)
                  continuation-pc))
          (pc (push-pc pc (.statement function)))
          (pc (fold (cute push-local <> <> <>) pc (ast:formal* function) args))
