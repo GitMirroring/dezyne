@@ -270,8 +270,12 @@
         (list pc))))
 
 (define-method (step (pc <program-counter>) (o <return>))
-  (let ((pc (clone pc #:return (eval-expression pc (.expression o)))))
-    (list (continuation pc o))))
+  (map (cute continuation <> o)
+       (if (equal? "*" (and=> (as (.expression o) <literal>) .value))
+           (let ((type (ast:type (ast:parent o <function>))))
+             (if (is-a? type <void>) (list (clone pc #:return (make <literal>)))
+                 (map (cute clone pc #:return <>) (ast:values type))))
+           (list (clone pc #:return (eval-expression pc (.expression o)))))))
 
 (define-method (step (pc <program-counter>) (o <action>))
   (cond ((ast:out? o)
