@@ -134,6 +134,7 @@ There is NO WARRANTY, to the extent permitted by law.
     ("collateral" . ("c" "c++" "cs" "scheme"))
     ("defer" . ("c" "c++" "cs" "scheme"))
     ("flush" . ("c" "c++" "cs" "scheme"))
+    ("foreign_function" . ("c++"))
     ("inject" . ("c" "c++" "cs" "javacsript" "scheme"))
     ("reply-data" . ("c" "c++" "javascript" "scheme"))
     ("shared" . ("c++"))
