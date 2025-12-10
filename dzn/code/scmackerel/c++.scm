@@ -258,10 +258,7 @@ std::basic_ostream<Char, Traits> &")
     (sm:compound* (map ast->code statements)))) ;;; XXX new sm:compound*
 
 (define-method (ast->code (o <action>))
-  (let* ((event (.event o))
-         (formals (ast:formal* (.event o)))
-         (event-name (.event.name o))
-         (action-name (code:event-name o))
+  (let* ((action-name (code:event-name o))
          (arguments (ast:argument* o))
          (arguments (map c++:ast->expression arguments)))
     (sm:call (name (string-append (%member-prefix) action-name))
