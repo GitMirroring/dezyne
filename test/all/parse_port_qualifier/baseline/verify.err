@@ -1,4 +1,8 @@
 test/all/parse_port_qualifier/parse_port_qualifier.dzn:32:3: error: provides port `h1' cannot be external
 test/all/parse_port_qualifier/parse_port_qualifier.dzn:33:3: error: provides port `h2' cannot be injected
+test/all/parse_port_qualifier/parse_port_qualifier.dzn:33:3: warning: injected port `h2' is a deprecated feature
 test/all/parse_port_qualifier/parse_port_qualifier.dzn:34:3: error: provides port `h3' cannot be external
 test/all/parse_port_qualifier/parse_port_qualifier.dzn:34:3: error: provides port `h3' cannot be injected
+test/all/parse_port_qualifier/parse_port_qualifier.dzn:34:3: warning: injected port `h3' is a deprecated feature
+test/all/parse_port_qualifier/parse_port_qualifier.dzn:37:3: warning: injected port `w2' is a deprecated feature
+test/all/parse_port_qualifier/parse_port_qualifier.dzn:38:3: warning: injected port `w3' is a deprecated feature
