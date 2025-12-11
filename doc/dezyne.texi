@@ -2305,6 +2305,11 @@ caller and the callee when this is required.
 Locator: The locator allows injecting the implementation behind a port
 deep into the system from the outside.
 
+@quotation Note
+Port injection is deprecated as of 2.20, in favor of global and foreign
+functions.
+@end quotation
+
 @cindex injection, c++
 In the example you can see that
 the locator facility is also responsible for passing an instance of
@@ -5033,6 +5038,11 @@ are not allowed in interfaces which are @code{injected}.
 @xref{Systems} for a detailed description of the binding of injected
 ports.
 
+@quotation Note
+Port injection is deprecated as of 2.20, in favor of global and foreign
+functions.
+@end quotation
+
 @node External
 @subsubsection @code{external}
 
@@ -5730,6 +5740,8 @@ wildcard         ::= "*"
 
 @quotation Note
 A binding can have only one @code{wildcard}, @xref{Using Injection}.
+Port injection is deprecated as of 2.20, in favor of global and foreign
+functions.
 @end quotation
 
 For example:
@@ -5814,6 +5826,11 @@ Binding of @code{injected} ports is done at a higher system level
 (@pxref{Components}).  A wild-card character (@code{*}) is used to
 achieve the binding of the @code{provides} port of a single instance to
 all @code{injected requires} ports.
+
+@quotation Note
+Port injection is deprecated as of 2.20, in favor of global and foreign
+functions.
+@end quotation
 
 Let's take a logging interface as an example:
 
