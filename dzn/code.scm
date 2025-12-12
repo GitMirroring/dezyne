@@ -33,6 +33,7 @@
   #:use-module (ice-9 regex)
   #:use-module (ice-9 string-fun)
 
+  #:use-module (dzn ast ast)
   #:use-module (dzn ast context)
   #:use-module (dzn ast display)
   #:use-module (dzn ast ast)

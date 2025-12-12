@@ -212,9 +212,16 @@
         variable)))))
 
 (define-method (ast->code (o <call>))
-  (sm:call-method
-   (name (ast:name (.function.name o)))
-   (arguments (map ast->expression (ast:argument* o)))))
+  (let* ((function (.function o))
+         (name (ast:name function))
+         (arguments (map ast->expression (ast:argument* o))))
+    (if (ast:parent function <behavior>)
+        (sm:call-method
+         (name name)
+         (arguments arguments))
+        (sm:call
+         (name name)
+         (arguments arguments)))))
 
 (define-method (ast->code (o <reply>))
   (let ((p (.parent o)))
