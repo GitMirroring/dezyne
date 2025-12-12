@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -252,7 +252,10 @@
 
 (define-method (step (pc <program-counter>) (o <call>))
   (let* ((function (.function o))
-         (args (map (cute eval-expression pc <>) (ast:argument* o)))
+         (args (map (cute eval-expression pc <>)
+                    (filter (disjoin (negate (is? <var>))
+                                     .variable)
+                            (ast:argument* o))))
          (continuation-pc (continuation pc o))
          (next (.statement continuation-pc))
          (pc (if (and (is-a? next <return>)
@@ -659,6 +662,7 @@
          (function-return pc parent)))
       ((? (is? <function>))
        (let* ((formals (ast:formal* parent))
+              (formals (filter (compose not (is? <interface>) .type) formals))
               (pc (pop-locals pc formals)))
          (pop-pc pc)))
       (_
