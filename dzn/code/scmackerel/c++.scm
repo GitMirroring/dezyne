@@ -151,7 +151,10 @@ std::basic_ostream<Char, Traits> &")
 
 (define-method (c++:->formal (o <formal>))
   (let* ((type (code:type-name o))
-         (type (if (ast:in? o) type
+         (pass-by-reference? (or (ast:out? o)
+                                 (ast:inout? o)
+                                 (is-a? (ast:type o) <interface>)))
+         (type (if (not pass-by-reference?) type
                    (string-append type "&"))))
     (sm:formal (type type)
                (name (.name o)))))
@@ -260,8 +263,11 @@ std::basic_ostream<Char, Traits> &")
 (define-method (ast->code (o <action>))
   (let* ((action-name (code:event-name o))
          (arguments (ast:argument* o))
-         (arguments (map c++:ast->expression arguments)))
-    (sm:call (name (string-append (%member-prefix) action-name))
+         (arguments (map c++:ast->expression arguments))
+         (local-function? (or (ast:parent o <on>)
+                              (ast:parent o <functions>))))
+    (sm:call (name (if (not local-function?) action-name
+                       (string-append (%member-prefix) action-name)))
              (arguments arguments))))
 
 (define-method (ast->code (o <assign>))
@@ -434,9 +440,28 @@ std::basic_ostream<Char, Traits> &")
      (map (compose (cute string-append <> "\n") .value) (ast:data* o))
      (append-map c++:enum->header-statements enums))))
 
+(define-method (root->global-functions (o <root>))
+  (define (global-function->sm function)
+    (let ((sm (sm:function
+               (name (.name function))
+               (type (code:type-name (ast:type function)))
+               (formals (map c++:->formal (ast:formal* function)))
+               (statement (ast->code (.statement function))))))
+      (let loop ((sm sm) (ast function))
+        (let ((namespace (ast:parent ast <namespace>)))
+          (if (is-a? namespace <root>) sm
+              (loop (sm:namespace
+                     (name (ast:name namespace))
+                     (statements (list sm)))
+                    namespace))))))
+  (let ((global-functions (filter (is? <function>) (ast:top** o))))
+    (map global-function->sm global-functions)))
+
 (define-method (root->statements (o <root>))
   (let ((enums (code:enum* o)))
-    (append-map c++:enum->statements enums)))
+    (append
+     (append-map c++:enum->statements enums)
+     (root->global-functions o))))
 
 
 ;;;
@@ -1758,6 +1783,7 @@ std::basic_ostream<Char, Traits> &")
                       ,(sm:cpp-system-include* "map")
                       ,@(root->header-statements o)
                       ,@(append-map model->header-statements models)
+                      ,@(root->global-functions o)
                       ,(code:version-comment))))))
     (display header)))
 
