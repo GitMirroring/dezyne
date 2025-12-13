@@ -3907,13 +3907,14 @@ The toplevel Dezyne program text is defined as follows:
 @example
 text ::= root
 root ::= (import | data-expression
-           | namespace | type | function | interface | component)*
+           | namespace | type | function | prototype | interface | component)*
 @end example
 
-An interface can refer to global types and functions (since 2.20), a
-component can refer to global types, functions (since 2.20), interfaces
-and other components.  An explicit @code{import} clause is needed when
-the referred information is defined in another file.
+An interface can refer to global types and functions or prototypes
+(since 2.20), a component can refer to global types, functions or
+prototypes (since 2.20), interfaces and other components.  An explicit
+@code{import} clause is needed when the referred information is defined
+in another file.
 
 @subsection Import
 
@@ -4871,10 +4872,11 @@ bool c = negate (idle);
 
 A function can be used to name and reuse a sequence of imperative
 statements.  As of version 2.20, a function is not required to be scoped
-to an interface or component behavior, but may be defined in the same
-scope as interfaces and components, see also @xref{Dezyne Files}.  To
-enable sharing functions across behaviors the function parameter-list
-also allows ports as parameters.
+to an interface or component behavior, but may be defined or forward
+declared (function prototype) at the same scope level as interfaces and
+components, see also @xref{Dezyne Files}.  To enable sharing functions
+across behaviors the function parameter-list also allows ports as
+parameters.
 
 @example
 function ::= type identifier "(" parameter-list ")"
@@ -4910,7 +4912,13 @@ Previous versions of the language restricted functions to the scope of
 behaviors.  Starting with version 2.20 functions may be declared
 independent from interface and component behaviors.  This obviously
 results in the ability allow functions to be reused across behaviors and
-thereby prevent duplication of data related functions.
+thereby prevent duplication of data related functions.  Furthermore,
+foreign functions are supported: an implementation that matches the
+prototype must be provided in the target language (since 2.20.0).  When
+the prototype declares a bool, enum or subint return type, during model
+checking every possible value is verified.  Currently the returned value
+cannot be influenced, this will change in the future when function and
+data contracts are added.
 
 @subsection Expression Functions
 @cindex expression-function
@@ -5905,7 +5913,7 @@ prefix when referring to the name from another scope.
 
 @example
 namespace      ::= "namespace" compound-identifier "@{" namespace-root "@}"
-namespace-root ::= (namespace | type | function | interface | component)*
+namespace-root ::= (namespace | type | prototype | function | interface | component)*
 compound-identifier
                ::= scope* identifier
 scope          ::= identifier "."
