@@ -21,6 +21,7 @@ if (node_p ()) {
 }
 
  #x:global-enum-definer
+ #x:global-function
  #x:model
 
 //version: #x:version
