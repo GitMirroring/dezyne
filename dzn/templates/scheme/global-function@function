@@ -1,0 +1,3 @@
+(define-method (#.name  #x:formals)
+  (let/ec return
+    #x:statement))

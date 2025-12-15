@@ -1,1 +1,1 @@
-(#x:function.name  o #x:code-arguments)
+(#x:function-name  #x:this #x:code-arguments)
