@@ -136,8 +136,10 @@
                                  (ast:model** o))
                          (code:used-foreigns o)))
          (enums (code:global-enum-definer o))
+         (functions (filter (negate ast:imported?) (ast:function* o)))
          (names (append (append-map scheme:names models)
-                        (map scheme:name enums))))
+                        (map scheme:name enums)
+                        (map ast:name functions))))
     (delete-duplicates names string=?)))
 
 (define-method (scheme:export (o <root>))
