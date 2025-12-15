@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2016, 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -54,6 +54,7 @@
             code:extension
             code:function-type
             code:functions
+            code:global-functions
             code:global-enum-definer
             code:injected-bindings
             code:injected-instances
@@ -77,6 +78,7 @@
             code:reply
             code:reply-type
             code:return
+            code:this
             code:trace-q-out
             code:trigger
             code:upcase-model-name
@@ -188,6 +190,9 @@
 (define-method (code:functions (o <component>))
   (ast:function* o))
 
+(define-method (code:global-functions (o <root>))
+  (filter (negate ast:imported?) (ast:function* o)))
+
 (define-method (code:ons (o <component>))
   (let ((behavior (.behavior o)))
     (if (not behavior) '()
@@ -204,6 +209,13 @@
 
 (define-method (code:reply (o <type>))
   o)
+
+(define-method (code:this (o <call>))
+  (let* ((function (.function o))
+         (model (ast:parent function <model>))
+         (local? model))
+    (if local? model
+        (ast:parent o <root>))))
 
 (define-method (code:trigger (o <on>))
   ((compose car ast:trigger*) o))

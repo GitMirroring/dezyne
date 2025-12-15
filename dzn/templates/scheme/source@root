@@ -14,6 +14,7 @@
 
  #x:header-data
  #x:global-enum-definer
+ #x:global-function
  #x:model
 
 ;;; version: #x:version

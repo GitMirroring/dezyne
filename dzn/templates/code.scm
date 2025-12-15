@@ -3,7 +3,7 @@
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
 ;;;
 ;;; This file is part of Dezyne.
@@ -46,6 +46,7 @@
 ;;; Names
 ;;;
 (define-templates file-name code:file-name file-name-infix)
+(define-templates function-name (compose ast:name .function))
 (define-templates function-type code:function-type)
 (define-templates port-name code:port-name)
 (define-templates port-type code:port-type type-infix)
@@ -54,6 +55,7 @@
 (define-templates instance->type-name (compose code:type-name ast:type) type-infix)
 (define-templates upcase-model-name code:upcase-model-name name-infix)
 (define-templates variable-name code:variable-name)
+(define-templates this code:this)
 
 
 ;;;
@@ -87,6 +89,7 @@
 (define-templates trace-q-out code:trace-q-out)
 
 (define-templates functions code:functions double-newline-infix)
+(define-templates global-function code:global-functions double-newline-infix)
 
 
 ;;;
