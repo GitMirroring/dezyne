@@ -301,11 +301,16 @@
                     arguments)))))
 
 (define-method (ast->code (o <call>))
-  (let* ((model (ast:parent o <model>))
-         (model-name (c:type-name model))
-         (name (string-append model-name "_" (ast:name (.function.name o))))
+  (let* ((function (.function o))
+         (name (ast:name function))
+         (global? (not (ast:parent function <behavior>)))
+         (name (if global? name
+                   (let* ((model (ast:parent o <model>))
+                          (model-name (c:type-name model)))
+                     (string-append model-name "_" name))))
          (arguments (map ast->expression (ast:argument* o)))
-         (arguments (cons "self" arguments)))
+         (arguments (if global? arguments
+                        (cons "self" arguments))))
     (sm:call
      (name name)
      (arguments arguments))))
@@ -441,6 +446,10 @@
      (map c:file-name->include imports)
      (map (compose (cute string-append <> "\n") .value) (ast:data* o))
      (append-map c:enum->header-statements enums))))
+
+(define-method (root->global-functions (o <root>))
+  (let ((global-functions (ast:function** o)))
+    (map function->function global-functions)))
 
 (define-method (root->statements (o <root>))
   (let ((enums (c:enum* o)))
@@ -930,6 +939,13 @@
 (define-method (component-model->statements (o <component-model>))
   ((ast:perfect-funcq component-model->sm:statements-unmemoized) o))
 
+(define (function->function function)
+  (sm:function
+   (name (.name function))
+   (type (code:type-name (ast:type function)))
+   (formals (map c:->formal (ast:formal* function)))
+   (statement (ast->code (.statement function)))))
+
 (define-method (model->header-statements (o <component>))
   (let ((interface-includes (code:interface-include* o)))
     (c:include-guard
@@ -1297,6 +1313,7 @@
                       ,(sm:cpp-system-include* "dzn/locator.h")
                       ,@(root->header-statements o)
                       ,@(append-map model->header-statements models)
+                      ,@(root->global-functions o)
                       ,(code:version-comment))))))
     (display header)))
 
@@ -1320,6 +1337,7 @@
                        (sm:cpp-system-include* "string.h"))
                     ,@(root->statements o)
                     ,@(append-map model->statements models)
+                    ,@(root->global-functions o)
                     ,(code:version-comment))))))
     (display code)))
 
