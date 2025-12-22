@@ -135,6 +135,7 @@ FEATURE_TESTS =					\
  %D%/hello_expression				\
  %D%/hello_external				\
  %D%/hello_foreign_function_bool		\
+ %D%/hello_foreign_function_bool_state		\
  %D%/hello_foreign_function_data		\
  %D%/hello_foreign_function_data_space		\
  %D%/hello_foreign_function_enum		\
