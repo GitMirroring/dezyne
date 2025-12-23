@@ -182,7 +182,11 @@
                        #:expression (make <literal> #:value "return_value")))))))
 
 (define-method (makreel:process-formals (o <ast>))
-  (let* ((parameters (makreel:process-parameters o))
+  (let* ((global? (and=> (ast:parent o <function>)
+                         (negate (cute ast:parent <> <model>))))
+         (parameters (append (if (not global?) '()
+                                 (makreel:process-parameters (%model)))
+                             (makreel:process-parameters o)))
          (continuations calls (makreel:call-continuation* o))
          (return? (memq o continuations))
          (return? (list-index (cute eq? <> o) continuations))
