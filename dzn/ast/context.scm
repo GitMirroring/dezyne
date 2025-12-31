@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2023, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -87,6 +87,8 @@
 (define-method (ast:memoize-context (o <ast>) context)
   "Fill context lookup table from O down."
   (let ((context (cons o context)))
+    (unless (%context)
+      (throw 'no-context "ast:memoize-context"))
     (hashq-set! (%context) o context)
     (for-each (cute ast:memoize-context <> context)
               (filter (is? <ast>) (ast:child* o)))))
@@ -99,6 +101,8 @@
     (%context)))
 
 (define-method (ast:context (o <ast>))
+  (unless (%context)
+    (throw 'no-context "ast:context"))
   (hashq-ref (%context) o))
 
 (define-method (with-root (procedure <applicable>))
