@@ -4514,7 +4514,8 @@
 ;;;
 (define (root->scmackerel root)
   (let* ((models (ast:model** root))
-         (component (find (is? <component>) models)))
+         (file-models (filter (negate ast:imported?) models))
+         (component (find (is? <component>) file-models)))
     (parameterize ((%shared (if component (ast:shared* component) '())))
       (let* ((model-name (or (%model-name) (ast:dotted-name (ast:get-model root))))
              (act-processes (list (dummy-tag-process)))
