@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2023, 2026 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -142,6 +142,7 @@ There is NO WARRANTY, to the extent permitted by law.
     ("collateral" . ("c" "c++" "cs" "scheme"))
     ("defer" . ("c" "c++" "cs" "scheme"))
     ("flush" . ("c" "c++" "cs" "scheme"))
+    ("global_function" . ("c" "c++" "javascript" "scheme"))
     ("inject" . ("c" "c++" "cs" "javacsript" "scheme"))
     ("reply-data" . ("c" "c++" "javascript" "scheme"))
     ("shared" . ("c++"))
