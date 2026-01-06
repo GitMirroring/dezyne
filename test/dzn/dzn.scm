@@ -269,6 +269,7 @@ output, and standard error as three values."
                     (feature? "double_inevitable")
                     (feature? "flush"))
                 "flush")
+           (feature? "global_function")
            (feature? "inject")
            (and (or (feature? "reply_data")
                     (feature? "data_reply"))
