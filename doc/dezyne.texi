@@ -3299,6 +3299,10 @@ Add directory @var{dir} to the import path.
 @itemx -i
 Display internal events when using the @code{diagram} trace format.
 
+@item --keep-running
+@itemx -k
+Do not exit, read trails from stdin and simulate each trail.
+
 @item --locations
 @itemx -l
 Display locations in the trace, this implies @option{--format=@code{trace}}.

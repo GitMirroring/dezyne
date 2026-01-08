@@ -38,6 +38,7 @@
   #:use-module (dzn vm step)
   #:use-module (dzn vm util)
   #:export (%exploring?
+            %interactive?
             extend-trace
             filter-compliance-error
             filter-error
@@ -46,7 +47,6 @@
             filter-implicit-illegal-only
             filter-match-error
             flush-defer
-            interactive?
             livelock?
             mark-livelock-error
             run-defer-event
@@ -70,6 +70,9 @@
 
 ;; Are we running "explore"?
 (define %exploring? (make-parameter #f))
+
+;; Are we in "interactive?" mode?
+(define %interactive? (make-parameter #f))
 
 ;;;
 ;;; Trace utilities
@@ -319,9 +322,6 @@ prefix."
                                 (cute - (length trace) <> 1))))
               index))))))
 
-(define (interactive?)
-  (isatty? (current-input-port)))
-
 (define-method (extend-trace (trace <list>))
   "Return a list of traces, produced by appending TRACE to each of the
 program-counters produced by taking a step."
@@ -387,7 +387,7 @@ program-counters produced by taking a step."
                                      (cute blocked-collaterally? pc <>)) pcs)
                                (cdr trace)
                                trace))
-                    (input pc (if (and observable (not (interactive?)))
+                    (input pc (if (and observable (not (%interactive?)))
                                   ((%next-input) pc)
                                   (values #f pc)))
                     (pcs (cond ((%exploring?)
@@ -587,7 +587,7 @@ PC until RTC?."
                  (%strict?)
                  (interface-postponed-non-deterministic? traces))
             (map interface-mark-determinism-error traces))
-           ((and (not (%exploring?)) (interactive?))
+           ((and (not (%exploring?)) (%interactive?))
             (choose-postponed-match traces))
            (else
             (mark-end-of-trail traces)))))

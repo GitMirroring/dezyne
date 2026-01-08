@@ -44,6 +44,7 @@
             (help (single-char #\h))
             (import (single-char #\I) (value #t))
             (internal (single-char #\i))
+            (keep-running (single-char #\k) (value #f))
             (locations (single-char #\l))
             (model (single-char #\m) (value #t))
             (no-compliance (single-char #\C))
@@ -77,6 +78,7 @@ Simulate a Dezyne model
   -h, --help             display this help and exit
   -I, --import=DIR+      add DIR to import path
   -i, --internal         display system-internal events
+  -k, --keep-running     read trails from stdin and simulate each trail
   -l, --locations        prepend locations to output trail,
                            implies --format=trace
   -m, --model=MODEL      generate main for MODEL
@@ -122,7 +124,8 @@ Simulate a Dezyne model
          (internal? (command-line:get 'internal #f))
          (locations? (command-line:get 'locations verbose?))
          (trace (command-line:get 'format "trace"))
-         (trail (option-ref options 'trail #f)))
+         (trail (option-ref options 'trail #f))
+         (keep-running? (option-ref options 'keep-running #f)))
     (parameterize ((%context (%context))
                    (%language "makreel"))
       (let* ((ast (parse options file-name))
@@ -145,6 +148,7 @@ Simulate a Dezyne model
                                #:strict? strict?
                                #:trace trace
                                #:trail trail
-                               #:verbose? verbose?)))
+                               #:verbose? verbose?
+                               #:keep-running? keep-running?)))
         (when (is-a? status <error>)
           (exit EXIT_FAILURE))))))

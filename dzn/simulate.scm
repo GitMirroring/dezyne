@@ -27,6 +27,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 readline)
 
   #:use-module (dzn ast context)
   #:use-module (dzn ast display)
@@ -714,7 +715,7 @@ status."
       pc))
 
   (define (end-of-trail? traces)
-    (and (not (isatty? (current-input-port)))
+    (and (not (%interactive?))
          (pair? traces)
          (not ((%next-input) (caar traces)))))
 
@@ -745,10 +746,10 @@ status."
                 (split-at trace port-index))))))
 
   (let* ((trail (if (and (null? trail)
-                         (not (isatty? (current-input-port))))
+                         (not (%interactive?)))
                     '(#f) trail))
          (pc (make-pc #:trail trail)))
-    (when (isatty? (current-input-port))
+    (when (%interactive?)
       (display %startup-info)
       (format #t "Enter `,help' for help.\n\n"))
     (when (equal? trace "trace")
@@ -758,11 +759,11 @@ status."
         (match (check-invariants (list pc))
           ((traces ..1) (report traces #:trace trace))
           (_ #f))
-        (parameterize ((%next-input (if (or (not (isatty? (current-input-port))) (pair? trail)) trail-input read-input)))
+        (parameterize ((%next-input (if (or (not (%interactive?)) (pair? trail)) trail-input read-input)))
           (let loop ((traces (list (list pc))))
             (%debug (current-source-location) "run-trail #traces ~a" (length traces))
             (let ((from-pcs (map car traces)))
-              (when (interactive?)
+              (when (%interactive?)
                 (format (current-error-port) "labels: ~a\n" (string-join (labels)))
                 (when deadlock-check?
                   (let* ((pc (car from-pcs))
@@ -897,6 +898,13 @@ status."
                                 (cute memq <> models))
                        root)))))
 
+(define (read-line-trail)
+  (readline "####\n> "))
+
+(define (read-trail)
+  (let ((line (read-line-trail)))
+    (and (not (eof-object? line)) (string->trail line))))
+
 
 ;;;
 ;;; Entry points
@@ -940,7 +948,8 @@ status."
                    (queue-size (%queue-size))
                    (queue-size-defer (%queue-size-defer))
                    (queue-size-external (%queue-size-external))
-                   strict? trace trail internal? locations? state? verbose?)
+                   strict? trace trail internal? locations? state? verbose?
+                   keep-running?)
   "Entry-point for the command module: dzn simulate: start simulate
 session for MODEL, following TRAIL.  If STRICT?, the trail must include
 all observable events.  If COMPLIANCE-CHECK?, report compliance errors.
@@ -949,14 +958,15 @@ run external queue-full-check at EOT.  If REFUSALS-CHECK?, run
 refusals-check at EOT."
   (let* ((trail? trail)
          (trail (or trail
-                    (and (not (isatty? (current-input-port)))
-                         (input-port? (current-input-port))
-                         (read-string (current-input-port)))
+                    (if keep-running? (read-line-trail)
+                        (and (not (isatty? (current-input-port)))
+                             (input-port? (current-input-port))
+                             (read-string (current-input-port))))
                     ""))
          (trail trail-model (string->trail+model trail))
          (model-name (or model-name trail-model))
          (trail (if (and trail? (null? trail)) '() trail)))
-    (when trail?
+    (when (and trail? (not keep-running?))
       (close-port (current-input-port)))
     (simulate* root trail
                #:compliance-check? compliance-check?
@@ -974,7 +984,8 @@ refusals-check at EOT."
                #:internal? internal?
                #:locations? locations?
                #:state? state?
-               #:verbose? verbose?)))
+               #:verbose? verbose?
+               #:keep-running? keep-running?)))
 
 (define* (simulate* root trail
                     #:key compliance-check? deadlock-check?
@@ -983,7 +994,8 @@ refusals-check at EOT."
                     (queue-size-defer (%queue-size-defer))
                     (queue-size-external (%queue-size-external))
                     queue-full-check? refusals-check? model-name
-                    strict? trace internal? locations? state? verbose?)
+                    strict? trace internal? locations? state? verbose?
+                    keep-running?)
   "Entry point for simulate library: start simulate session for MODEL,
 following TRAIL.  If STRICT?, the trail must include all observable
 events.  If COMPLIANCE-CHECK?, report compliance errors.  If
@@ -1000,25 +1012,31 @@ refusals-check at EOT."
         (format (current-error-port) "~a: No dezyne model found.\n" file-name))
       (exit EXIT_OTHER_FAILURE))
     (parameterize ((%debug? (and (not (zero? (dzn:debugity)))
-                                 (dzn:debugity))))
+                                 (dzn:debugity)))
+                   (%interactive? (and (not keep-running?)
+                                       (isatty? (current-input-port)))))
       (let* ((sut (runtime:get-sut root model))
              (instances (runtime:create-instances sut)))
-        (simulate** sut instances trail
-                    #:compliance-check? compliance-check?
-                    #:deadlock-check? deadlock-check?
-                    #:interface-determinism-check? interface-determinism-check?
-                    #:interface-livelock-check? interface-livelock-check?
-                    #:queue-full-check? queue-full-check?
-                    #:queue-size queue-size
-                    #:queue-size-defer queue-size-defer
-                    #:queue-size-external queue-size-external
-                    #:refusals-check? refusals-check?
-                    #:strict? strict?
-                    #:trace trace
-                    #:internal? internal?
-                    #:locations? locations?
-                    #:state? state?
-                    #:verbose? verbose?)))))
+        (let loop ((trail trail))
+          (simulate** sut instances trail
+                      #:compliance-check? compliance-check?
+                      #:deadlock-check? deadlock-check?
+                      #:interface-determinism-check? interface-determinism-check?
+                      #:interface-livelock-check? interface-livelock-check?
+                      #:queue-full-check? queue-full-check?
+                      #:queue-size queue-size
+                      #:queue-size-defer queue-size-defer
+                      #:queue-size-external queue-size-external
+                      #:refusals-check? refusals-check?
+                      #:strict? strict?
+                      #:trace trace
+                      #:internal? internal?
+                      #:locations? locations?
+                      #:state? state?
+                      #:verbose? verbose?)
+          (when keep-running?
+            (let ((trail (read-trail)))
+              (and trail (loop trail)))))))))
 
 (define* (simulate** sut instances trail
                      #:key compliance-check? deadlock-check?
