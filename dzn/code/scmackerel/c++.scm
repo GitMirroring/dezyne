@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2023, 2024, 2025, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -452,7 +452,7 @@ std::basic_ostream<Char, Traits> &")
               (sm:statement*
                (format #f "throw dzn::binding_error (this->dzn_meta, ~s)"
                        event-name)))))
-  (let* ((shared initial (code:shared-state o))
+  (let* ((shared initial (if (%no-constraint?) (values #f 0) (code:shared-state o)))
          (public-enums (code:public-enum* o))
          (enums (append public-enums (code:enum* o)))
          (interface
@@ -484,15 +484,6 @@ std::basic_ostream<Char, Traits> &")
       (let* ((expression (.expression ast))
              (value (code:shared-value expression)))
         (sm:assign* (.variable.name ast) value)))
-    (define (state->if shared else)
-      (let* ((expression (sm:equal* "dzn_state" (.state shared)))
-             (assignments (ast:statement* (.assign shared)))
-             (assignments (map ast->assign assignments)))
-        (sm:if* expression
-                (match assignments
-                  ((assign) assign)
-                  ((assigns ...) (sm:compound* assigns)))
-                else)))
 
     (define (value->init value)
       (simple-format #f "~s" value))
