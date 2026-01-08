@@ -1,0 +1,79 @@
+####
+> h.hello w.world h.hello w.cruel
+####
+> h.hello w.world
+####
+> 
+####
+> h.hello w.world h.hello w.cruel
+####
+> (header ((h) ihello provides) ((sut) keep_running component) ((w) iworld requires))
+(state ((h)) ((sut) (b . false)) ((w)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.world -> ...
+... -> <external>.w.world
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (b . true)) ((w)))
+(trail "h.hello" "w.world" "w.return" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.cruel -> ...
+... -> <external>.w.cruel
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (b . false)) ((w)))
+(trail "h.hello" "w.cruel" "w.return" "h.return")
+(state ((h)) ((sut) (b . false)) ((w)))
+(labels "h.hello")
+(eligible "h.hello")
+(header ((h) ihello provides) ((sut) keep_running component) ((w) iworld requires))
+(state ((h)) ((sut) (b . false)) ((w)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.world -> ...
+... -> <external>.w.world
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (b . true)) ((w)))
+(trail "h.hello" "w.world" "w.return" "h.return")
+(state ((h)) ((sut) (b . true)) ((w)))
+(labels "h.hello")
+(eligible "h.hello")
+(header ((h) ihello provides) ((sut) keep_running component) ((w) iworld requires))
+(state ((h)) ((sut) (b . false)) ((w)))
+(state ((h)) ((sut) (b . false)) ((w)))
+(labels "h.hello")
+(eligible "h.hello")
+(header ((h) ihello provides) ((sut) keep_running component) ((w) iworld requires))
+(state ((h)) ((sut) (b . false)) ((w)))
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.world -> ...
+... -> <external>.w.world
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (b . true)) ((w)))
+(trail "h.hello" "w.world" "w.return" "h.return")
+<external>.h.hello -> ...
+... -> sut.h.hello
+sut.w.cruel -> ...
+... -> <external>.w.cruel
+... <- <external>.w.return
+sut.w.return <- ...
+... <- sut.h.return
+<external>.h.return <- ...
+(state ((h)) ((sut) (b . false)) ((w)))
+(trail "h.hello" "w.cruel" "w.return" "h.return")
+(state ((h)) ((sut) (b . false)) ((w)))
+(labels "h.hello")
+(eligible "h.hello")

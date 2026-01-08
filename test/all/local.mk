@@ -192,6 +192,7 @@ FEATURE_TESTS =					\
  %D%/illegal_component0				\
  %D%/illegal_interface_incomplete		\
  %D%/inline-functions				\
+ %D%/keep_running				\
  %D%/queuefull_component0			\
  %D%/semantics					\
  %D%/state-diagram				\
