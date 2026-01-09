@@ -1,6 +1,6 @@
 // -*-comment-start: "//";comment-end:""-*-
 // Dezyne --- Dezyne command line tools
-// Copyright © 2023 Jan Nieuwenhuizen <janneke@gnu.org>
+// Copyright © 2023, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 //
 // This file is part of Dezyne.
 //
@@ -84,7 +84,7 @@ main ()
   defer_data_init (&sut, &locator, &meta);
 
   sut.h->meta.requires.name = "h";
-  sut.h->out.world = sut_h_out_world;
+  sut.h->out.world = (void (*) (ihello*, int)) sut_h_out_world;
 
   dzn_closure sut_h_in_hello = { (void (*) (void *)) sut.h->in.hello, sut.h};
   dzn_closure sut_h_in_hi = { (void (*) (void *)) sut.h->in.hi, sut.h};
