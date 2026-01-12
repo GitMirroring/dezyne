@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -191,17 +191,17 @@ type <- enum / int / extern
 namespace <-- NAMESPACE compound-name# BRACE-OPEN# namespace-root BRACE-CLOSE#
   namespace-root <-- (type / namespace / interface / component / &BRACE-CLOSE)#*
 
-interface <-- INTERFACE reset-event-names reset-port-names scoped-name#
+interface <-- INTERFACE scoped-name#
               BRACE-OPEN# types-and-events# (behavior / &BRACE-CLOSE)#
-              BRACE-CLOSE#
+              BRACE-CLOSE# reset-event-names
 
   types-and-events <-- (type / event / &behavior / &BRACE-CLOSE)#*
     event <-- direction type-name# event-name#
               enter-frame formals# exit-frame SEMICOLON#
       direction <-- IN / OUT
 
-component <-- COMPONENT reset-port-names reset-event-names scoped-name#
-              BRACE-OPEN# ports# body# BRACE-CLOSE#
+component <-- COMPONENT scoped-name#
+              BRACE-OPEN# ports# body# BRACE-CLOSE# reset-port-names
   body <- behavior / system / &BRACE-CLOSE
     system <-- SYSTEM BRACE-OPEN# instances-and-bindings BRACE-CLOSE#
       instances-and-bindings <-- (binding / instance)*
