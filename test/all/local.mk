@@ -441,6 +441,7 @@ REGRESSION_TESTS =				\
  %D%/failures_nondet_inevitable			\
  %D%/failures_second_inevitable			\
  %D%/flush_inevitable_sync_out			\
+ %D%/foreign_function_shadow_event		\
  %D%/foreign_handwritten			\
  %D%/foreign_import				\
  %D%/foreign_import_system			\
