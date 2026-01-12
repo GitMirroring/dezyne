@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2017, 2021, 2022, 2024 Rutger van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2019, 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2017, 2021, 2022, 2024, 2026 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2019, 2020, 2021, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -112,12 +112,19 @@ the pipeline COMMANDS."
          ,SIGINT))
       (display input output-port)
       (close output-port)
-      (let ((stdout (read-string input-port)))
+      (let ((stdout (read-string input-port))
+            (stati (map (compose (disjoin status:exit-val
+                                          status:term-sig)
+                                 cdr waitpid)
+                        pids)))
         (false-if-exception (close input-port))
-        (values stdout (apply + (map (compose (disjoin status:exit-val
-                                                       status:term-sig)
-                                              cdr waitpid)
-                                     pids))))))
+        (and=> (list-index (negate zero?) stati)
+               (lambda (index)
+                (format (current-error-port)
+                        "~a: exited with status ~a\n"
+                        (string-join (list-ref commands index))
+                        (list-ref stati index))))
+        (values stdout (apply + stati)))))
   (match commands
     (((? procedure? procedure) commands ...)
      (unless (string-null? input)
