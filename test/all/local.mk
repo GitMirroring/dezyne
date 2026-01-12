@@ -666,6 +666,7 @@ REGRESSION_TESTS =				\
  %D%/space.function				\
  %D%/space.shell				\
  %D%/space.foreign				\
+ %D%/space.foreign_functions			\
  %D%/space.import_interface_shadow		\
  %D%/space.interface_function			\
  %D%/space.interface_shadow			\
