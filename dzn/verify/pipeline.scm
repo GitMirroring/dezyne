@@ -1,9 +1,9 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
-;;; Copyright © 2018, 2021, 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023, 2024, 2025, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2021, 2022, 2023, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2017, 2018 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;;
@@ -759,27 +759,31 @@ init for MODEL unless INIT."
    (list
     (lambda _
       (let ((output status (verify-pipeline "verify-interface" root model)))
-        (verify:interface-asserts model output #:keep-going? keep-going?)))
+        (if (not (zero? status)) (error "pipeline failure")
+            (verify:interface-asserts model output #:keep-going? keep-going?))))
     (lambda _
       (let ((output status (verify-pipeline "verify-interface-nondet" root model)))
-        (verify:interface-nondet-assert model output #:keep-going? keep-going?))))))
+        (if (not (zero? status)) (error "pipeline failure")
+            (verify:interface-nondet-assert model output #:keep-going? keep-going?)))))))
 
 (define* (mcrl2:verify-component root model #:key keep-going?)
   (let ((output status (verify-pipeline "verify-component" root model)))
-    (reduce-or
-     keep-going?
-     (list
-      (cut verify:component-asserts model output #:keep-going? keep-going?)
-      (lambda _
-        (let ((compliance-output
-               compliance-status
-               (verify-pipeline "verify-compliance" root model)))
-          (verify:compliance-assert model output
-                                    ;; XXX FIXME
-                                    #:compliance-output compliance-output
-                                    #:compliance-status compliance-status
-                                    #:keep-going? keep-going?
-                                    #:status status)))))))
+    (if (not (zero? status)) (error "pipeline failure")
+        (reduce-or
+         keep-going?
+         (list
+          (cut verify:component-asserts model output #:keep-going? keep-going?)
+          (lambda _
+            (let ((compliance-output
+                   compliance-status
+                   (verify-pipeline "verify-compliance" root model)))
+              (if (not (zero? compliance-status)) (error "pipeline failure")
+                  (verify:compliance-assert model output
+                                            ;; XXX FIXME
+                                            #:compliance-output compliance-output
+                                            #:compliance-status compliance-status
+                                            #:keep-going? keep-going?
+                                            #:status status)))))))))
 
 (define* (mcrl2:verify root model-name #:key keep-going?)
   (let ((model (makreel:get-model root model-name)))
