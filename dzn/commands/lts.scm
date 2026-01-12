@@ -3,8 +3,8 @@
 ;;; Copyright © 2018, 2019 Henk Katerberg <hank@mudball.nl>
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018 Johri van Eerd <vaneerd.johri@gmail.com>
-;;; Copyright © 2018, 2019, 2020, 2021, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2021 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2020, 2021, 2023, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021, 2026 Rutger van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -34,6 +34,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
 
+  #:use-module (dzn command-line)
   #:use-module (dzn lts)
 
   #:export (main))
@@ -132,42 +133,45 @@ Navigate and query an LTS from FILE in Aldebaran (AUT) format.
      (cleanup?
       (cleanup-aut #:file-name file-name #:prefix prefix))
      (else
-      (let* ((text (if (or (null? files) (equal? "-" file-name))
-                       (with-input-from-port (current-input-port) read-string)
-                       (with-input-from-file file-name read-string)))
-             (lts (aut-text->lts text))
-             (lts-hide (lts-hide lts tau exclude-tau))
-             (lts-hide-state (lts-hide-state (remove-state-loops lts-hide))))
-        (when illegal?
-          (report-result "illegal"
-                         "LTS contains illegal events"
-                         "LTS contains no illegal events"
-                         (assert-illegal lts-hide-state)))
-        (when livelock?
-          (report-result "livelock"
-                         "tau loop found:"
-                         "No tau loop found."
-                         (assert-livelock lts-hide-state)))
-        (when deterministic-labels
-          (report-result "deterministic"
-                         "LTS is non-deterministic"
-                         "LTS is deterministic"
-                         (assert-nondeterministic lts-hide deterministic-labels)))
-        (let ((lts-failures (add-failures lts-hide-state)))
-          (when deadlock?
-            (report-result "deadlock"
-                           "deadlock found:"
-                           "No deadlock found."
-                           (assert-deadlock lts-failures)))
-          (when tags?
-            (let* ((tags (lts->tags lts))
-                   (tags (string-join (map tag->line-column tags) output-separator)))
-              (when single-line?
-                (format #t "tags:"))
-              (format #t "~a\n" tags)))
-          (when failures?
-            (let ((lts (if exclude-illegal? (remove-illegal lts-failures)
-                           lts-failures)))
-              (when single-line?
-                (format #t "failures:"))
-              (display-lts lts #:separator output-separator)))))))))
+      (let ((text (if (or (null? files) (equal? "-" file-name))
+                      (with-input-from-port (current-input-port) read-string)
+                      (with-input-from-file file-name read-string))))
+        (when (string-null? text)
+          (format (current-error-port) "dzn lts: error: no input\n")
+          (exit EXIT_OTHER_FAILURE))
+        (let* ((lts (aut-text->lts text))
+               (lts-hide (lts-hide lts tau exclude-tau))
+               (lts-hide-state (lts-hide-state (remove-state-loops lts-hide))))
+          (when illegal?
+            (report-result "illegal"
+                           "LTS contains illegal events"
+                           "LTS contains no illegal events"
+                           (assert-illegal lts-hide-state)))
+          (when livelock?
+            (report-result "livelock"
+                           "tau loop found:"
+                           "No tau loop found."
+                           (assert-livelock lts-hide-state)))
+          (when deterministic-labels
+            (report-result "deterministic"
+                           "LTS is non-deterministic"
+                           "LTS is deterministic"
+                           (assert-nondeterministic lts-hide deterministic-labels)))
+          (let ((lts-failures (add-failures lts-hide-state)))
+            (when deadlock?
+              (report-result "deadlock"
+                             "deadlock found:"
+                             "No deadlock found."
+                             (assert-deadlock lts-failures)))
+            (when tags?
+              (let* ((tags (lts->tags lts))
+                     (tags (string-join (map tag->line-column tags) output-separator)))
+                (when single-line?
+                  (format #t "tags:"))
+                (format #t "~a\n" tags)))
+            (when failures?
+              (let ((lts (if exclude-illegal? (remove-illegal lts-failures)
+                             lts-failures)))
+                (when single-line?
+                  (format #t "failures:"))
+                (display-lts lts #:separator output-separator))))))))))
