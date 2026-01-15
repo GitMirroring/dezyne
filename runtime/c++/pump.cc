@@ -1,6 +1,6 @@
 // dzn-runtime -- Dezyne runtime library
 //
-// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024 Rutger van Beusekom <rutger@dezyne.org>
+// Copyright © 2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023, 2024, 2026 Rutger van Beusekom <rutger@dezyne.org>
 // Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
 // Copyright © 2015, 2016, 2017, 2019, 2020, 2022, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
@@ -141,6 +141,7 @@ pump::deadline::deadline (size_t id, size_t ms)
 pump::pump ()
   : unblocked ()
   , running (true)
+  , executing (false)
   , paused (false)
   , current_coroutine (0)
   , switch_context ()
@@ -178,7 +179,7 @@ pump::wait ()
 {
   debug.rdbuf () &&debug << "pump::wait" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
-  idle.wait (lock, [this] {return queue.empty () && deferred.empty ();});
+  idle.wait (lock, [this] {return !executing && queue.empty () && deferred.empty ();});
 }
 
 void
@@ -215,14 +216,21 @@ pump::operator () ()
     {
       auto work_p = [this] {return queue.size () || deferred.size () || !running;};
 
+      auto execute = [this](const std::function<void()>& f, std::unique_lock<std::mutex>& lock)
+      {
+        executing = true;
+        lock.unlock ();
+        f ();
+        lock.lock ();
+        executing = false;
+      };
+
       worker = [&]
       {
         std::unique_lock<std::mutex> lock (mutex);
-        if (queue.empty ())
-          idle.notify_one ();
-
         if (queue.empty () && deferred.empty ())
           {
+            idle.notify_one ();
             if (timers.size ())
               condition.wait_until (lock, timers.begin ()->first.time, work_p);
             else
@@ -233,18 +241,14 @@ pump::operator () ()
           {
             std::function<void ()> f (std::move (queue.front ()));
             queue.pop ();
-            lock.unlock ();
-            f ();
-            lock.lock ();
+            execute (f, lock);
           }
 
         if (queue.empty () && deferred.size () && deferred.front ().first ())
           {
             auto p = deferred.front ();
             deferred.erase (deferred.begin ());
-            lock.unlock ();
-            p.second (current_coroutine);
-            lock.lock ();
+            execute (std::bind (p.second, current_coroutine), lock);
           }
 
         auto now = std::chrono::steady_clock::now ();
@@ -252,9 +256,7 @@ pump::operator () ()
           {
             auto f (timers.begin ()->second);
             timers.erase (timers.begin ());
-            lock.unlock ();
-            f ();
-            lock.lock ();
+            execute (f, lock);
           }
       };
 
