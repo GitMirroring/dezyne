@@ -554,6 +554,7 @@ REGRESSION_TESTS =				\
  %D%/injected_foreign				\
  %D%/inner.space				\
  %D%/integer_expressions			\
+ %D%/interface_action_missing_reply		\
  %D%/interface_enum				\
  %D%/interface_int				\
  %D%/interface_missing_reply			\

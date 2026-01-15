@@ -1,0 +1,9 @@
+(header ((client) interface_action_missing_reply provides) ((sut) interface_action_missing_reply interface))
+(state ((client)) ((sut)))
+test/all/interface_action_missing_reply/interface_action_missing_reply.dzn:31:3: error: h.hello
+<match>
+(state ((client)) ((sut)))
+test/all/interface_action_missing_reply/interface_action_missing_reply.dzn:31:3: error: h.hello
+(trail "<match>")
+(labels "hello")
+(eligible)

@@ -1,0 +1,2 @@
+test/all/interface_action_missing_reply/interface_action_missing_reply.dzn:31:3: error: h.hello
+test/all/interface_action_missing_reply/interface_action_missing_reply.dzn:31:3: error: no match; got input `"h.hello"'
