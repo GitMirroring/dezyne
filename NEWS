@@ -5,13 +5,23 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
+* Changes in 2.20.0 since 2.19.3
+** Language
+  - Global functions are now supported.
+  - Foreign functions are now supported.
+** Commands
+  - A new command, `dzn test' has been added; offering an initial
+    version of LTS-based testing.
+** Code
+  - The C++ code is being checked using `-Wredundant-decls'.
+
 * Changes in 2.19.3 since 2.19.2
 ** Code
   - The c++ runtime's pump::wait is now a supported interface that makes
     all callers wait until the pump is idle to wake them up
     collectively.
 ** Commands
-  - A new command, `dzn anonymize' has been added
+  - A new command, `dzn anonymize' has been added.
 ** Noteworthy bug fixes
   - Reporting a deadlock for an interface missing a reply after an
     action instead of reporting <missing-reply>.  This is a regression
