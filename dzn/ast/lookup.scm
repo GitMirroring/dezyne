@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023, 2025 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2014, 2018, 2020, 2021, 2022, 2023, 2025, 2026 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017, 2018, 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Filip Toman <filip.toman@verum.com>
@@ -453,6 +453,9 @@ null) and return its CONTEXT."
                 (or (let ((port+name (string-append (.name port) name)))
                       (ast:lookup-variable (ast:parent o <behavior>) port+name))
                     (lookup-shared-variable port name)))))))
+
+(define-method (.type (o <function>))
+  (.type (.signature o)))
 
 (define-method (.type (o <argument>))
   (ast:lookup o (.type.name o)))
