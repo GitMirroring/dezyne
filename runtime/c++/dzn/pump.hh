@@ -2,7 +2,7 @@
 //
 // Copyright © 2016, 2017, 2019, 2020, 2023 Janneke Nieuwenhuizen <janneke@gnu.org>
 // Copyright © 2016 Henk Katerberg <hank@mudball.nl>
-// Copyright © 2016-2019, 2021-2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+// Copyright © 2016-2019, 2021-2025, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of dzn-runtime.
 //
@@ -52,6 +52,7 @@ struct pump
 {
   std::vector<void *> unblocked;
   bool running;
+  bool executing;
   bool paused;
   std::function<void ()> worker;
   std::list<coroutine> coroutines;
