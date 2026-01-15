@@ -1,0 +1,5 @@
+verify: interface_action_missing_reply: check: deadlock: fail
+error: reply missing from model interface_action_missing_reply
+verify: interface_action_missing_reply: check: unreachable: skip
+verify: interface_action_missing_reply: check: livelock: ok
+verify: interface_action_missing_reply: check: deterministic: ok
