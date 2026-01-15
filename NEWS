@@ -5,7 +5,14 @@
 #+OPTIONS: num:nil
 #+OPTIONS: ^:nil
 
-* Changes in 2.19.3 since 2.19.2
+* Changes in 2.20.0 since 2.19.3
+** Language
+  - Global functions are now supported.
+  - Foreign functions are now supported.
+** Simulator
+  - The `dzn simulate' command has a new option: `-k,--keep-running'.
+
+* Changes in 2.19.3 since 2.19.3
 ** Code
   - The c++ runtime's pump::wait is now a supported interface that makes
     all callers wait until the pump is idle to wake them up
