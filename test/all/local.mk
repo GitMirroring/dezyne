@@ -720,6 +720,7 @@ PARSER_TESTS =					\
  %D%/parse_duplicate_definition			\
  %D%/parse_duplicate_import_prefix		\
  %D%/parse_function_shadow_event		\
+ %D%/parse_function_shadow_port			\
  %D%/parse_formal_shadow_type			\
  %D%/parse_imperative_guard			\
  %D%/parse_import_both				\

@@ -1,0 +1,5 @@
+test/all/parse_function_shadow_port/parse_function_shadow_port.dzn:34:7: error: event `world' not defined for port `h'
+test/all/parse_function_shadow_port/parse_function_shadow_port.dzn:32:5: info: port `h' defined here
+test/all/parse_function_shadow_port/parse_function_shadow_port.dzn:34:7: error: undefined event `world'
+test/all/parse_function_shadow_port/parse_function_shadow_port.dzn:36:8: error: `h' is not a port
+test/all/parse_function_shadow_port/parse_function_shadow_port.dzn:32:5: info: `h' declared here
