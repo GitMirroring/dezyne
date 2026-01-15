@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2022, 2023, 2024, 2025 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024, 2025, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2023, 2024, 2025 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -1918,23 +1918,15 @@
                         (sm:sequence*
                          (sm:invoke (%in-action o))
                          (sm:union*
-                          (sm:sum (var "i")
-                                  (type (%state o))
-                                  (statement
-                                   (sm:sequence*
-                                    (sm:invoke (%state-action o) var)
-                                    (sm:goto
-                                     (name (model-prefix "reorder_reply"))))))
+                          (sm:goto
+                           (name (model-prefix "reorder_reply")))
                           (sm:sum (var "i")
                                   (type (%replies o))
                                   (statement
                                    (sm:sequence* (sm:invoke (%reply-action o) var)
                                                  (sm:goto (name
                                                            (model-prefix "reorder_replied"))
-                                                          (arguments (list var))))))
-                          (sm:sequence* (%reorder-end-action o)
-                                        %missing-reply-action
-                                        %sm:delta))))))
+                                                          (arguments (list var)))))))))))
               (sm:sum (var "i")
                       (type (%modeling o))
                       (statement
@@ -1976,7 +1968,10 @@
                       (statement
                        (sm:sequence*
                         (sm:invoke (%state-action o) var)
-                        (sm:goto (name name)))))))))
+                        (sm:goto (name name)))))
+              (sm:sequence* (%reorder-end-action o)
+                            %missing-reply-action
+                            %sm:delta)))))
          (interface-reorder-replied
           (let ((reply "r"))
             (sm:process
