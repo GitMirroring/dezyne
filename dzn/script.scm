@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
@@ -190,7 +190,10 @@ Use \"dzn COMMAND --help\" for command-specific information.
 (define (main args)
   (let* ((options (parse-opts args))
          (repl? (option-ref options 'repl #f))
-         (timings? (option-ref options 'timings #f)))
+         (timings? (option-ref options 'timings #f))
+         (debug? (option-ref options 'debug #f)))
+    (when debug?
+      (debug-set! depth 40))
     (when timings?
       (instrument-timings %time %measure))
     (if repl? (call-with-error-handling (cute run-command options))
