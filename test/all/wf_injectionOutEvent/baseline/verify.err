@@ -1,3 +1,2 @@
-test/all/wf_injectionOutEvent/wf_injectionOutEvent.dzn:41:3: warning: injected port `ii' is a deprecated feature
 test/all/wf_injectionOutEvent/wf_injectionOutEvent.dzn:41:3: error: injected port `ii' has out events: notif
 test/all/wf_injectionOutEvent/wf_injectionOutEvent.dzn:32:3: info: port defined here
