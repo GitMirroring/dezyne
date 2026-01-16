@@ -1059,20 +1059,9 @@
 ;;; helper functions
 ;;;
 (define-method (defined-function (o <call>))
-  (let* ((root (ast:parent o <root>))
-         (global-functions (ast:function** root))
-         (behavior (ast:parent o <behavior>))
-         (functions (if (not behavior) global-functions
-                        (append global-functions
-                                (ast:function* behavior))))
-         (name (.function.name o))
-         (name? (cute ast:name-equal? name <>)))
-    (if (or (find name? functions)
-            (find (conjoin (is? <function>) name?)
-                  (ast:top** (ast:parent o <root>))))
-        '()
-        `(,(wfc-error o (format #f "undefined function call: ~s"
-                                (ast:name name)))))))
+  (if (.function o) '()
+      `(,(wfc-error o (format #f "undefined function call: ~s"
+                              (ast:name (.function.name o)))))))
 
 (define (feature-supported? feature)
   (or (member (%language) '("dzn" "json" "makreel"))
