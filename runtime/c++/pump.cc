@@ -230,7 +230,7 @@ pump::operator () ()
         std::unique_lock<std::mutex> lock (mutex);
         if (queue.empty () && deferred.empty ())
           {
-            idle.notify_one ();
+            idle.notify_all ();
             if (timers.size ())
               condition.wait_until (lock, timers.begin ()->first.time, work_p);
             else
