@@ -1,6 +1,6 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
-;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2017, 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -491,6 +491,9 @@ and \"POST\" 'post in GRAMMAR."
     (print-ast statement port)))
 
 ;;; expressions
+(define-method (print-type (o <top>) port)
+  (simple-format port "[~a:~a]" (class-name (class-of o)) o))
+
 (define-method (print-type (o <interface>) port) ;;; FIXME why isn't interface a <type>
   (display (dzn:dotted-name o) port))
 
