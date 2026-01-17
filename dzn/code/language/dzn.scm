@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2017, 2018, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2017, 2018, 2021, 2022, 2023, 2026 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2017, 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2017 Johri van Eerd <vaneerd.johri@gmail.com>
 ;;; Copyright © 2018 Henk Katerberg <hank@mudball.nl>
@@ -85,22 +85,21 @@
 ;;;
 ;;; Names.
 ;;;
-(define-method (dzn:full-name (o <type>))
+(define-method (dzn:full-name (o <type>) model)
   (let* ((scope (ast:full-scope o))
-         (model-scope (ast:parent o <model>))
-         (model-scope (or (and model-scope (ast:full-name model-scope)) '()))
+         (model-scope (or (and model (ast:full-name model)) '()))
          (common (or (list-index (negate equal?) scope model-scope)
                      (min (length scope) (length model-scope)))))
     (drop (ast:full-name o) common)))
 
-(define-method (dzn:dotted-name (o <ast>))
+(define-method (dzn:dotted-name (o <ast>) model)
   (ast:dotted-name o))
 
-(define-method (dzn:dotted-name (o <enum>))
-  (string-join (dzn:full-name o) "."))
+(define-method (dzn:dotted-name (o <enum>) model)
+  (string-join (dzn:full-name o model) "."))
 
-(define-method (dzn:dotted-name (o <subint>))
-  (string-join (dzn:full-name o) "."))
+(define-method (dzn:dotted-name (o <subint>) model)
+  (string-join (dzn:full-name o model) "."))
 
 
 ;;;
@@ -242,7 +241,7 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (print-ast (o <subint>) port)
   (let ((range (.range o)))
     (display "subint " port)
-    (print-type o port)
+    (print-type o (ast:parent o <model>) port)
     (simple-format port " {~a..~a};\n" (.from range) (.to range))))
 
 (define-method (print-ast (o <interface>) port)
@@ -313,7 +312,7 @@ and \"POST\" 'post in GRAMMAR."
 
 (define-method (print-ast (o <event>) port)
   (simple-format port "~a " (.direction o))
-  (print-type (ast:type o) port)
+  (print-type (ast:type o) #f port)
   (simple-format port " ~a (" (.name o))
   (print-ast-join (ast:formal* o) port ", ")
   (display ");\n" port))
@@ -321,7 +320,7 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (print-ast (o <formal>) port)
   (display (.direction o) port)
   (display " " port)
-  (print-type (.type o) port)
+  (print-type (.type o) (ast:parent o <model>) port)
   (display " " port)
   (display (.name o) port))
 
@@ -337,7 +336,7 @@ and \"POST\" 'post in GRAMMAR."
   (when (.injected? o)
     (display " injected" port))
   (display " " port)
-  (print-type (.type o) port)
+  (print-type (.type o) (ast:parent o <model>) port)
   (display " " port)
   (display (.name o) port)
   (display ";\n" port))
@@ -354,7 +353,7 @@ and \"POST\" 'post in GRAMMAR."
   (print-brace-close port))
 
 (define-method (print-ast (o <function>) port)
-  (print-type (ast:type o) port)
+  (print-type (ast:type o) (ast:parent o <model>) port)
   (simple-format port " ~a (" (.name o))
   (print-ast-join (ast:formal* o) port ", ")
   (display ")" port)
@@ -417,7 +416,7 @@ and \"POST\" 'post in GRAMMAR."
 (define-method (print-ast (o <variable>) port)
   (let* ((expression (.expression o))
          (type (and=> expression ast:type)))
-    (print-type (.type o) port)
+    (print-type (.type o) (ast:parent o <model>) port)
     (cond ((and expression
                 (not (is-a? type <void>)))
            (simple-format port " ~a = " (.name o))
@@ -491,14 +490,14 @@ and \"POST\" 'post in GRAMMAR."
     (print-ast statement port)))
 
 ;;; expressions
-(define-method (print-type (o <top>) port)
+(define-method (print-type (o <top>) model port)
   (simple-format port "[~a:~a]" (class-name (class-of o)) o))
 
-(define-method (print-type (o <interface>) port) ;;; FIXME why isn't interface a <type>
-  (display (dzn:dotted-name o) port))
+(define-method (print-type (o <interface>) model port) ;;; FIXME why isn't interface a <type>
+  (display (dzn:dotted-name o #f) port))
 
-(define-method (print-type (o <type>) port)
-  (display (dzn:dotted-name o) port))
+(define-method (print-type (o <type>) model port)
+  (display (dzn:dotted-name o model) port))
 
 (define-method (print-ast (o <literal>) port)
   (print-ast (.value o) port))
@@ -532,7 +531,7 @@ and \"POST\" 'post in GRAMMAR."
   (simple-format port "~a.~a.~a" (.name (.port o)) (.name o) (.field o)))
 
 (define-method (print-ast (o <enum-literal>) port)
-  (print-type (.type o) port)
+  (print-type (.type o) (ast:parent o <model>) port)
   (display "." port)
   (display (.field o) port))
 
@@ -573,7 +572,7 @@ and \"POST\" 'post in GRAMMAR."
   (let* ((expression (.expression o))
          (type (and=> expression ast:type)))
     (display "<" port)
-    (print-type (.type o) port)
+    (print-type (.type o) (ast:parent o <model>) port)
     (cond ((and expression
                 (not (is-a? type <void>)))
            (simple-format port " ~a.~a = " (.port.name o) (.name o))
