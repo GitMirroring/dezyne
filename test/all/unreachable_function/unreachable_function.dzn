@@ -1,6 +1,7 @@
 // Dezyne --- Dezyne command line tools
 //
 // Copyright © 2022 Paul Hoogendijk <paul@dezyne.org>
+// Copyright © 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 //
 // This file is part of Dezyne.
 //
@@ -24,44 +25,65 @@
 interface ihello
 {
   in void hello ();
-
+  out void always ();
+  out void never ();
   behavior
   {
-    on hello: {}
+    bool also_true ()
+    {
+      return true;
+    }
+    on hello:
+      {
+        bool b = true;
+        if (b && also_true ()) always;
+        else never;
+      }
   }
 }
 
 component unreachable_function
 {
   provides ihello h;
-  requires ihello w;
 
   behavior
   {
     bool always = true;
 
-    void never_called ()
+    bool called ()
     {
-      if (always)
-        w.hello ();
-      else
-        w.hello ();
+      return always;
     }
 
-    void called ()
+    bool never_called ()
+    {
+      also_never_called ();
+      return true;
+    }
+
+    void also_never_called ()
     {
       if (always)
-        w.hello ();
+        h.never ();
       else
-        w.hello ();
+        h.never ();
+    }
+
+    void also_called ()
+    {
+      if (always)
+        h.always ();
+      else
+        h.never ();
     }
 
     on h.hello ():
     {
-      if (always)
-        called ();
+      if ((always || never_called ())
+          && (always && called ()))
+        also_called ();
       else
-        never_called ();
+        also_never_called ();
     }
   }
 }
