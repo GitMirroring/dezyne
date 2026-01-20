@@ -114,15 +114,6 @@
   "Return a full name of MODEL, separated with dots, with ticks removed."
   (string-join (map untick (ast:full-name o)) "."))
 
-(define-method (makreel:get-model (o <root>))
-  (define (named? o)
-    (equal? (makreel:unticked-dotted-name o) (%model-name)))
-  (let ((model (and (%model-name)
-                    (find named? (ast:model** o)))))
-    (or model
-        (find (is? <component>) (ast:model** o))
-        (filter (is? <interface>) (ast:model** o)))))
-
 
 ;;;
 ;;; Accessors.
