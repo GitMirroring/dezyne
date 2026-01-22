@@ -36,8 +36,9 @@
 
   #:use-module (scmackerel indent)
 
-  #:use-module (dzn ast ast)
   #:use-module (dzn ast)
+  #:use-module (dzn ast ast)
+  #:use-module (dzn ast util)
   #:use-module (dzn code ast)
   #:use-module (dzn code util)
   #:use-module (dzn misc)
@@ -123,7 +124,8 @@
   (let ((parent (.parent o)))
     (or (is-a? parent <blocking>)
         (is-a? parent <compound>)
-        (is-a? parent <guard>)
+        (and (is-a? parent <guard>)
+             (not (eq? o (.expression parent))))
         (is-a? parent <on>)
         (and (is-a? parent <if>)
              (not (ast:eq? o (.expression parent)))))))
