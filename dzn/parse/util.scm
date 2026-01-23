@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2020, 2021, 2023 Rutger (regtur) van Beusekom <rutger@dezyne.org>
-;;; Copyright © 2020, 2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2021, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -38,9 +38,9 @@
 (define (list-models-name+type file-name)
   "Return an ALIST of form `((name . type) ...)' for each model in
 FILE-NAME."
-  (let* ((debug? (dzn:command-line:get 'debug #f))
-         (text (with-input-from-file file-name read-string))
-         (tree (parse:string->tree text #:file-name file-name)))
+  (let* ((text (parse:file->string file-name))
+         (tree (parameterize ((%peg:fall-back? #t))
+                 (parse:string->tree text #:file-name file-name))))
     (define (model->name+type context)
       (let* ((model (find tree:model? context))
              (name (context:dotted-name context))
