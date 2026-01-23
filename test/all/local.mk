@@ -567,6 +567,7 @@ REGRESSION_TESTS =				\
  %D%/invariant_two_out				\
  %D%/iteration					\
  %D%/label_instance_mismatch			\
+ %D%/list-models				\
  %D%/livelock_choice				\
  %D%/livelock_iterator				\
  %D%/livelock_recurse				\
