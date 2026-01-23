@@ -351,6 +351,11 @@ and \"POST\" 'post in GRAMMAR."
   (print-ast-join (ast:type* o) port)
   (print-ast-join (ast:variable* o) port)
   (print-ast-join (ast:function* o) port)
+  (let ((invariant (.invariant o)))
+    (when (and invariant
+               (not (ast:equal? (.expression invariant)
+                                (make <literal> #:value "true"))))
+      (print-ast invariant port)))
   (print-ast-join (ast:statement* (.statement o)) port)
   (print-brace-close port))
 
