@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2018, 2021, 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2021, 2022, 2023, 2024, 2025, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2018, 2020, 2022, 2023, 2024 Paul Hoogendijk <paul@dezyne.org>
 ;;; Copyright © 2018, 2019, 2020 Rob Wieringa <rma.wieringa@gmail.com>
 ;;; Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -850,6 +850,7 @@ to prevent unintended shadowing
     (match o
       (($ <compound>)
        (clone o #:elements (add-return (ast:statement* o) #:loc o)))
+      (($ <return>) o)
       ((statement ... ($ <return>)) o)
       ((statement ... t) (append o (list (make <return> #:location (.location (.parent t))))))
       ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
