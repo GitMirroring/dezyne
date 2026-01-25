@@ -857,6 +857,7 @@ to prevent unintended shadowing
     (match o
       (($ <compound>)
        (clone o #:elements (add-return (ast:statement* o) #:loc o)))
+      (($ <return>) o)
       ((statement ... ($ <return>)) o)
       ((statement ... t) (append o (list (make <return> #:location (.location (.parent t))))))
       ((statement ...) (append o (list (make <return> #:location (.location loc)))))))
