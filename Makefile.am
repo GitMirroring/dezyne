@@ -85,6 +85,11 @@ BUILT_SOURCES =
 bin_SCRIPTS =					\
   bin/dzn
 
+noinst_SCRIPTS =				\
+  test/bin/run					\
+  test/bin/run-baseline				\
+  test/bin/run-execute
+
 EXTRA_DIST +=					\
  bin/dzn.in					\
  test/bin/cpu-timeout				\
