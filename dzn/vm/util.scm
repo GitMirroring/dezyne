@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018, 2019 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2018, 2019, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2018, 2019, 2021, 2022, 2023, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021, 2022 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -545,8 +545,9 @@ See <https://www.gnu.org/licenses/agpl.html>, for more details.
                (labels (ast:label* status))
                (labels (map label->string labels))
                (labels (if (is-a? (%sut) <runtime:port>) labels
-                           (map (cute string-append port-name "." <>)
-                                labels))))
+                           (if (eq? (%sut) instance) labels
+                               (map (cute string-append port-name "." <>)
+                                    labels)))))
           labels))))
 
 (define-method (return-labels (pc <program-counter>))
