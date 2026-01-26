@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
-;;; Copyright © 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2020, 2021, 2022, 2023, 2025 Rutger van Beusekom <rutger@dezyne.org>
 ;;; Copyright © 2021 Paul Hoogendijk <paul@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
@@ -146,10 +146,23 @@
     (if (or valid? (null? postponed-match)) rest
         postponed-match)))
 
+(define (foreign-call? trace)
+  "A foreign call is currently considered determinstic."
+  (find (compose (conjoin (is? <call>)
+                          (compose (is? <return>)
+                                   .statement
+                                   .function))
+                 .statement)
+        trace))
+
 (define (non-deterministic? traces)
   "Return #t when TRACES are a nondeterministic set, i.e.: at least two
 valid PCs that are executing an imperative statement."
-  (let* ((pcs (map car traces))
+  (let* ((traces (filter (disjoin
+                          (compose not (is-status? <postponed-match>) car)
+                          (negate foreign-call?))
+                         traces))
+         (pcs (map car traces))
          (pcs (filter (negate (is-status? <error>)) pcs))
          (pcs (filter (disjoin
                        (negate (is-status? <postponed-match>))
