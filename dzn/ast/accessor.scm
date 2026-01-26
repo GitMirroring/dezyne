@@ -241,6 +241,12 @@
      (else
       (ast:full-name scope)))))
 
+(define-method (ast:full-name (o <function>))
+  (let ((name (ast:name o))
+        (scope (ast:parent o <scope>)))
+    (if (not scope) (list name)
+        (append (ast:full-name scope) (list name)))))
+
 (define-method (ast:full-name (o <root>))
   '())
 
