@@ -170,7 +170,7 @@ SEMICOLON < ';'")
 
 imports <-- import+
 
-definitions <-- (dollars / type / namespace / interface / component / EOF)#+
+definitions <-- (dollars / type / namespace / function / interface / component / EOF)#+
 
 import <-- IMPORT file-name SEMICOLON#
   file-name <- (!SEMICOLON .)+
