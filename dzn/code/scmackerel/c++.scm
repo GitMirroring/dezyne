@@ -56,8 +56,9 @@
   (let* ((name (ast:full-name o))
          (name (if (not (is-a? o <foreign>)) name
                    (cons "SKEL" name)))
-         (name (if (is-a? o <enum>) (cons "ENUM" name)
-                   (append name '("hh"))))
+         (name (cond ((is-a? o <enum>) (cons "ENUM" name))
+                     ((is-a? o <function>) (cons "FUNCTION" name))
+                     (else (append name '("hh")))))
          (name (map string-upcase name))
          (guard (string-join name "_")))
     `(,(sm:cpp-ifndef* guard)
@@ -148,6 +149,24 @@ std::basic_ostream<Char, Traits> &")
           `(,@(code:->namespace o struct)
             ,@(c++:enum->statements o))))
     (c++:include-guard o statements)))
+
+(define (c++:global-function->statements function)
+  (let ((statement (sm:function
+                    (name (.name function))
+                    (type (code:type-name (ast:type function)))
+                    (formals (map c++:->formal (ast:formal* function)))
+                    (statement (ast->code (.statement function))))))
+    (let loop ((statements (list statement)) (ast function))
+      (let ((namespace (ast:parent ast <namespace>)))
+        (if (is-a? namespace <root>) statements
+            (loop (list (sm:namespace
+                         (name (ast:name namespace))
+                         (statements statements)))
+                  namespace))))))
+
+(define (c++:global-function->header-statements function)
+(let ((statements (c++:global-function->statements function)))
+  (c++:include-guard function statements)))
 
 (define-method (c++:->formal (o <formal>))
   (let* ((type (code:type-name o))
@@ -432,30 +451,22 @@ std::basic_ostream<Char, Traits> &")
 ;;;
 ;;; Root.
 ;;;
+(define-method (root->header-global-functions (o <root>))
+  (let ((functions (filter (negate ast:imported?) (ast:function** o))))
+    (append-map c++:global-function->header-statements functions)))
+
 (define-method (root->header-statements (o <root>))
   (let ((imports (ast:unique-import* o))
         (enums (code:enum* o)))
     (append
      (map c++:file-name->include imports)
      (map (compose (cute string-append <> "\n") .value) (ast:data* o))
-     (append-map c++:enum->header-statements enums))))
+     (append-map c++:enum->header-statements enums)
+     (root->header-global-functions o))))
 
 (define-method (root->global-functions (o <root>))
-  (define (global-function->sm function)
-    (let ((sm (sm:function
-               (name (.name function))
-               (type (code:type-name (ast:type function)))
-               (formals (map c++:->formal (ast:formal* function)))
-               (statement (ast->code (.statement function))))))
-      (let loop ((sm sm) (ast function))
-        (let ((namespace (ast:parent ast <namespace>)))
-          (if (is-a? namespace <root>) sm
-              (loop (sm:namespace
-                     (name (ast:name namespace))
-                     (statements (list sm)))
-                    namespace))))))
   (let ((functions (filter (negate ast:imported?) (ast:function** o))))
-    (map global-function->sm functions)))
+    (append-map c++:global-function->statements functions)))
 
 (define-method (root->statements (o <root>))
   (let ((enums (code:enum* o)))
@@ -1774,7 +1785,6 @@ std::basic_ostream<Char, Traits> &")
                       ,(sm:cpp-system-include* "map")
                       ,@(root->header-statements o)
                       ,@(append-map model->header-statements models)
-                      ,@(root->global-functions o)
                       ,(code:version-comment))))))
     (display header)))
 
