@@ -4908,7 +4908,11 @@ Previous versions of the language restricted functions to the scope of
 behaviors.  Starting with version 2.20 functions may be declared
 independent from interface and component behaviors.  This obviously
 results in the ability allow functions to be reused across behaviors and
-thereby prevent duplication of data related functions.
+thereby prevent duplication of data related functions.  Functions not
+confined to the scope of an interface or component may or may not be
+defined in the Dezyne language.  In the latter case, during
+verification, the entire range of possible return values is verified by
+selecting each value non-deterministically.
 
 @subsection Expression Functions
 @cindex expression-function
