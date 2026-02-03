@@ -30,6 +30,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix gexp)
   #:use-module (guix packages)
+  #:use-module (bluebox packages blue)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages boost)
@@ -54,7 +55,7 @@
        (sha256
         (base32 #!dezyne!# "13vah8szmnh0qscd7l2zlynd3krb9sb8s91y5lsw5lqvmv6ns1q5"))))
     (build-system gnu-build-system)
-    (native-inputs (list guile-3.0 pkg-config))
+    (native-inputs (list blue guile-3.0 pkg-config))
     (inputs (list bash-minimal
                   boost
                   guile-3.0
