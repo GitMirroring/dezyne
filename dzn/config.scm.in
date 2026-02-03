@@ -70,6 +70,18 @@
 (define %builddir
   "@builddir@")
 
+(define (relative-file-name file-name)
+  (if (not (absolute-file-name? file-name)) file-name
+      (let ((dir (dirname (dirname (current-filename)))))
+        ;;(string-drop file-name (1+ (string-length dir)))
+        ".")))
+
+(define %srcdir
+  (relative-file-name "@srcdir@")) ;FIXME: BLUE uses absolute file name for srcdir
+
+(define %builddir
+  (relative-file-name "@builddir@")) ;FIXME: BLUE uses absolute file name for srcdir
+
 (define %datadir
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
       "@datadir@"))

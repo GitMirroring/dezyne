@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020, 2021 Rutger van Beusekom <rutger@dezyne.org>
 #
 # This file is part of Dezyne.
@@ -18,12 +18,15 @@
 # You should have received a copy of the GNU Affero General Public
 # License along with Dezyne.  If not, see <http://www.gnu.org/licenses/>.
 
+.blue-store
 .deps
 .dirstamp
 .libs
+*.d
 *.go
 *.la
 *.lo
+*.so
 *.o
 *~
 /INSTALL
