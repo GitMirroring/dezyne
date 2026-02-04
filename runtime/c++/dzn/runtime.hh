@@ -429,17 +429,16 @@ struct event<R (Args...)>
 
       dzn::locator const& locator = *this->dzn_locator;
       dzn::runtime &runtime = *this->dzn_runtime;
-      dzn::component &component = *this->component;
       dzn::component *provide = this->dzn_port_meta->provide.component;
 
       if ((runtime.handling (provide) || port_blocked_p (locator, this->port))
           && runtime.native (provide))
         collateral_block (locator, provide);
-      runtime.reset_skip_block (&component);
+      runtime.reset_skip_block (this->component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
       this->port_update (this->name);
       this->write_state ();
-      scoped_handling handling (runtime, locator, &component);
+      scoped_handling handling (runtime, locator, this->component);
       scoped_activity activity (runtime, locator, 1);
       this->reply = f (args...);
       runtime.flush (provide, coroutine_id (locator), true);
@@ -575,18 +574,17 @@ struct event<void (Args...)>
 
       dzn::locator const& locator = *this->dzn_locator;
       dzn::runtime &runtime = *this->dzn_runtime;
-      dzn::component &component = *this->component;
       dzn::component *provide = this->dzn_port_meta->provide.component;
 
       if ((runtime.handling (provide)
            || port_blocked_p (locator, this->port))
           && runtime.native (provide))
         collateral_block (locator, provide);
-      runtime.reset_skip_block (&component);
+      runtime.reset_skip_block (this->component);
       trace_in (*this->os, *this->dzn_port_meta, this->name);
       this->port_update (this->name);
       this->write_state ();
-      scoped_handling handling (runtime, locator, &component);
+      scoped_handling handling (runtime, locator, this->component);
       scoped_activity activity (runtime, locator, 1);
       f (args...);
       runtime.flush (provide, coroutine_id (locator), true);
@@ -715,7 +713,6 @@ struct event<void (Args...)>
 
       dzn::locator const &locator = *this->dzn_locator;
       dzn::runtime &runtime = *this->dzn_runtime;
-      dzn::component *component = this->component;
       dzn::component *provide = this->dzn_port_meta->provide.component;
       dzn::component *require = this->dzn_port_meta->require.component;
       bool no_flush_label_p = port_blocked_p (locator, this->port)
@@ -757,8 +754,8 @@ struct event<void (Args...)>
 
           if (!require
               || (!provide
-                  && !runtime.handling (component)
-                  && !runtime.performs_flush (component))
+                  && !runtime.handling (this->component)
+                  && !runtime.performs_flush (this->component))
               || (provide
                   && !runtime.native (provide)
                   && !runtime.handling (provide)
@@ -766,8 +763,8 @@ struct event<void (Args...)>
             runtime.flush (require, coroutine_id (locator), activity.value == 1);
           else if ((!provide && !port_blocked_p (locator, this->port)
                     || !runtime.blocked (provide))
-                   && runtime.handling (component)
-                   && blocked_p (locator, component))
+                   && runtime.handling (this->component)
+                   && blocked_p (locator, this->component))
             port_update ();
         }
 
