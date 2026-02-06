@@ -2,7 +2,7 @@
 #
 # Copyright © 2016 Rob Wieringa <rma.wieringa@gmail.com>
 # Copyright © 2016, 2018, 2020, 2021, 2022, 2023 Rutger van Beusekom <rutger@dezyne.org>
-# Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2023, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2016, 2017, 2018, 2019, 2020, 2021, 2023, 2024, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
 #
 # This file is part of Dezyne.
@@ -46,6 +46,7 @@ WARN_FLAGS=					\
  -Wall						\
  -Wextra					\
  -Werror					\
+ -Wredundant-decls				\
  -Wshadow
 endif
 NOWARN_FLAGS=					\
