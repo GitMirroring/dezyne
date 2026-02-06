@@ -9,6 +9,8 @@
 ** Language
   - Global functions are now supported.
   - Foreign functions are now supported.
+** Code
+  - The C++ code is being checked using `-Wredundant-decls'.
 ** Simulator
   - The `dzn simulate' command has a new option: `-k,--keep-running'.
 
