@@ -61,8 +61,9 @@
   (let* ((name (ast:full-name o))
          (name (if (not (is-a? o <foreign>)) name
                    (cons "SKEL" name)))
-         (name (if (is-a? o <enum>) (cons "ENUM" name)
-                   (append name '("h"))))
+         (name (cond ((is-a? o <enum>) (cons "ENUM" name))
+                     ((is-a? o <function>) (cons "FUNCTION" name))
+                     (else (append name '("h")))))
          (name (string-join name "_"))
          (guard (string-upcase name)))
     `(,(sm:cpp-ifndef* guard)
@@ -173,6 +174,10 @@
           `(,(sm:typedef* enum scope)
             ,@(c:enum->statements o))))
     (c:include-guard o statements)))
+
+(define (c:global-function->header-statements function)
+  (let ((statement (function->function function)))
+    (c:include-guard function (list statement))))
 
 (define-method (c:->formal (o <formal>))
   (let* ((type (code:type-name o))
@@ -439,13 +444,18 @@
 ;;;
 ;;; Root.
 ;;;
+(define-method (root->header-global-functions (o <root>))
+  (let ((functions (filter (negate ast:imported?) (ast:function** o))))
+    (append-map c:global-function->header-statements functions)))
+
 (define-method (root->header-statements (o <root>))
   (let ((imports (ast:unique-import* o))
         (enums (c:enum* o)))
     (append
      (map c:file-name->include imports)
      (map (compose (cute string-append <> "\n") .value) (ast:data* o))
-     (append-map c:enum->header-statements enums))))
+     (append-map c:enum->header-statements enums)
+     (root->header-global-functions o))))
 
 (define-method (root->global-functions (o <root>))
   (let ((functions (filter (negate ast:imported?) (ast:function** o))))
