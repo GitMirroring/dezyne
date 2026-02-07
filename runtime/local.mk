@@ -64,7 +64,9 @@ lib_LTLIBRARIES += %D%/libdzn.la
 
 %C%_libdzn_ladir = $(includedir)/dzn
 
-%C%_libdzn_la_CPPFLAGS = -I $(abs_top_srcdir)/runtime/c
+%C%_libdzn_la_CPPFLAGS =			\
+  -I $(srcdir)/runtime/c			\
+  -I runtime/c
 
 %C%_libdzn_la_LDFLAGS =				\
  $(PTH_LIBS)					\
@@ -134,7 +136,8 @@ WARN_FLAGS=					\
 
 %C%_libdzn_c___la_CPPFLAGS =			\
  $(WARN_FLAGS)					\
- -I $(abs_top_srcdir)/runtime/c++
+ -I $(srcdir)/runtime/c++			\
+ -I runtime/c++
 
 %C%_libdzn_c___la_LDFLAGS =			\
  -version-info $(version_info)			\

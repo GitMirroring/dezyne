@@ -54,6 +54,10 @@ exampledir = $(docdir)
 do_subst = sed						\
   -e 's,[@]GUILE[@],$(GUILE),g'				\
   -e 's,[@]prefix[@],$(prefix),g'			\
+  -e 's,[@]abs_top_srcdir[@],$(abs_top_srcdir),g'	\
+  -e 's,[@]abs_top_builddir[@],$(abs_top_builddir),g'	\
+  -e 's,[@]srcdir[@],$(srcdir),g'			\
+  -e 's,[@]builddir[@],$(builddir),g'			\
   -e 's,[@]bindir[@],$(bindir),g'			\
   -e 's,[@]datadir[@],$(datadir),g'			\
   -e 's,[@]datarootdir[@],$(datarootdir),g'		\
@@ -73,12 +77,18 @@ AM_V_SED = $(AM_V_SED_@AM_V@)
 AM_V_SED_ = $(AM_V_SED_@AM_DEFAULT_V@)
 AM_V_SED_0 = @echo "  SED     " $@;
 
-bin/%: bin/%.in Makefile
+bin/%: $(srcdir)/bin/%.in Makefile | bin-dir
 	$(AM_V_SED)$(do_subst) < $< > $@
 	@chmod a+x $@
 
-dzn/%: dzn/%.in Makefile
+bin-dir:
+	mkdir -p bin
+
+dzn/%: $(srcdir)/dzn/%.in Makefile | dzn-dir
 	$(AM_V_SED)$(do_subst) < $< > $@
+
+dzn-dir:
+	mkdir -p dzn
 
 BUILT_SOURCES =
 
@@ -121,7 +131,9 @@ GUILEC_FLAGS =					\
  -Warity-mismatch				\
  -Wformat					\
  --load-path=$(abs_top_srcdir)			\
- --load-path=$(abs_top_srcdir)/runtime/scheme
+ --load-path=$(abs_top_builddir)		\
+ --load-path=$(abs_top_srcdir)/runtime/scheme	\
+ --load-path=$(abs_top_builddir)/runtime/scheme
 
 AM_V_GUILEC = $(AM_V_GUILEC_@AM_V@)
 AM_V_GUILEC_ = $(AM_V_GUILEC_@AM_DEFAULT_V@)
