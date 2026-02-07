@@ -28,6 +28,7 @@
 (define-module (dzn config)
   #:use-module (dzn shell-util)
   #:export (%bindir
+            %builddir
             %copyright-info
             %datadir
             %datarootdir
@@ -48,6 +49,7 @@
             %queue-size-defer
             %queue-size-external
             %runtime-dir
+            %srcdir
             %template-dir
             %test-dir
             %version-major
@@ -61,6 +63,12 @@
 (define %prefix
   (or (and (getenv "DZN_UNINSTALLED") (getenv "DZN_PREFIX"))
       "@prefix@"))
+
+(define %srcdir
+  "@srcdir@")
+
+(define %builddir
+  "@builddir@")
 
 (define %datadir
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
@@ -76,7 +84,7 @@
       (string-append %datadir "/" %package)))
 
 (define %bindir
-  (or (and (getenv "DZN_UNINSTALLED") (string-append %prefix "/bin"))
+  (or (and (getenv "DZN_UNINSTALLED") (string-append %builddir "/bin"))
       "@bindir@"))
 
 (define %runtime-dir

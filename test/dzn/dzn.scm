@@ -647,7 +647,7 @@ are weak-bisim equivalent"
                        (or (string-contains file-name "alpha")
                            (string-contains file-name "shadow"))))
          (command `("make"
-                    "-f" ,(string-append "test/lib/build." language ".make")
+                    "-f" ,(string-append %srcdir "/test/lib/build." language ".make")
                     ,@(if shadow? '("WARN_FLAGS=-Wall -Wextra -Werror") '())
                     ,(string-append "LANGUAGE=" language)
                     ,(string-append "IN=" file-name)
