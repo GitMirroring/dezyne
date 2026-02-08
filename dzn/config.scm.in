@@ -155,7 +155,11 @@ There is NO WARRANTY, to the extent permitted by law.
 ;;; Defaults.
 ;;;
 (define %default-languages
-  (string-split (string-trim-both "@languages@") #\space))
+  (let* ((languages "@languages@")
+         (languages (string-trim languages #\())
+         (languages (string-trim-right languages #\)))
+         (languages (string-trim-both languages)))
+   (string-split languages #\space)))
 
 ;;; The component queue.
 (define %default-queue-size 3)

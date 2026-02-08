@@ -3,7 +3,7 @@
 !#
 
 ;;; Dezyne --- Dezyne command line tools
-;;; Copyright © 2020, 2022, 2024 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020, 2022, 2024, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -27,6 +27,7 @@
 (use-modules (srfi srfi-26)
              (ice-9 getopt-long)
              (ice-9 match)
+             (dzn config)
              (dzn command-line)
              (dzn misc)
              (dzn shell-util)
@@ -62,7 +63,7 @@ Examples:
   ./pre-inst-env run test/all/hello
   ./pre-inst-env run test/all/hello/hello.dzn
 "
-                "@languages@")
+                %default-languages)
           (exit (or (and usage? EXIT_OTHER_FAILURE) EXIT_SUCCESS))))
     options))
 
@@ -90,12 +91,9 @@ Examples:
          (file-name (if (string-prefix? "./test" file-name)
                         (string-drop file-name 2)
                         file-name))
-         (default-languages (string-trim-both "@languages@"))
-         (default-languages (if (string-null? default-languages) '()
-                               (string-split default-languages #\space)))
          (languages (multi-opt options 'language))
          (languages (if (pair? languages) languages
-                        default-languages))
+                        %default-languages))
          (skip (multi-opt options 'skip))
          (stages (multi-opt options 'stage))
          (stages (if (pair? stages) stages
