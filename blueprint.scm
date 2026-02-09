@@ -201,6 +201,9 @@
      (name "guileobjectdir")
      (value (const #%~#%?guile-object-dir)))
     (variable
+     (name "BLUE")
+     (value (delay# (find-executable "blue"))))
+    (variable
      (name "GUILE_TOOLS")
      (value (delay# (find-executable "guild"))))
     (variable
@@ -607,7 +610,7 @@ Testsuite summary for Dezyne 2.19.3.114-7ca0c2
 (define libdzn-c++
   (c-binary
    (inputs runtime-cc-files)
-   (outputs "runtime/c++/.libs/libdzn-c++.so")
+   (outputs "runtime/c++/libdzn-c++.so")
    (cppflags (list (string-append "-I" #%?srcdir "/runtime/c++")))
    (library? #t)
    (shared? #t)
@@ -616,7 +619,7 @@ Testsuite summary for Dezyne 2.19.3.114-7ca0c2
 (define libdzn-c
   (c-binary
    (inputs runtime-c-files)
-   (outputs "runtime/c/.libs/libdzn-c.so")
+   (outputs "runtime/c/libdzn-c.so")
    (cppflags (list (string-append "-I" #%?srcdir "/runtime/c")))
    (library? #t)
    (shared? #t)

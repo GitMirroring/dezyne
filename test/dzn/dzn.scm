@@ -662,22 +662,32 @@ are weak-bisim equivalent"
          (shadow? (and (string=? language "c++")
                        (or (string-contains file-name "alpha")
                            (string-contains file-name "shadow"))))
-         (command `("make"
-                    "-f" ,(string-append %srcdir "/test/lib/build." language ".make")
-                    ,@(if shadow? '("WARN_FLAGS=-Wall -Wextra -Werror") '())
-                    ,(string-append "LANGUAGE=" language)
-                    ,(string-append "IN=" file-name)
-                    ,(string-append "OUT=" out-lang)
-                    ,@(if thread-pool? '("THREAD_POOL_O=thread_pool.o") '()))))
+         (command `("blue" "configure" "--" "build")))
+    (when shadow?
+      (setenv "WARN_FLAGS" "-Wall -Wextra -Werror"))
+    (when thread-pool?
+      (setenv "THREAD_POOL_O" "thread_pool.o"))
+    (setenv "GUILE_LOAD_PATH"
+            (string-append (getcwd)
+                           ":" (getenv "GUILE_LOAD_PATH")))
+    (setenv "GUILE_LOAD_COMPILED_PATH"
+            (string-append (getcwd)
+                           ":" (getenv "GUILE_LOAD_COMPILED_PATH")))
     (or (error-model? file-name)
         (feature-skip? file-name language)
         (skip? file-name
                language
                "code" (string-append language ":code")
                "build" (string-append language ":build"))
-        (receive (status stdout stderr)
-            (observe command input)
-          (zero? status)))))
+        (with-directory-excursion out-lang
+          (let ((srcdir "../../../../../"))
+            (when (file-exists? "blueprint.scm")
+              (delete-file "blueprint.scm"))
+            (link (string-append srcdir "test/lib/blueprint." language ".scm")
+                  "blueprint.scm")
+            (receive (status stdout stderr)
+                (observe command input)
+              (zero? status)))))))
 
 (define (run-execute file-name language trace)
   (format #t "** stage: execute: ~a ~a\n" language trace)

@@ -28,6 +28,7 @@
 (define-module (dzn config)
   #:use-module (dzn shell-util)
   #:export (%bindir
+            %blue
             %builddir
             %copyright-info
             %datadir
@@ -94,6 +95,9 @@
   (or (and (getenv "DZN_UNINSTALLED") %prefix)
       (getenv "DZN_DATADIR")
       (string-append %datadir "/" %package)))
+
+(define %blue
+  "@BLUE@")
 
 (define %bindir
   (or (and (getenv "DZN_UNINSTALLED") (string-append %builddir "/bin"))
