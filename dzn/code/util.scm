@@ -27,6 +27,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
 
+  #:use-module (ice-9 rdelim)
+
   #:use-module (dzn ast ast)
   #:use-module (dzn ast)
   #:use-module (dzn command-line)
@@ -81,7 +83,7 @@
          (dir (dirname source-file)))
     (map (cute code:relative-file-name dir <>) import-files)))
 
-(define* (code:dump generate #:key file-name verbose?)
+(define* (code:dump generate #:key file-name touch? verbose?)
   (cond
    ((equal? file-name "-")
     (generate))
@@ -89,8 +91,19 @@
     (when verbose?
       (format (current-error-port) "  DZN      ~a\n" file-name))
     (mkdir-p (dirname file-name))
-    (with-output-to-file file-name
-      generate))))
+    (if touch? (with-output-to-file file-name generate)
+        (with-temporary-file
+         (lambda (port)
+           (let ((tmp (port-filename port)))
+             (with-output-to-port port
+               generate)
+             (force-output port)
+             (if (not (file-exists? file-name)) (rename-file tmp file-name)
+                 (let ((new-content (with-input-from-file tmp read-string))
+                       (content (with-input-from-file file-name read-string)))
+                   (unless (equal? new-content content)
+                     (rename-file tmp file-name))))))
+         #:file-name file-name)))))
 
 (define* (code:touch file-name #:key verbose?)
   (when verbose?
