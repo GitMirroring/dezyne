@@ -1,7 +1,7 @@
 ;;; Dezyne --- Dezyne command line tools
 ;;;
 ;;; Copyright © 2012, 2013, 2014, 2015, 2016, 2017 Ludovic Courtès <ludo@gnu.org>
-;;; Copyright © 2017, 2019, 2020, 2021, 2022, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017, 2019, 2020, 2021, 2022, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2015 Mark H Weaver <mhw@netris.org>
 ;;; Copyright © 2022, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
@@ -45,7 +45,8 @@
             set-file-time
             substitute
             substitute*
-            with-directory-excursion)
+            with-directory-excursion
+            with-temporary-file)
   #:replace (file-is-directory?))
 
 (define (mingw?)
@@ -127,6 +128,19 @@ PREDICATE is a string, filter files using string-match using PREDICATE."
         body ...)
       (lambda ()
         (chdir init)))))
+
+(define* (with-temporary-file procedure #:key (mode "w+")
+                              (file-name "/tmp/dezyne")
+                              (template (string-append file-name "-XXXXXX")))
+  (let ((port (mkstemp template mode)))
+    (dynamic-wind
+      (const #t)
+      (lambda _
+        (procedure port))
+      (lambda ()
+        (false-if-exception
+         (delete-file (port-filename port)))
+        (close-port port)))))
 
 (define* (delete-file-recursively dir
                                   #:key follow-mounts?)
