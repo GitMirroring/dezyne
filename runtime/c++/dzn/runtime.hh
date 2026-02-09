@@ -719,7 +719,7 @@ struct event<void (Args...)>
         || runtime.performs_flush (nullptr)
         || runtime.defer;
 
-      auto event = [f,require,this,args...]
+      auto event_wrapper = [f,require,this,args...]
       {
         if (require)
           {
@@ -729,7 +729,7 @@ struct event<void (Args...)>
         f (args...);
       };
 
-      auto port_update = [this]
+      auto port_update_wrapper = [this]
       {
         this->port_update ("<flush>");
         if (this->other_port_update)
@@ -738,11 +738,11 @@ struct event<void (Args...)>
 
       scoped_activity activity (runtime, locator, -1);
 
-      runtime.deferred_flush (require) = [this,port_update,provide,&locator,&runtime]
+      runtime.deferred_flush (require) = [this,port_update_wrapper,provide,&locator,&runtime]
         {
           if (!port_blocked_p (locator, this->port)
               && (!runtime.defer || runtime.native (provide)))
-            port_update ();
+            port_update_wrapper ();
         };
       runtime.deferred (provide) = require;
 
@@ -750,7 +750,7 @@ struct event<void (Args...)>
         f (args...);
       else
         {
-          runtime.queue (require).push (event);
+          runtime.queue (require).push (event_wrapper);
 
           if (!require
               || (!provide
@@ -761,11 +761,11 @@ struct event<void (Args...)>
                   && !runtime.handling (provide)
                   && !runtime.performs_flush (provide)))
             runtime.flush (require, coroutine_id (locator), activity.value == 1);
-          else if ((!provide && !port_blocked_p (locator, this->port)
+          else if (((!provide && !port_blocked_p (locator, this->port))
                     || !runtime.blocked (provide))
                    && runtime.handling (this->component)
                    && blocked_p (locator, this->component))
-            port_update ();
+            port_update_wrapper ();
         }
 
       prune_deferred (locator);

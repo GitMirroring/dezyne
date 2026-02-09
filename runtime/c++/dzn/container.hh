@@ -114,9 +114,9 @@ struct container: public component
     if (perform ())
       sync_trigger ();
   }
-  void operator () (std::map<std::string, Function> &&lookup)
+  void operator () (std::map<std::string, Function> && l)
   {
-    this->lookup = std::move (lookup);
+    this->lookup = std::move (l);
     pump ([this]{this->perform (true);});
     pump.wait ();
   }
