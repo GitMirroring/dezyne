@@ -53,7 +53,7 @@ stamp-vti
 /config.status
 /configure
 /doc/*.1
-/doc/dezyne.info
+/doc/dezyne.info*
 /doc/dezyne.pdf
 /doc/html/
 /doc/stamp-1
