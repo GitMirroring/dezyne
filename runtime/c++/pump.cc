@@ -163,7 +163,7 @@ pump::port_blocked_p (void *port)
 void
 pump::stop ()
 {
-  debug.rdbuf () &&debug << "pump::stop" << std::endl;
+  debug.rdbuf () && debug << "pump::stop" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   if (running)
     {
@@ -177,7 +177,7 @@ pump::stop ()
 void
 pump::wait ()
 {
-  debug.rdbuf () &&debug << "pump::wait" << std::endl;
+  debug.rdbuf () && debug << "pump::wait" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   idle.wait (lock, [this] {return !executing && queue.empty () && deferred.empty ();});
 }
@@ -185,7 +185,7 @@ pump::wait ()
 void
 pump::pause ()
 {
-  debug.rdbuf () &&debug << "pump::pause" << std::endl;
+  debug.rdbuf () && debug << "pump::pause" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   paused = true;
 }
@@ -193,7 +193,7 @@ pump::pause ()
 void
 pump::resume ()
 {
-  debug.rdbuf () &&debug << "pump::resume" << std::endl;
+  debug.rdbuf () && debug << "pump::resume" << std::endl;
   std::unique_lock<std::mutex> lock (mutex);
   paused = false;
   condition.notify_one ();
@@ -202,7 +202,7 @@ pump::resume ()
 void
 pump::flush ()
 {
-  debug.rdbuf () &&debug << "pump::flush" << std::endl;
+  debug.rdbuf () && debug << "pump::flush" << std::endl;
   resume ();
   std::this_thread::sleep_for (std::chrono::milliseconds (100));
   pause ();
@@ -261,15 +261,15 @@ pump::operator () ()
       };
 
       coroutine zero;
-      debug.rdbuf () &&debug << "coroutine zero: "
+      debug.rdbuf () && debug << "coroutine zero: "
                              << zero.id << std::endl;
       create_context ();
-      debug.rdbuf () &&debug << "coroutine self: "
+      debug.rdbuf () && debug << "coroutine self: "
                              << find_self (coroutines)->id << std::endl;
 
       exit = [&]
       {
-        debug.rdbuf () &&debug << "enter exit"
+        debug.rdbuf () && debug << "enter exit"
                                << std::endl;
         zero.release ();
       };
@@ -284,7 +284,7 @@ pump::operator () ()
           lock.lock ();
           remove_finished_coroutines (coroutines);
         }
-      debug.rdbuf () &&debug << "finish pump; #coroutines: " << coroutines.size ()
+      debug.rdbuf () && debug << "finish pump; #coroutines: " << coroutines.size ()
                              << " #collateral: " << collateral_blocked.size () << std::endl;
 
       for (auto &coroutine : coroutines)
@@ -299,7 +299,7 @@ pump::operator () ()
     }
   catch (std::exception const& exception)
     {
-      debug.rdbuf () &&debug << "oops: " << exception.what () << std::endl;
+      debug.rdbuf () && debug << "oops: " << exception.what () << std::endl;
       std::terminate ();
     }
 }
@@ -324,7 +324,7 @@ pump::create_context ()
     try
       {
         auto self = find_self (coroutines);
-        debug.rdbuf () &&debug << "[" << self->id << "] create context"
+        debug.rdbuf () && debug << "[" << self->id << "] create context"
                                << std::endl;
         context_switch ();
         while (running || queue.size () || timers_expired (std::chrono::steady_clock::now ()))
@@ -337,12 +337,12 @@ pump::create_context ()
       }
     catch (forced_unwind const&)
       {
-        debug.rdbuf () &&debug << "ignoring forced_unwind"
+        debug.rdbuf () && debug << "ignoring forced_unwind"
                                << std::endl;
       }
     catch (std::exception const& e)
       {
-        debug.rdbuf () &&debug << "oops: " << e.what ()
+        debug.rdbuf () && debug << "oops: " << e.what ()
                                << std::endl;
         std::terminate ();
       }
@@ -354,7 +354,7 @@ pump::context_switch ()
 {
   if (switch_context.size ())
     {
-      debug.rdbuf () &&debug << "context_switch" << std::endl;
+      debug.rdbuf () && debug << "context_switch" << std::endl;
       auto context = std::move (switch_context.front ());
       switch_context.erase (switch_context.begin ());
       context ();
@@ -378,7 +378,7 @@ void
 pump::collateral_block (dzn::runtime &runtime, dzn::component *component)
 {
   auto self = find_self (coroutines);
-  debug.rdbuf () &&debug << "[" << self->id << "] collateral_block"
+  debug.rdbuf () && debug << "[" << self->id << "] collateral_block"
                          << std::endl;
 
   collateral_blocked.splice (collateral_blocked.end (), coroutines, self);
@@ -394,20 +394,20 @@ pump::collateral_block (dzn::runtime &runtime, dzn::component *component)
 
   self->port = it->port;
 
-  debug.rdbuf () &&debug << "[" << self->id << "] collateral block on "
+  debug.rdbuf () && debug << "[" << self->id << "] collateral block on "
                          << self->port << std::endl;
 
   create_context ();
   self->yield_to (coroutines.back ());
 
-  debug.rdbuf () &&debug << "[" << self->id << "] collateral_unblock"
+  debug.rdbuf () && debug << "[" << self->id << "] collateral_unblock"
                          << std::endl;
 }
 
 void
 pump::collateral_release (std::list<coroutine>::iterator self)
 {
-  debug.rdbuf () &&debug << "[" << self->id << "] collateral_release"
+  debug.rdbuf () && debug << "[" << self->id << "] collateral_release"
                          << std::endl;
 
   auto predicate = [this] (coroutine const& c)
@@ -425,7 +425,7 @@ pump::collateral_release (std::list<coroutine>::iterator self)
                          predicate);
       if (it != collateral_blocked.end ())
         {
-          debug.rdbuf () &&debug << "collateral_unblocking: " << it->id
+          debug.rdbuf () && debug << "collateral_unblocking: " << it->id
                                  << " for port: " << it->port << " " << std::endl;
           coroutines.splice (coroutines.end (), collateral_blocked, it);
           coroutines.back ().port = nullptr;
@@ -439,7 +439,7 @@ pump::collateral_release (std::list<coroutine>::iterator self)
                                                  collateral_blocked.end (),
                                                  predicate))
     {
-      debug.rdbuf () &&debug << "everything unblocked!!!" << std::endl;
+      debug.rdbuf () && debug << "everything unblocked!!!" << std::endl;
       unblocked.clear ();
     }
 }
@@ -458,7 +458,7 @@ pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
       return;
     }
   self->port = port;
-  debug.rdbuf () &&debug << "[" << self->id << "] block on "
+  debug.rdbuf () && debug << "[" << self->id << "] block on "
                          << port << std::endl;
 
   bool collateral_skip = collateral_release_skip_block (component);
@@ -474,7 +474,7 @@ pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
          });
       if (it != collateral_blocked.end ())
         {
-          debug.rdbuf () &&debug << "[" << it->id << "]" << " move from "
+          debug.rdbuf () && debug << "[" << it->id << "]" << " move from "
                                  << it->port << " to " << port << std::endl;
           it->port = port;
         }
@@ -483,7 +483,7 @@ pump::block (dzn::runtime &runtime, dzn::component *component, void *port)
 
   assert (coroutines.back ().port == nullptr);
   self->yield_to (coroutines.back ());
-  debug.rdbuf () &&debug << "[" << self->id << "] entered context" << std::endl;
+  debug.rdbuf () && debug << "[" << self->id << "] entered context" << std::endl;
   if (debug.rdbuf ())
     {
       debug << "routines: ";
@@ -510,7 +510,7 @@ pump::collateral_release_skip_block (dzn::component *component)
                            [&] (void *port)
                            {return self->port == port;}) != unblocked.end ())
         {
-          debug.rdbuf () &&debug << "[" << self->id << "]" << " relay skip "
+          debug.rdbuf () && debug << "[" << self->id << "]" << " relay skip "
                                  << self->port << std::endl;
           have_collateral = true;
           self->component = nullptr;
@@ -526,29 +526,29 @@ void pump::release (dzn::runtime &runtime, dzn::component *component, void *port
   runtime.set_skip_block (component, port);
 
   auto self = find_self (coroutines);
-  debug.rdbuf () &&debug << "[" << self->id << "] release of "
+  debug.rdbuf () && debug << "[" << self->id << "] release of "
                          << port << std::endl;
 
   auto blocked = find_blocked (coroutines, port);
   if (blocked == coroutines.end ())
     {
-      debug.rdbuf () &&debug << "[" << self->id << "] skip block" << std::endl;
+      debug.rdbuf () && debug << "[" << self->id << "] skip block" << std::endl;
       return;
     }
 
-  debug.rdbuf () &&debug << "[" << blocked->id << "] unblock" << std::endl;
+  debug.rdbuf () && debug << "[" << blocked->id << "] unblock" << std::endl;
 
   switch_context.emplace_back ([blocked, this]
   {
     auto self = find_self (this->coroutines);
-    debug.rdbuf () &&debug << "setting unblocked to port "
+    debug.rdbuf () && debug << "setting unblocked to port "
                            << blocked->port << std::endl;
     this->unblocked.push_back (blocked->port);
     blocked->component = nullptr;
     blocked->port = nullptr;
 
-    debug.rdbuf () &&debug << "[" << self->id << "] switch from" << std::endl;
-    debug.rdbuf () &&debug << "[" << blocked->id << "] to" << std::endl;
+    debug.rdbuf () && debug << "[" << self->id << "] switch from" << std::endl;
+    debug.rdbuf () && debug << "[" << blocked->id << "] to" << std::endl;
 
     self->finished = true;
     self->yield_to (*blocked);

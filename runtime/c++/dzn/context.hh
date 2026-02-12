@@ -100,7 +100,7 @@ public:
         }
       catch (forced_unwind const&)
         {
-          debug.rdbuf () &&debug << "ignoring forced_unwind" << std::endl;
+          debug.rdbuf () && debug << "ignoring forced_unwind" << std::endl;
         }
     }))
   {
