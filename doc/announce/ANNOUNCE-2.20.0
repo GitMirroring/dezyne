@@ -1,0 +1,119 @@
+Subject: Dezyne 2.20.0 released
+
+<#secure method=pgpmime mode=sign>
+
+We are happy to announce Dezyne 2.20 which introduces global function
+and foreign function.  This release represents 111 commits over three
+years.
+
+See the NEWS below for a brief summary.
+
+Here is the Dezyne home page:
+    https://dezyne.org
+
+What's next?
+
+In the next releases we would like to see:
+- Improved performance of the Well-formedness check.
+- Performance improved parse infrastructure including normalization.
+- New sequential simulator infrastructure with improved support for
+  systems, constraining interfaces, shared state, and debugging
+  communcations labeled with external and defer.
+
+See the ROADMAP in GIT for details.
+
+Enjoy!
+The Dezyne developers.
+
+ABOUT
+
+Dezyne is a programming language and a set of tools to spoecify,
+validate, verify, simulate, document, and implement concurrent control
+software for embedded and cyber-physical systems.
+
+The Dezyne language has formal semantics expressed in mCRL2
+(https://mcrl2.org) developed at the department of Mathematics and
+Computer Science of the Eindhoven University of Technology
+(https://tue.nl).  Dezyne requires that every model is finite,
+deterministic and free of deadlocks, livelocks, and contract violations.
+This is achieved by means of the language itself as well as by builtin
+verification through model checking.  This allows the construction of
+complex systems by assembling independently verified components.
+
+DOWNLOAD
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
+Here are the compressed sources:
+
+  https://dezyne.org/download/dezyne/dezyne-2.20.0.tar.gz
+
+Here is the GPG detached signature:
+
+  https://dezyne.org/download/dezyne/dezyne-2.20.0.tar.gz.sig
+
+Here are the SHA1 and SHA256 checksums:
+
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.20.0.tar.gz
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.20.0.tar.gz
+
+Use a .sig file to verify that the corresponding file (without the
+.sig suffix) is intact.  First, be sure to download both the .sig file
+and the corresponding tarball.  Then, run a command like this:
+
+  gpg --verify .sig
+
+The signature should match the fingerprint of the following key:
+
+  pub   rsa4096 2018-04-08 [SC]
+        1A85 8392 E331 EAFD B8C2  7FFB F3C1 A0D9 C1D6 5273
+  uid           [  full  ] Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+If that command fails because you don't have the required public key,
+or that public key has expired, try the following commands to retrieve
+or refresh it, and then rerun the 'gpg --verify' command.
+
+  gpg --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+As a last resort to find the key, you can try the official GNU
+keyring:
+
+  wget -q https://ftp.gnu.org/gnu/gnu-keyring.gpg
+  gpg --keyring gnu-keyring.gpg --verify .sig
+
+This release is based on the dezyne git repository, available as
+
+  git clone git://git.savannah.nongnu.org/dezyne.git
+
+with commit  tagged as v2.20.0.
+
+For a summary of changes and contributors, see:
+
+  https://git.sv.gnu.org/gitweb/?p=dezyne.git;a=shortlog;h=v2.20.0
+
+or run this command from a git-cloned dezyne directory:
+
+  git shortlog v2.19.3..v2.20.0
+
+Alternatively, Dezyne can be installed using GNU Guix:
+
+  guix pull
+  guix install dezyne
+
+NEWS
+
+* Changes in 2.20.0 since 2.19.3
+** Language
+  - Global functions are now supported.
+  - Foreign functions are now supported.
+** Commands
+  - A new command, `dzn test' has been added; offering an initial
+    version of LTS-based testing.
+** Code
+  - The C++ code is being checked using `-Wredundant-decls'.
+
+Thanks to everyone who contributed to this release:
+
+    53	Janneke Nieuwenhuizen
+     5	Paul Hoogendijk
+    53	Rutger van Beusekom
