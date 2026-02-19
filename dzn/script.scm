@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2018 Rob Wieringa <rma.wieringa@gmail.com>
-;;; Copyright © 2022, 2023, 2024 Rutger (regtur) van Beusekom <rutger@dezyne.org>
+;;; Copyright © 2022, 2023, 2024, 2026 Rutger (regtur) van Beusekom <rutger@dezyne.org>
 ;;;
 ;;; This file is part of Dezyne.
 ;;;
@@ -31,6 +31,7 @@
   #:use-module (system repl error-handling)
 
   #:use-module (ice-9 documentation)
+  #:use-module (ice-9 exceptions)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 match)
   #:use-module (ice-9 poe)
@@ -191,10 +192,17 @@ Use \"dzn COMMAND --help\" for command-specific information.
   (let* ((options (parse-opts args))
          (repl? (option-ref options 'repl #f))
          (timings? (option-ref options 'timings #f))
-         (debug? (option-ref options 'debug #f)))
+         (debug? (option-ref options 'debug #f))
+         (command (cute run-command options)))
     (when debug?
       (debug-set! depth 40))
     (when timings?
       (instrument-timings %time %measure))
-    (if repl? (call-with-error-handling (cute run-command options))
-        (run-command options))))
+    (if repl? (call-with-error-handling command)
+        (if debug? (command)
+            (with-exception-handler
+                (lambda (error)
+                  (when (quit-exception? error) (raise-exception error))
+                  (for-each write-line-error (exception-irritants error))
+                  (exit EXIT_FAILURE))
+              command)))))
