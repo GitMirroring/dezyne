@@ -1,6 +1,6 @@
 # Dezyne --- Dezyne command line tools
 #
-# Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025 Janneke Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Janneke Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2019 Timothy Sample <samplet@ngyro.com>
 # Copyright © 2020, 2021, 2022 Rutger van Beusekom <rutger@dezyne.org>
 # Copyright © 2020 Johri van Eerd <vaneerd.johri@gmail.com>
@@ -396,7 +396,7 @@ gen-announce:
 	build-aux/announce-gen					\
 	    --release-type=stable				\
 	    --package-name=$(PACKAGE)				\
-	    --previous-version='2.19.1'				\
+	    --previous-version='2.19.3'				\
             --current-version=$(PACKAGE_VERSION)		\
 	    --gpg-key-id=$(GPG_KEY_ID)				\
 	    --url-directory=https://dezyne.org/download/dezyne	\
