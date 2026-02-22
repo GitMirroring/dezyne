@@ -191,6 +191,8 @@ recheck-hello: all
 # Documentation
 ###############
 
+MAKEINFOFLAGS = --no-split
+
 info_TEXINFOS =					\
  doc/dezyne.texi
 
