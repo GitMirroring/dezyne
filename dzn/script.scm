@@ -203,8 +203,14 @@ Use \"dzn COMMAND --help\" for command-specific information.
     (if repl? (call-with-error-handling command)
         (if debug? (command)
             (with-exception-handler
-                (lambda (error)
-                  (when (quit-exception? error) (raise-exception error))
-                  (for-each write-line-error (exception-irritants error))
+                (lambda (e)
+                  (when (quit-exception? e)
+                    (raise-exception e))
+                  (format (current-error-port) "internal error: ~a\n"
+                          (if (exception-with-message? e) (exception-message e)
+                              "unknown exception"))
+                  (when (exception-with-irritants? e)
+                    (format (current-error-port) "irritants:\n")
+                    (for-each write-line-error (exception-irritants e)))
                   (exit EXIT_FAILURE))
               command)))))
