@@ -54,8 +54,8 @@ Here is the GPG detached signature:
 
 Here are the SHA1 and SHA256 checksums:
 
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.20.0.tar.gz
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  dezyne-2.20.0.tar.gz
+  05b6663387c120a531c3dc9a97c9c354a829c817  dezyne-2.20.0.tar.gz
+  d0d205f3b37d6e603765d1e330e5724897e2ed4802cc4630bd1b43291d02b0ec  dezyne-2.20.0.tar.gz
 
 Use a .sig file to verify that the corresponding file (without the
 .sig suffix) is intact.  First, be sure to download both the .sig file
